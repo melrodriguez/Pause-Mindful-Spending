@@ -17,15 +17,19 @@ struct FloatingNavBar: View {
                     ZStack {
                         if selectedTab == tab {
                             Capsule()
-                                .fill(Color.accentColor.opacity(0.18))
+                                .fill(AppColors.pink.opacity(0.18))
                                 .matchedGeometryEffect(id: "bubble", in: bubbleNS)
                         }
 
-                        Text(tab.rawValue)
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(selectedTab == tab ? Color.accentColor : Color.secondary)
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(
+                                selectedTab == tab
+                                ? AppColors.pink
+                                : Color.secondary
+                            )
                             .padding(.horizontal, 14)
+
                     }
                     .frame(height: 40)
                 }
@@ -38,6 +42,5 @@ struct FloatingNavBar: View {
                 .fill(.thinMaterial)
                 .shadow(radius: 8)
         )
-        .padding(.horizontal, 18)
     }
 }

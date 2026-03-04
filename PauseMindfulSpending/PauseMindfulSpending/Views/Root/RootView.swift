@@ -17,7 +17,6 @@ struct RootView: View {
                     SettingsView().tag(NavBar.settings)
                 }
                 .toolbar(.hidden, for: .tabBar)
-                .background(Color.clear)
                 
                 // View for nav bar
                 VStack {
@@ -33,6 +32,7 @@ struct RootView: View {
                         }
                     }
                     .padding(.bottom, 18)
+                    .padding(.horizontal, 20)
                 }
             }
             .navigationDestination(isPresented: $showAddItem) {

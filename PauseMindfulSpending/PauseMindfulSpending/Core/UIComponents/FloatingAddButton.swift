@@ -7,6 +7,7 @@ struct FloatingAddButton: View {
         Button(action: action) {
             Image(systemName: "plus")
                 .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(AppColors.pink)
                 .frame(width: 56, height: 56)
         }
         .buttonStyle(.plain)

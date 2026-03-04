@@ -20,7 +20,7 @@ struct AppHeader: View {
                 .scaledToFit()
                 .frame(width: 28)
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 20)
         .padding(.top, 8)
     }
 }
