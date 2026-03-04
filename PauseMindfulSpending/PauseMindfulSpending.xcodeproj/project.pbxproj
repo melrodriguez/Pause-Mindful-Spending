@@ -16,9 +16,22 @@
 		A1DCE60D2F524F44009706C1 /* PauseMindfulSpending.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PauseMindfulSpending.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A1CC3AD82F58DD9600FB4B5F /* Exceptions for "PauseMindfulSpending" folder in "PauseMindfulSpending" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A1DCE60C2F524F44009706C1 /* PauseMindfulSpending */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A1DCE60F2F524F44009706C1 /* PauseMindfulSpending */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1CC3AD82F58DD9600FB4B5F /* Exceptions for "PauseMindfulSpending" folder in "PauseMindfulSpending" target */,
+			);
 			path = PauseMindfulSpending;
 			sourceTree = "<group>";
 		};
@@ -271,6 +284,7 @@
 				DEVELOPMENT_TEAM = 3378WL824J;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PauseMindfulSpending/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -299,6 +313,7 @@
 				DEVELOPMENT_TEAM = 3378WL824J;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PauseMindfulSpending/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

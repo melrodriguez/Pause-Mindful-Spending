@@ -2,8 +2,16 @@ import SwiftUI
 
 struct TimersView: View {
     var body: some View {
-        Text("Timers")
-            .font(.title)
-            .fontWeight(.semibold)
+        VStack(alignment: .leading) {
+            
+            AppHeader(title: "Timers")
+            
+            Spacer()
+        }
+        .appBackground()
     }
+}
+
+#Preview {
+    TimersView()
 }

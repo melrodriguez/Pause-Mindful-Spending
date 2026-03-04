@@ -2,8 +2,16 @@ import SwiftUI
 
 struct WishlistView: View {
     var body: some View {
-        Text("Wishlist")
-            .font(.title)
-            .fontWeight(.semibold)
+        VStack(alignment: .leading) {
+            
+            AppHeader(title: "Wishlist")
+            
+            Spacer()
+        }
+        .appBackground()
     }
+}
+
+#Preview {
+    WishlistView()
 }

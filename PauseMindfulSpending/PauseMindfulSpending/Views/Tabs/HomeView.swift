@@ -2,8 +2,16 @@ import SwiftUI
 
 struct HomeView: View {
     var body: some View {
-        Text("Home")
-            .font(.title)
-            .fontWeight(.semibold)
+        VStack(alignment: .leading) {
+            
+            AppHeader(title: "Pause")
+            
+            Spacer()
+        }
+        .appBackground()
     }
+}
+
+#Preview {
+    HomeView()
 }

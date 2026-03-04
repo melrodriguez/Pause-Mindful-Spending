@@ -5,11 +5,10 @@ struct RootView: View {
     @State private var selectedTab: NavBar = .home
     // Show add item log page if true
     @State private var showAddItem: Bool = false
-
+    
     var body: some View {
         NavigationStack {
             ZStack {
-                
                 // Controls switching between tabs
                 TabView(selection: $selectedTab) {
                     HomeView().tag(NavBar.home)
@@ -18,6 +17,7 @@ struct RootView: View {
                     SettingsView().tag(NavBar.settings)
                 }
                 .toolbar(.hidden, for: .tabBar)
+                .background(Color.clear)
                 
                 // View for nav bar
                 VStack {
@@ -41,4 +41,9 @@ struct RootView: View {
             }
         }
     }
+}
+
+
+#Preview {
+    RootView()
 }

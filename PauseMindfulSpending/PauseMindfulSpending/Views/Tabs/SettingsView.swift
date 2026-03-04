@@ -2,8 +2,16 @@ import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
-        Text("Settings")
-            .font(.title)
-            .fontWeight(.semibold)
+        VStack(alignment: .leading) {
+            
+            AppHeader(title: "Settings")
+            
+            Spacer()
+        }
+        .appBackground()
     }
+}
+
+#Preview {
+    SettingsView()
 }
