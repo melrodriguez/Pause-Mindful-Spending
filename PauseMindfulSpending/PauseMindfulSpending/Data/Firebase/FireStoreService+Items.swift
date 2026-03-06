@@ -1,7 +1,12 @@
 import FirebaseFirestore
 
 extension FireStoreService {
-    func createItem(uid: String, data: [String: Any], durationSeconds: Int, completion: @escaping (String?) -> Void) {
+    func createItem(
+        uid: String,
+        data: [String: Any],
+        durationSeconds: Int,
+        completion: @escaping (String?) -> Void
+    ) {
         // Creates an item in the items subcollection and will pass the itemId using the
         // completion handler
         
