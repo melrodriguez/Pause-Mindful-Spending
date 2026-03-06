@@ -10,10 +10,10 @@ class UserManager {
         displayName: String,
         email: String,
         password: String,
-        completion: @escaping (Bool) -> Void
+        completion: @escaping (String?) -> Void
     ) {
         // Creates a user in Firebase Authentication and creates a user document in
-        // Firestore. Uses completion handler to carry result of completion
+        // Firestore. Uses completion handler to pass uid.
         
         Auth.auth().createUser(withEmail: email, password: password) {
             result, error in
@@ -25,27 +25,27 @@ class UserManager {
                     uid: uid
                 )
                 
-                completion(true)
+                completion(uid)
             }
             else {
-                completion(false)
+                completion(nil)
             }
         }
     }
     
-    func login(email: String, password: String, completion: @escaping (Bool) -> Void) {
+    func login(email: String, password: String, completion: @escaping (String?) -> Void) {
         // Sign into existing account, if there are any failures will update completion
-        // handler to carry result of completion
+        // handler to pass uid
         
         Auth.auth().signIn(withEmail: email, password: password) {
-            authResult, error in
-            if let error = error as NSError? {
-                print("DEBUG: Failed to login of account \(error.localizedDescription)")
-                completion(false)
-                return
+            result, error in
+            if let user = result?.user {
+                let uid = user.uid
+                completion(uid)
             }
-            
-            completion(true)
+            else {
+                completion(nil)
+            }
         }
     }
     
