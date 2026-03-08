@@ -13,7 +13,8 @@ class FireStoreService {
             "createdAt": FieldValue.serverTimestamp(),
             "lastLoginAt": FieldValue.serverTimestamp(),
             "photoUrl": "",
-            "categoryIds": []
+            "categoryIds": [],
+            "impulseResisted": 0
         ])
     }
     
@@ -63,6 +64,20 @@ class FireStoreService {
                 } else {
                     completion(true)
                 }
+            }
+    }
+    
+    func fetchUserDocumentField<T>(uid: String, fieldName: String, completion: @escaping (T?) -> Void) {
+        self.db.collection("users")
+            .document(uid)
+            .getDocument() { document, error in
+                guard let document = document, document.exists else {
+                    completion(nil)
+                    return
+                }
+                
+                let fieldData = document.get(fieldName) as? T
+                completion(fieldData)
             }
     }
 

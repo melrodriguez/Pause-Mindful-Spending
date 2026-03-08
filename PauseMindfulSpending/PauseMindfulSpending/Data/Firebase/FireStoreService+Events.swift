@@ -25,43 +25,81 @@ extension FireStoreService {
         uid: String,
         type: String,
         itemId: String,
-        timerId: String,
-        categoryId: String,
-        amount: Double,
         completion: @escaping (String?) -> Void)
     {
-        let data: [String: Any] = [
+        var data: [String: Any] = [
             "type": type,
             "itemId": itemId,
-            "timerId": timerId,
-            "categoryId": categoryId,
-            "amount": amount
+            "createdAt": FieldValue.serverTimestamp()
         ]
         
-        self.fetchEventList(uid: uid) { userEvents in
-            var events = userEvents
+        self.addDocumentToSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "events",
+            data: data) { eventId in
+                guard let eventId = eventId else {
+                    completion(nil)
+                    return
+                }
+                
+                self.updateUserDocumentList(
+                    uid: uid,
+                    fieldName: "eventIds",
+                    data: eventId) { success in
+                        if success {
+                            completion(eventId)
+                        } else {
+                            completion(nil)
+                        }
+                }
+            }
+    }
+    
+    func deleteEvent(uid: String, eventId: String) {
+        self.deleteDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "events",
+            subId: eventId
+        )
+        
+        self.removeUserDocumentListItem(
+            uid: uid,
+            fieldName: "eventIds",
+            data: eventId) { success in
+            return
+        }
+    }
+    
+    func fetchDetailsFromEvent(uid: String, eventId: String, completion: @escaping ([String: Any]?) -> Void) {
+        self.fetchDocumentFromSubcollection(parentCollection: "users", parentId: uid, subCollection: "events", subId: eventId) { data in
+            guard
+                let data = data,
+                let itemId = data["itemId"] as? String
+            else {
+                completion(nil)
+                return
+            }
             
-            self.addDocumentToSubcollection(
-                parentCollection: "users",
-                parentId: uid,
-                subCollection: "categories",
-                data: data) { eventId in
-                    guard let eventId = eventId else {
-                        completion(nil)
-                        return
-                    }
-                    
-                    self.updateUserDocumentList(
-                        uid: uid,
-                        fieldName: "eventIds",
-                        data: eventId) { success in
-                            if success {
-                                completion(eventId)
-                            } else {
-                                completion(nil)
-                            }
-                    }
+            self.fetchItem(uid: uid, itemId: itemId) { document in
+                guard
+                    let document = document,
+                    let amount = document["cost"] as? Double else {
+                    completion(nil)
+                    return
+                }
+                let categoryId = document["categoryId"] as? String
+                let timerId = document["timerId"] as? String
+                
+                completion([
+                    "itemId": itemId,
+                    "categoryId": categoryId,
+                    "timerId": timerId,
+                    "amount": amount
+                ])
             }
         }
     }
+    
 }

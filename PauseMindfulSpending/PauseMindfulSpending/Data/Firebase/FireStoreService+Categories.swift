@@ -24,7 +24,7 @@ extension FireStoreService {
     func addCategory(uid: String, name: String, enableStreak: Bool) {
         // Adds a category document then adds the categoryId to back to the user dcoument
         
-        var categoryData: [String: Any] = [
+        var data: [String: Any] = [
             "name": name,
             "highestStreak": 0,
             "enableStreak": enableStreak,
@@ -32,45 +32,37 @@ extension FireStoreService {
             "updatedAt": FieldValue.serverTimestamp()
         ]
         
-        self.fetchCategoryList(uid: uid) { userCategories in
-            var categoryIds = userCategories
-            
-            self.addDocumentToSubcollection(
-                parentCollection: "users",
-                parentId: uid,
-                subCollection: "categories",
-                data: categoryData) { categoryId in
-                    guard let categoryId = categoryId else {
-                        return
-                    }
-                    
-                    self.updateUserDocumentList(
-                        uid: uid,
-                        fieldName: "categoryIds",
-                        data: categoryId) { success in
-                        return
-                    }
-            }
+        self.addDocumentToSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "categories",
+            data: data) { categoryId in
+                guard let categoryId = categoryId else {
+                    return
+                }
+                
+                self.updateUserDocumentList(
+                    uid: uid,
+                    fieldName: "categoryIds",
+                    data: categoryId) { success in
+                    return
+                }
         }
     }
     
     func deleteCategory(uid: String, categoryId: String) {
-        self.fetchCategoryList(uid: uid) { userCategories in
-            var categoryIds = userCategories
-            
-            self.deleteDocumentFromSubcollection(
-                parentCollection: "users",
-                parentId: uid,
-                subCollection: "categories",
-                subId: categoryId
-            )
-            
-            self.removeUserDocumentListItem(
-                uid: uid,
-                fieldName: "categoryIds",
-                data: categoryId) { success in
-                return
-            }
+        self.deleteDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "categories",
+            subId: categoryId
+        )
+        
+        self.removeUserDocumentListItem(
+            uid: uid,
+            fieldName: "categoryIds",
+            data: categoryId) { success in
+            return
         }
     }
 

@@ -17,6 +17,12 @@ extension FireStoreService {
         updatedData["createdAt"] = FieldValue.serverTimestamp()
         updatedData["status"] = "wishlist"
         updatedData["lastUpdatedAt"] = FieldValue.serverTimestamp()
+        
+        guard let amount = updatedData["cost"] as? Double else {
+            // Misisng cost
+            completion(nil)
+            return
+        }
 
         self.createTimer(uid: uid, durationSeconds: durationSeconds) {timerId in
             guard let timerId = timerId else {
@@ -39,14 +45,23 @@ extension FireStoreService {
                         parentId: uid,
                         subCollection: "items",
                         data: updatedData) { itemId in
-                        guard let itemId = itemId else {
-                            completion(nil)
-                            return
-                        }
+                            guard let itemId = itemId else {
+                                completion(nil)
+                                return
+                            }
                             
-                        dataToReturn["itemId"] = itemId
-                        completion(dataToReturn)
-                    }
+                            dataToReturn["itemId"] = itemId
+                            
+                            self.createEvent(uid: uid, type: "item_created", itemId: itemId) { eventId in
+                                guard let eventId = eventId else {
+                                    // Failed to make event
+                                    completion(nil)
+                                    return
+                                }
+                                
+                                completion(dataToReturn)
+                            }
+                        }
                 }
             } else {
                 self.addDocumentToSubcollection(
@@ -54,15 +69,23 @@ extension FireStoreService {
                     parentId: uid,
                     subCollection: "items",
                     data: updatedData) { itemId in
-                    guard let itemId = itemId else {
-                        completion(nil)
-                        return
-                    }
+                        guard let itemId = itemId else {
+                            completion(nil)
+                            return
+                        }
                         
-                    dataToReturn["itemId"] = itemId
-                    completion(dataToReturn)
-                }
-
+                        dataToReturn["itemId"] = itemId
+                        
+                        self.createEvent(uid: uid, type: "item_created", itemId: itemId) { eventId in
+                            guard let eventId = eventId else {
+                                // Failed to make event
+                                completion(nil)
+                                return
+                            }
+                            
+                            completion(dataToReturn)
+                        }
+                    }
             }
         }
     }
@@ -172,6 +195,10 @@ extension FireStoreService {
         var updatedData = fieldsToUpdate
         updatedData["lastUpdatedAt"] = FieldValue.serverTimestamp()
         
+        if let categoryId = fieldsToUpdate["categoryId"] as? String {
+            self.createEvent(uid: uid, type: "update_item_category", itemId: itemId) { eventId in }
+        }
+        
         updateDocumentFromSubcollection(
             parentCollection: "users",
             parentId: uid,
@@ -185,7 +212,8 @@ extension FireStoreService {
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
             guard
                 let itemData = itemData,
-                let timerId = itemData["timerId"] as? String
+                let timerId = itemData["timerId"] as? String,
+                let amount = itemData["cost"] as? Double
             else {
                 return
             }
@@ -196,6 +224,10 @@ extension FireStoreService {
                 "timerId": FieldValue.delete(),
                 "lastUpdatedAt": FieldValue.serverTimestamp()
             ])
+            
+            self.createEvent(uid: uid, type: "item_deleted", itemId: itemId) { eventId in
+                return
+            }
         }
     }
     
@@ -248,9 +280,9 @@ extension FireStoreService {
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
             guard
                 let itemData = itemData,
-                let timerId = itemData["timerId"] as? String
+                let timerId = itemData["timerId"] as? String,
+                let amount = itemData["cost"] as? Double
             else {
-            
                 return
             }
                     
@@ -264,7 +296,45 @@ extension FireStoreService {
                 "timerId": FieldValue.delete(),
                 "lastUpdatedAT": FieldValue.serverTimestamp()
             ])
+            
+            
+            self.createEvent(uid: uid, type: "item_bought", itemId: itemId) { eventId in
+                return
+            }
         }
     }
     
+    func setItemAsCompleted(uid: String, itemId: String) {
+        self.fetchItem(uid: uid, itemId: itemId) { itemData in
+            guard
+                let itemData = itemData,
+                let timerId = itemData["timerId"] as? String,
+                let amount = itemData["cost"] as? Double
+            else {
+                return
+            }
+                    
+            self.deleteTimer(uid: uid, timerId: timerId)
+            self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
+                "status": "completed",
+                "timerId": FieldValue.delete(),
+                "lastUpdatedAT": FieldValue.serverTimestamp()
+            ])
+            
+            self.updateUserDocument(
+                uid: uid,
+                fieldName: "impulseResisted",
+                data: FieldValue.increment(Int64(1))) { success in
+                    if success {
+                        self.createEvent(uid: uid, type: "item_completed", itemId: itemId) { eventId in
+                            return
+                        }           
+                    }
+                    else {
+                        return
+                    }
+            }
+        }
+    }
+
 }
