@@ -2,6 +2,7 @@ import SwiftUI
 
 // Controls which tab is visible + nav bar
 struct RootView: View {
+    
     @State private var selectedTab: NavBar = .home
     // Show add item log page if true
     @State private var showAddItem: Bool = false
