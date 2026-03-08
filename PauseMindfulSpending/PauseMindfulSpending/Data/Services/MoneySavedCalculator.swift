@@ -29,7 +29,7 @@ struct MoneySavedCalculator {
             $0.createdAt >= weekInterval.start && $0.createdAt < weekInterval.end
         }
 
-        let weekdaySymbols = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+        let weekdaySymbols = ["Sun", "Mon","Tue","Wed","Thu","Fri","Sat"]
         let startOfWeek = weekInterval.start
 
         var dailyNet: [Int: Double] = [:]
