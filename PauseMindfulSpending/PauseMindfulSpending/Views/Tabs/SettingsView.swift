@@ -2,11 +2,12 @@ import SwiftUI
 
 struct SettingsView: View {
     
-    @AppStorage("haptics_enabled") private var hapticsEnabled = true
-    @AppStorage("night_mode") private var nightMode = false
-    @AppStorage("wishlist_single_card") private var singleCardView = false
+    @StateObject private var viewModel: SettingsViewModel
     
-    // dummy for now
+    init(viewModel: SettingsViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+    
     @State private var cameraAccessOn = true
     @State private var libraryAccessOn = true
     
@@ -16,10 +17,9 @@ struct SettingsView: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
-                    
                     ProfileSectionView(
-                        username: "username",
-                        email: "username@gmail.com"
+                        username: viewModel.displayName,
+                        email: viewModel.email
                     )
                     .padding(.top, 20)
                     
@@ -27,7 +27,10 @@ struct SettingsView: View {
                         SettingsToggleRow(
                             title: "Haptics",
                             systemImage: "speaker.wave.2",
-                            isOn: $hapticsOn
+                            isOn: Binding(
+                                get: { viewModel.hapticsEnabled },
+                                set: { viewModel.updateHaptics($0) }
+                            )
                         )
                         
                         Divider()
@@ -35,7 +38,10 @@ struct SettingsView: View {
                         SettingsToggleRow(
                             title: "Night mode",
                             systemImage: "moon",
-                            isOn: $nightModeOn
+                            isOn: Binding(
+                                get: { viewModel.nightMode },
+                                set: { viewModel.updateNightMode($0) }
+                            )
                         )
                         
                         Divider()
@@ -43,7 +49,10 @@ struct SettingsView: View {
                         SettingsToggleRow(
                             title: "Wishlist single card view",
                             systemImage: "rectangle.grid.1x2",
-                            isOn: $singleCardViewOn
+                            isOn: Binding(
+                                get: { viewModel.singleCardView },
+                                set: { viewModel.updateWishlistLayout(singleCard: $0) }
+                            )
                         )
                     }
                     
@@ -62,6 +71,8 @@ struct SettingsView: View {
                             isOn: $libraryAccessOn
                         )
                     }
+                    
+                    Color.clear.frame(height: 60)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
@@ -69,9 +80,6 @@ struct SettingsView: View {
             }
         }
         .appBackground()
+        .toolbar(.hidden, for: .tabBar)
     }
-}
-
-#Preview {
-    SettingsView()
 }

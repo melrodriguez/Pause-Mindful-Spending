@@ -7,15 +7,17 @@ class FireStoreService {
     func createUser(displayName: String, email: String, uid: String) {
         // Adds a user document to the users collection
         
-        db.collection("users").addDocument(data:[
+        db.collection("users").document(uid).setData([
             "displayName": displayName,
             "email": email,
             "createdAt": FieldValue.serverTimestamp(),
             "lastLoginAt": FieldValue.serverTimestamp(),
             "photoUrl": "",
             "categoryIds": [],
+            "eventIds": [],
+            "settingsId": NSNull(),
             "impulseResisted": 0
-        ])
+        ], merge: true)
     }
     
     func fetchUser(uid: String, completion: @escaping ([String: Any]?) -> Void) {
@@ -32,7 +34,7 @@ class FireStoreService {
     }
     
     func updateUserDocument(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
-        self.db.collection("user")
+        self.db.collection("users")
             .document(uid)
             .setData([fieldName: data], merge: true) { error in
                 if let error = error {
@@ -46,7 +48,7 @@ class FireStoreService {
     func updateUserDocumentList(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
         self.db.collection("users")
             .document(uid)
-            .updateData([fieldName: FieldValue.arrayRemove([data])]) { error in
+            .updateData([fieldName: FieldValue.arrayUnion([data])]) { error in
                 if let error = error {
                     completion(false)
                 } else {
@@ -58,7 +60,7 @@ class FireStoreService {
     func removeUserDocumentListItem(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
         self.db.collection("users")
             .document(uid)
-            .updateData([fieldName: FieldValue.arrayUnion([data])]) { error in
+            .updateData([fieldName: FieldValue.arrayRemove([data])]) { error in
                 if let error = error {
                     completion(false)
                 } else {
@@ -66,6 +68,7 @@ class FireStoreService {
                 }
             }
     }
+    
     
     func fetchUserDocumentField<T>(uid: String, fieldName: String, completion: @escaping (T?) -> Void) {
         self.db.collection("users")

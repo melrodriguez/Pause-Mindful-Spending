@@ -19,7 +19,7 @@ struct ProfileSectionView: View {
                     Image(systemName: "pencil")
                         .font(AppFonts.headline)
                         .foregroundColor(AppColors.bg1)
-                        .frame(width: 25, height: 25)
+                        .frame(width: 29, height: 29)
                         .background(AppColors.blue)
                         .clipShape(Circle())
                 }
