@@ -16,12 +16,16 @@ extension FireStoreService {
         
         updatedData["createdAt"] = FieldValue.serverTimestamp()
         updatedData["status"] = "wishlist"
+        updatedData["lastUpdatedAt"] = FieldValue.serverTimestamp()
 
         self.createTimer(uid: uid, durationSeconds: durationSeconds) {timerId in
-            if let timerId = timerId {
-                updatedData["timerId"] = timerId
-                dataToReturn["timerId"] = timerId
+            guard let timerId = timerId else {
+                completion(nil)
+                return
             }
+            
+            updatedData["timerId"] = timerId
+            dataToReturn["timerId"] = timerId
             
             if let category = category {
                 self.fetchCategoryIdUsingName(uid: uid, name: category) { categoryId in
@@ -35,12 +39,13 @@ extension FireStoreService {
                         parentId: uid,
                         subCollection: "items",
                         data: updatedData) { itemId in
-                        if let itemId = itemId {
-                            dataToReturn["itemId"] = itemId
-                            completion(dataToReturn)
-                        } else {
+                        guard let itemId = itemId else {
                             completion(nil)
+                            return
                         }
+                            
+                        dataToReturn["itemId"] = itemId
+                        completion(dataToReturn)
                     }
                 }
             } else {
@@ -49,12 +54,13 @@ extension FireStoreService {
                     parentId: uid,
                     subCollection: "items",
                     data: updatedData) { itemId in
-                    if let itemId = itemId {
-                        dataToReturn["itemId"] = itemId
-                        completion(dataToReturn)
-                    } else {
+                    guard let itemId = itemId else {
                         completion(nil)
+                        return
                     }
+                        
+                    dataToReturn["itemId"] = itemId
+                    completion(dataToReturn)
                 }
 
             }
@@ -69,11 +75,12 @@ extension FireStoreService {
             parentId: uid,
             subCollection: "items",
             subId: itemId) { itemData in
-            if let itemData = itemData {
-                completion(itemData)
-            } else {
+            guard let itemData = itemData else {
                 completion(nil)
+                return
             }
+                
+            completion(itemData)
         }
     }
     
@@ -82,23 +89,25 @@ extension FireStoreService {
         // return results through completion handler
         
         db.collection("users").document(uid).collection("items").getDocuments{ snapshot, error in
-            if let docs = snapshot?.documents {
-                let items = docs.map{ $0.data() }
-                completion(items)
-            } else {
+            guard let docs = snapshot?.documents else {
                 completion([])
+                return
             }
+            
+            let items = docs.map{ $0.data() }
+            completion(items)
         }
     }
     
     func fetchAllItemDocumentsIds(uid: String, completion: @escaping ([String]) -> Void) {
         db.collection("users").document(uid).collection("items").getDocuments{ snapshot, error in
-            if let docs = snapshot?.documents {
-                let ids = docs.map { $0.documentID }
-                completion(ids)
-            } else {
+            guard let docs = snapshot?.documents else {
                 completion([])
+                return
+                
             }
+            let ids = docs.map { $0.documentID }
+            completion(ids)
         }
     }
     
@@ -111,20 +120,22 @@ extension FireStoreService {
         // through completion handler
         
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
-            if let itemData = itemData,
-               let timerId = itemData["timerId"] as? String,
-               let categoryId = itemData["categoryId"] as? String {
-                
-                let dataToReturn: [String: Any] = [
-                    "itemId": itemId,
-                    "timerId": timerId,
-                    "categoryId": categoryId
-                ]
-                
-                completion(dataToReturn)
-            } else {
+            guard
+                let itemData = itemData,
+                let timerId = itemData["timerId"] as? String,
+                let categoryId = itemData["categoryId"] as? String
+            else {
                 completion(nil)
+                return
             }
+                
+            let dataToReturn: [String: Any] = [
+                "itemId": itemId,
+                "timerId": timerId,
+                "categoryId": categoryId
+            ]
+                
+            completion(dataToReturn)
         }
     }
     
@@ -172,15 +183,19 @@ extension FireStoreService {
     
     func deleteItem(uid: String, itemId: String) {
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
-            if let itemData = itemData,
-               let timerId = itemData["timerId"] as? String {
-                self.deleteTimer(uid: uid, timerId: timerId)
-                self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
-                    "status": "deleted",
-                    "timerId": FieldValue.delete()
-                ])
-
+            guard
+                let itemData = itemData,
+                let timerId = itemData["timerId"] as? String
+            else {
+                return
             }
+            
+            self.deleteTimer(uid: uid, timerId: timerId)
+            self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
+                "status": "deleted",
+                "timerId": FieldValue.delete(),
+                "lastUpdatedAt": FieldValue.serverTimestamp()
+            ])
         }
     }
     
@@ -193,12 +208,13 @@ extension FireStoreService {
         db.collection("items")
             .whereField("status", isEqualTo: "wishlist")
             .getDocuments{ snapshot, error in
-                if let docs = snapshot?.documents {
-                    let items = docs.map{ $0.data() }
-                    completion(items)
-                } else {
+                guard let docs = snapshot?.documents else {
                     completion(nil)
+                    return
                 }
+                
+                let items = docs.map{ $0.data() }
+                completion(items)
             }
     }
     
@@ -218,29 +234,36 @@ extension FireStoreService {
             .whereField("categoryId", isEqualTo: categoryId)
             .whereField("status", isEqualTo:  "wishlist")
             .getDocuments{ snapshot, error in
-                if let docs = snapshot?.documents {
-                    let items = docs.map{ $0.data() }
-                    completion(items)
-                } else {
+                guard let docs = snapshot?.documents else {
                     completion(nil)
+                    return
                 }
+                
+                let items = docs.map{ $0.data() }
+                completion(items)
             }
     }
     
     func setItemAsBought(uid: String, itemId: String) {
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
-            if let itemData = itemData,
-               let timerId = itemData["timerId"] as? String {
-                if let categoryId = itemData["categoryId"] as? String {
-                    self.updateCategoryStreak(uid: uid, categoryId: categoryId, dateItemBought: Date())
-                }
-                
-                self.deleteTimer(uid: uid, timerId: timerId)
-                self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
-                    "status": "bought",
-                    "timerId": FieldValue.delete()
-                ])
+            guard
+                let itemData = itemData,
+                let timerId = itemData["timerId"] as? String
+            else {
+            
+                return
             }
+                    
+            if let categoryId = itemData["categoryId"] as? String {
+                self.updateCategoryStreak(uid: uid, categoryId: categoryId, dateItemBought: Date())
+            }
+                
+            self.deleteTimer(uid: uid, timerId: timerId)
+            self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
+                "status": "bought",
+                "timerId": FieldValue.delete(),
+                "lastUpdatedAT": FieldValue.serverTimestamp()
+            ])
         }
     }
     

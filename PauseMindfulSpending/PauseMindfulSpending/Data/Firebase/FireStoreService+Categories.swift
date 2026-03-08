@@ -7,47 +7,73 @@ extension FireStoreService {
         // hanlder
         
         self.fetchUser(uid: uid) { userData in
-            if let userData = userData {
-                let categoryIds = userData["categoryIds"] as? [String]
-                completion(categoryIds!)
-            }
-            else {
+            guard let userData = userData else {
                 completion([])
+                return
             }
+            
+            guard let categoryIds = userData["categoryIds"] as? [String] else {
+               completion([])
+                return
+            }
+            
+            completion(categoryIds)
         }
     }
     
     func addCategory(uid: String, name: String, enableStreak: Bool) {
         // Adds a category document then adds the categoryId to back to the user dcoument
         
-        var categoryIds: [String] = []
         var categoryData: [String: Any] = [
             "name": name,
             "highestStreak": 0,
             "enableStreak": enableStreak,
-            "createdAt": FieldValue.serverTimestamp()
+            "createdAt": FieldValue.serverTimestamp(),
+            "updatedAt": FieldValue.serverTimestamp()
         ]
         
         self.fetchCategoryList(uid: uid) { userCategories in
-            categoryIds = userCategories
-        }
-        
-        self.addDocumentToSubcollection(
-            parentCollection: "users",
-            parentId: uid,
-            subCollection: "categories",
-            data: categoryData) { categoryId in
-                if let categoryId = categoryId {
-                    categoryIds.append(categoryId)
+            var categoryIds = userCategories
+            
+            self.addDocumentToSubcollection(
+                parentCollection: "users",
+                parentId: uid,
+                subCollection: "categories",
+                data: categoryData) { categoryId in
+                    guard let categoryId = categoryId else {
+                        return
+                    }
                     
-                    self.db.collection("users")
-                        .document(uid)
-                        .setData(["categoryIds": categoryIds], merge: true)
-                }
+                    self.updateUserDocumentList(
+                        uid: uid,
+                        fieldName: "categoryIds",
+                        data: categoryId) { success in
+                        return
+                    }
             }
-
+        }
     }
     
+    func deleteCategory(uid: String, categoryId: String) {
+        self.fetchCategoryList(uid: uid) { userCategories in
+            var categoryIds = userCategories
+            
+            self.deleteDocumentFromSubcollection(
+                parentCollection: "users",
+                parentId: uid,
+                subCollection: "categories",
+                subId: categoryId
+            )
+            
+            self.removeUserDocumentListItem(
+                uid: uid,
+                fieldName: "categoryIds",
+                data: categoryId) { success in
+                return
+            }
+        }
+    }
+
     func fetchCategoryStringUsingId(
         uid: String,
         categoryId: String,
@@ -60,11 +86,12 @@ extension FireStoreService {
             parentId: uid,
             subCollection: "categories",
             subId: categoryId) {categoryData in
-                if categoryData != nil {
-                    completion(categoryData!["name"] as? String)
-                } else {
+                guard let categoryData = categoryData else {
                     completion(nil)
+                    return
                 }
+                
+                completion(categoryData["name"] as? String)
             }
     }
     
@@ -141,33 +168,35 @@ extension FireStoreService {
         // category. If there is a new highest streak then it will update it.
         
         self.fetchCategory(uid: uid, categoryId: categoryId) { categoryData in
-            if let categoryData = categoryData,
-               let ts = categoryData["lastItemBought"] as? Timestamp,
-               let highestStreak = categoryData["highestStreak"] as? Int {
-                let lastBoughtDate = ts.dateValue()
+            guard
+                let categoryData = categoryData,
+                let ts = categoryData["lastItemBought"] as? Timestamp,
+                let highestStreak = categoryData["highestStreak"] as? Int
+            else {
+                return
+            }
+            
+            let lastBoughtDate = ts.dateValue()
+            let streak = Calendar.current.dateComponents(
+                [.day],
+                from: lastBoughtDate,
+                to: dateItemBought
+            ).day ?? 0
                 
-                let streak = Calendar.current.dateComponents(
-                    [.day],
-                    from: lastBoughtDate,
-                    to: dateItemBought
-                ).day ?? 0
                 
-                
-                if highestStreak < streak {
-                    let data: [String: Any] = [
-                        "highestStreak": streak,
-                        "updatedAt": FieldValue.serverTimestamp(),
-                        "lastItemBought": FieldValue.serverTimestamp()
-                    ]
-                        
-                    self.updateDocumentFromSubcollection(
-                        parentCollection: "user",
-                        parentId: uid,
-                        subCollection: "categories",
-                        subId: categoryId,
-                        fieldsToUpdate: data
-                    )
-                }
+            if highestStreak < streak {
+                let data: [String: Any] = [
+                    "highestStreak": streak,
+                    "updatedAt": FieldValue.serverTimestamp(),
+                    "lastItemBought": FieldValue.serverTimestamp()
+                ]
+                self.updateDocumentFromSubcollection(
+                    parentCollection: "user",
+                    parentId: uid,
+                    subCollection: "categories",
+                    subId: categoryId,
+                    fieldsToUpdate: data
+                )
             }
         }
     }

@@ -15,16 +15,20 @@ extension FireStoreService {
         data["status"] = "active"
         data["createdAt"] = FieldValue.serverTimestamp()
         data["endDate"] = now.addingTimeInterval(TimeInterval(durationSeconds))
-        
+        data["updatedAt"] = FieldValue.serverTimestamp()
+
         self.addDocumentToSubcollection(
             parentCollection: "users",
             parentId: uid,
             subCollection: "timers",
             data: data) { timerId in
-            if let timerId = timerId {
+                guard let timerId = timerId else {
+                    completion(nil)
+                    return
+                }
+                
                 completion(timerId)
             }
-        }
     }
     
     func pauseTimer (uid: String, timerId: String) {
@@ -34,6 +38,7 @@ extension FireStoreService {
         
         data["pausedAt"] = FieldValue.serverTimestamp()
         data["status"] =  "paused"
+        data["updatedAt"] = FieldValue.serverTimestamp()
         
         self.updateDocumentFromSubcollection(
             parentCollection: "users",
@@ -56,11 +61,12 @@ extension FireStoreService {
             parentId: uid,
             subCollection: "timers",
             subId: timerId) { data in
-            if let data = data {
-                completion(data)
-            } else {
+            guard let data = data else{
                 completion(nil)
+                return
             }
+                
+            completion(data)
         }
     }
     
@@ -68,31 +74,32 @@ extension FireStoreService {
         // Resumes a paused timer and updates endDate
         
         self.fetchTimer(uid: uid, timerId: timerId) { timerData in
-            if let timerData = timerData {
-                if let pauseTs = timerData["pausedAt"] as? Timestamp,
-                   let endTs = timerData["endDate"] as? Timestamp {
-                    
-                    let pausedAt = pauseTs.dateValue()
-                    let endDate = endTs.dateValue()
-                    
-                    let now = Date()
-                    
-                    let pauseDuration = now.timeIntervalSince(pausedAt)
-                    let newEndDate = endDate.addingTimeInterval(pauseDuration)
-                    
-                    self.updateDocumentFromSubcollection(
-                        parentCollection: "users",
-                        parentId: uid,
-                        subCollection: "timers",
-                        subId: timerId,
-                        fieldsToUpdate: ([
-                            "endDate": newEndDate,
-                            "pausedAt": FieldValue.delete(),
-                            "status": "active"
-                        ])
-                    )
-                }
+            guard
+                let timerData = timerData,
+                let pauseTs = timerData["pausedAt"] as? Timestamp,
+                let endTs = timerData["endDate"] as? Timestamp
+            else {
+                return
             }
+                    
+            let pausedAt = pauseTs.dateValue()
+            let endDate = endTs.dateValue()
+            let now = Date()
+                    
+            let pauseDuration = now.timeIntervalSince(pausedAt)
+            let newEndDate = endDate.addingTimeInterval(pauseDuration)
+            self.updateDocumentFromSubcollection(
+                parentCollection: "users",
+                parentId: uid,
+                subCollection: "timers",
+                subId: timerId,
+                fieldsToUpdate: ([
+                    "endDate": newEndDate,
+                    "pausedAt": FieldValue.delete(),
+                    "status": "active",
+                    "updatedAt": FieldValue.serverTimestamp()
+                ])
+            )
         }
     }
     
@@ -110,7 +117,8 @@ extension FireStoreService {
             fieldsToUpdate: ([
                 "startDate": FieldValue.serverTimestamp(),
                 "endDate": now.addingTimeInterval(TimeInterval(newDurationSeconds)),
-                "status": "active"
+                "status": "active",
+                "updatedAt": FieldValue.serverTimestamp()
             ])
         )
     }

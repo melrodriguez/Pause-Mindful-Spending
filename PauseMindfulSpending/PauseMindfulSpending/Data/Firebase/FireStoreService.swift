@@ -12,7 +12,8 @@ class FireStoreService {
             "email": email,
             "createdAt": FieldValue.serverTimestamp(),
             "lastLoginAt": FieldValue.serverTimestamp(),
-            "photoUrl": ""
+            "photoUrl": "",
+            "categoryIds": []
         ])
     }
     
@@ -20,15 +21,51 @@ class FireStoreService {
         // Fetches a user data and uses completion handler to return results
         
         db.collection("users").document(uid).getDocument { snapshot, error in
-            if let data = snapshot?.data() {
-                completion(data)
-            }
-            else {
+            guard let data = snapshot?.data() else {
                 completion(nil)
+                return
             }
+            
+            completion(data)
         }
     }
     
+    func updateUserDocument(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
+        self.db.collection("user")
+            .document(uid)
+            .setData([fieldName: data], merge: true) { error in
+                if let error = error {
+                    completion(false)
+                } else {
+                    completion(true)
+                }
+            }
+    }
+    
+    func updateUserDocumentList(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
+        self.db.collection("users")
+            .document(uid)
+            .updateData([fieldName: FieldValue.arrayRemove([data])]) { error in
+                if let error = error {
+                    completion(false)
+                } else {
+                    completion(true)
+                }
+            }
+    }
+    
+    func removeUserDocumentListItem(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
+        self.db.collection("users")
+            .document(uid)
+            .updateData([fieldName: FieldValue.arrayUnion([data])]) { error in
+                if let error = error {
+                    completion(false)
+                } else {
+                    completion(true)
+                }
+            }
+    }
+
     func addDocumentToSubcollection(
         parentCollection: String,
         parentId: String,
@@ -61,12 +98,12 @@ class FireStoreService {
             .collection(subCollection)
             .document(subId)
             .getDocument() { snapshot, error in
-                if let data = snapshot?.data() {
-                    completion(data)
-                }
-                else {
+                guard let data = snapshot?.data() else {
                     completion(nil)
+                    return
                 }
+                
+                completion(data)
             }
     }
     
