@@ -113,6 +113,7 @@ struct HomeView: View {
             )
             .presentationDetents([.medium, .large])
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 
     // Converts local DashboardConfig into actual dashboard widgets
