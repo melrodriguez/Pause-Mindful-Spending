@@ -4,8 +4,7 @@ extension FireStoreService {
     func createTimer(
         uid: String,
         durationSeconds: Int,
-        completion: @escaping (String?) -> Void
-    ) {
+        completion: @escaping (String?) -> Void) {
         // Used when creating an item. Creates a timer given a duration in seconds and
         // returns the timerId through the completion handler
         
@@ -21,10 +20,9 @@ extension FireStoreService {
             parentCollection: "users",
             parentId: uid,
             subCollection: "timers",
-            data: data
-        ) { data in
-            if data != nil {
-                completion(data)
+            data: data) { timerId in
+            if let timerId = timerId {
+                completion(timerId)
             }
         }
     }
@@ -57,12 +55,10 @@ extension FireStoreService {
             parentCollection: "users",
             parentId: uid,
             subCollection: "timers",
-            subId: timerId,
-        ) { data in
-            if data != nil {
+            subId: timerId) { data in
+            if let data = data {
                 completion(data)
-            }
-            else {
+            } else {
                 completion(nil)
             }
         }
@@ -71,38 +67,33 @@ extension FireStoreService {
     func resumeTimer(uid: String, timerId: String) {
         // Resumes a paused timer and updates endDate
         
-        var timerData: [String: Any] = [:]
-        
-        self.fetchTimer(uid: uid, timerId: timerId) { data in
-            if data != nil {
-                timerData = data!
+        self.fetchTimer(uid: uid, timerId: timerId) { timerData in
+            if let timerData = timerData {
+                if let pauseTs = timerData["pausedAt"] as? Timestamp,
+                   let endTs = timerData["endDate"] as? Timestamp {
+                    
+                    let pausedAt = pauseTs.dateValue()
+                    let endDate = endTs.dateValue()
+                    
+                    let now = Date()
+                    
+                    let pauseDuration = now.timeIntervalSince(pausedAt)
+                    let newEndDate = endDate.addingTimeInterval(pauseDuration)
+                    
+                    self.updateDocumentFromSubcollection(
+                        parentCollection: "users",
+                        parentId: uid,
+                        subCollection: "timers",
+                        subId: timerId,
+                        fieldsToUpdate: ([
+                            "endDate": newEndDate,
+                            "pausedAt": FieldValue.delete(),
+                            "status": "active"
+                        ])
+                    )
+                }
             }
         }
-        
-        if let pauseTs = timerData["pausedAt"] as? Timestamp,
-           let endTs = timerData["endDate"] as? Timestamp {
-            
-            let pausedAt = pauseTs.dateValue()
-            let endDate = endTs.dateValue()
-            
-            let now = Date()
-            
-            let pauseDuration = now.timeIntervalSince(pausedAt)
-            let newEndDate = endDate.addingTimeInterval(pauseDuration)
-            
-            self.updateDocumentFromSubcollection(
-                parentCollection: "users",
-                parentId: uid,
-                subCollection: "timers",
-                subId: timerId,
-                fieldsToUpdate: ([
-                    "endDate": newEndDate,
-                    "pausedAt": FieldValue.delete(),
-                    "status": "active"
-                ])
-            )
-        }
-        
     }
     
     func updateTimer(uid: String, timerId: String, newDurationSeconds: Int) {
@@ -121,6 +112,17 @@ extension FireStoreService {
                 "endDate": now.addingTimeInterval(TimeInterval(newDurationSeconds)),
                 "status": "active"
             ])
+        )
+    }
+    
+    func deleteTimer(uid: String, timerId: String) {
+        // Deletes the specified timer document
+        
+        self.deleteDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "timers",
+            subId: timerId
         )
     }
 }

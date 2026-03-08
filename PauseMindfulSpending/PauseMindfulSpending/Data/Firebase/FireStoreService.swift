@@ -34,8 +34,8 @@ class FireStoreService {
         parentId: String,
         subCollection: String,
         data: [String: Any],
-        completion: @escaping (String?) -> Void
-    ) {
+        completion: @escaping (String?) -> Void)
+    {
         // Helper function add a document to any subcollections in a user document
         
         let ref = db.collection(parentCollection)
@@ -51,8 +51,8 @@ class FireStoreService {
         parentId: String,
         subCollection: String,
         subId: String,
-        completion: @escaping ([String: Any]?) -> Void
-    ) {
+        completion: @escaping ([String: Any]?) -> Void)
+    {
         // Helper function to fetch any document in subcollection stored in a user
         // document. Will pass data in completion handler.
         
@@ -75,8 +75,8 @@ class FireStoreService {
         parentId: String,
         subCollection: String,
         subId: String,
-        fieldsToUpdate: [String: Any]
-    ) {
+        fieldsToUpdate: [String: Any])
+    {
         // Helper function to update any document in a subcollection. You don't have to
         // include all the data, just update the field you need
         
@@ -85,6 +85,21 @@ class FireStoreService {
             .collection(subCollection)
             .document(subId)
             .setData(fieldsToUpdate, merge: true)
+    }
+    
+     func deleteDocumentFromSubcollection(
+        parentCollection: String,
+        parentId: String,
+        subCollection: String,
+        subId: String)
+    {
+        // Helper funciton deletes a document in a subcollection.
+        
+        db.collection(parentCollection)
+            .document(parentId)
+            .collection(subCollection)
+            .document(subId)
+            .delete()
     }
     
 }
