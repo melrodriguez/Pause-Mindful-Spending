@@ -12,7 +12,9 @@ class FireStoreService {
             "email": email,
             "createdAt": FieldValue.serverTimestamp(),
             "lastLoginAt": FieldValue.serverTimestamp(),
-            "photoUrl": ""
+            "photoUrl": "",
+            "categoryIds": [],
+            "impulseResisted": 0
         ])
     }
     
@@ -20,22 +22,72 @@ class FireStoreService {
         // Fetches a user data and uses completion handler to return results
         
         db.collection("users").document(uid).getDocument { snapshot, error in
-            if let data = snapshot?.data() {
-                completion(data)
-            }
-            else {
+            guard let data = snapshot?.data() else {
                 completion(nil)
+                return
             }
+            
+            completion(data)
         }
     }
     
+    func updateUserDocument(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
+        self.db.collection("user")
+            .document(uid)
+            .setData([fieldName: data], merge: true) { error in
+                if let error = error {
+                    completion(false)
+                } else {
+                    completion(true)
+                }
+            }
+    }
+    
+    func updateUserDocumentList(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
+        self.db.collection("users")
+            .document(uid)
+            .updateData([fieldName: FieldValue.arrayRemove([data])]) { error in
+                if let error = error {
+                    completion(false)
+                } else {
+                    completion(true)
+                }
+            }
+    }
+    
+    func removeUserDocumentListItem(uid: String, fieldName: String, data: Any, completion: @escaping (Bool) -> Void) {
+        self.db.collection("users")
+            .document(uid)
+            .updateData([fieldName: FieldValue.arrayUnion([data])]) { error in
+                if let error = error {
+                    completion(false)
+                } else {
+                    completion(true)
+                }
+            }
+    }
+    
+    func fetchUserDocumentField<T>(uid: String, fieldName: String, completion: @escaping (T?) -> Void) {
+        self.db.collection("users")
+            .document(uid)
+            .getDocument() { document, error in
+                guard let document = document, document.exists else {
+                    completion(nil)
+                    return
+                }
+                
+                let fieldData = document.get(fieldName) as? T
+                completion(fieldData)
+            }
+    }
+
     func addDocumentToSubcollection(
         parentCollection: String,
         parentId: String,
         subCollection: String,
         data: [String: Any],
-        completion: @escaping (String?) -> Void
-    ) {
+        completion: @escaping (String?) -> Void)
+    {
         // Helper function add a document to any subcollections in a user document
         
         let ref = db.collection(parentCollection)
@@ -51,8 +103,8 @@ class FireStoreService {
         parentId: String,
         subCollection: String,
         subId: String,
-        completion: @escaping ([String: Any]?) -> Void
-    ) {
+        completion: @escaping ([String: Any]?) -> Void)
+    {
         // Helper function to fetch any document in subcollection stored in a user
         // document. Will pass data in completion handler.
         
@@ -61,12 +113,12 @@ class FireStoreService {
             .collection(subCollection)
             .document(subId)
             .getDocument() { snapshot, error in
-                if let data = snapshot?.data() {
-                    completion(data)
-                }
-                else {
+                guard let data = snapshot?.data() else {
                     completion(nil)
+                    return
                 }
+                
+                completion(data)
             }
     }
     
@@ -75,8 +127,8 @@ class FireStoreService {
         parentId: String,
         subCollection: String,
         subId: String,
-        fieldsToUpdate: [String: Any]
-    ) {
+        fieldsToUpdate: [String: Any])
+    {
         // Helper function to update any document in a subcollection. You don't have to
         // include all the data, just update the field you need
         
@@ -85,6 +137,21 @@ class FireStoreService {
             .collection(subCollection)
             .document(subId)
             .setData(fieldsToUpdate, merge: true)
+    }
+    
+     func deleteDocumentFromSubcollection(
+        parentCollection: String,
+        parentId: String,
+        subCollection: String,
+        subId: String)
+    {
+        // Helper funciton deletes a document in a subcollection.
+        
+        db.collection(parentCollection)
+            .document(parentId)
+            .collection(subCollection)
+            .document(subId)
+            .delete()
     }
     
 }
