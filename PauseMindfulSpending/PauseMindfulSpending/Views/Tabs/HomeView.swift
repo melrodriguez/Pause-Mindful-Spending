@@ -61,22 +61,28 @@ struct HomeView: View {
             .padding(.horizontal, AppLayout.horizontalScreenPadding)
 
             ScrollView {
-                DashboardGrid(
-                    widgets: $widgets,
-                    isEditingDashboard: $isEditingDashboard,
-                    draggedWidget: $draggedWidget,
-                    impulsesState: viewModel.impulsesState,
-                    moneySavedState: viewModel.moneySavedState,
-                    onRemove: { widget in
-                        withAnimation {
-                            widgets.removeAll { $0.id == widget.id }
-                            saveCurrentDashboard()
+                VStack(spacing: 0) {
+                    DashboardGrid(
+                        widgets: $widgets,
+                        isEditingDashboard: $isEditingDashboard,
+                        draggedWidget: $draggedWidget,
+                        impulsesState: viewModel.impulsesState,
+                        moneySavedState: viewModel.moneySavedState,
+                        onRemove: { widget in
+                            withAnimation {
+                                widgets.removeAll { $0.id == widget.id }
+                                saveCurrentDashboard()
+                            }
+                        },
+                        onEditCategories: { widget in
+                            configuringWidget = widget
                         }
-                    },
-                    onEditCategories: { widget in
-                        configuringWidget = widget
-                    }
-                )
+                    )
+                    .padding(.top, 6)
+
+                    Color.clear
+                        .frame(height: 60)
+                }
                 .padding(.horizontal, AppLayout.horizontalScreenPadding)
             }
         }

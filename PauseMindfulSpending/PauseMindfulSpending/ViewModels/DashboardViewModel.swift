@@ -27,7 +27,6 @@ class DashboardViewModel: ObservableObject {
     func loadCategories(uid: String) {
         repo.fetchUserCategories(uid: uid) { [weak self] categories in
             self?.categories = categories
-            print("Loaded categories:", categories)
         }
     }
 
