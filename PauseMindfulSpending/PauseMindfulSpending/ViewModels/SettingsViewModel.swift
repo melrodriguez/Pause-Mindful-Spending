@@ -22,6 +22,10 @@ final class SettingsViewModel: ObservableObject {
         userProfile.email
     }
     
+    var photoUrl: String? {
+        userProfile.photoUrl
+    }
+    
     var hapticsEnabled: Bool {
         userSettings.isHapticsEnabled
     }

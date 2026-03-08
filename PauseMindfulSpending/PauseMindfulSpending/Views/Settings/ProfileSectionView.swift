@@ -3,23 +3,22 @@ import SwiftUI
 struct ProfileSectionView: View {
     let username: String
     let email: String
+    let photoUrl: String?
     
     var body: some View {
         HStack(alignment: .center, spacing: 20) {
+            
             ZStack(alignment: .bottomTrailing) {
                 
-                // place pfp in circle later
-                Circle()
-                    .fill(Color.gray.opacity(0.25))
-                    .frame(width: 90, height: 90)
+                ProfileImageView(photoUrl: photoUrl, size: 90)
                 
                 Button {
-                    // edit tapped
+                    // TODO - profile picture editing
                 } label: {
                     Image(systemName: "pencil")
                         .font(AppFonts.headline)
                         .foregroundColor(AppColors.bg1)
-                        .frame(width: 29, height: 29)
+                        .frame(width: 31, height: 31)
                         .background(AppColors.blue)
                         .clipShape(Circle())
                 }
@@ -39,7 +38,12 @@ struct ProfileSectionView: View {
         }
     }
 }
+    
 
 #Preview {
-    ProfileSectionView(username: "bob", email: "bob@gmail.com")
+    ProfileSectionView(
+        username: "bob",
+        email: "bob@gmail.com",
+        photoUrl: nil
+    )
 }

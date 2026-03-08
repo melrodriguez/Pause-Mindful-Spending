@@ -8,6 +8,7 @@ struct SettingsView: View {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
+    // TODO - temp, need to implement camera perms
     @State private var cameraAccessOn = true
     @State private var libraryAccessOn = true
     
@@ -19,7 +20,8 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     ProfileSectionView(
                         username: viewModel.displayName,
-                        email: viewModel.email
+                        email: viewModel.email,
+                        photoUrl: viewModel.photoUrl
                     )
                     .padding(.top, 20)
                     
