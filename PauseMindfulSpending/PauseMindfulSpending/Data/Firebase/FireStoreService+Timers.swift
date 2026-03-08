@@ -4,8 +4,7 @@ extension FireStoreService {
     func createTimer(
         uid: String,
         durationSeconds: Int,
-        completion: @escaping (String?) -> Void
-    ) {
+        completion: @escaping (String?) -> Void) {
         // Used when creating an item. Creates a timer given a duration in seconds and
         // returns the timerId through the completion handler
         
@@ -16,17 +15,20 @@ extension FireStoreService {
         data["status"] = "active"
         data["createdAt"] = FieldValue.serverTimestamp()
         data["endDate"] = now.addingTimeInterval(TimeInterval(durationSeconds))
-        
+        data["updatedAt"] = FieldValue.serverTimestamp()
+
         self.addDocumentToSubcollection(
             parentCollection: "users",
             parentId: uid,
             subCollection: "timers",
-            data: data
-        ) { data in
-            if data != nil {
-                completion(data)
+            data: data) { timerId in
+                guard let timerId = timerId else {
+                    completion(nil)
+                    return
+                }
+                
+                completion(timerId)
             }
-        }
     }
     
     func pauseTimer (uid: String, timerId: String) {
@@ -36,6 +38,7 @@ extension FireStoreService {
         
         data["pausedAt"] = FieldValue.serverTimestamp()
         data["status"] =  "paused"
+        data["updatedAt"] = FieldValue.serverTimestamp()
         
         self.updateDocumentFromSubcollection(
             parentCollection: "users",
@@ -57,39 +60,34 @@ extension FireStoreService {
             parentCollection: "users",
             parentId: uid,
             subCollection: "timers",
-            subId: timerId,
-        ) { data in
-            if data != nil {
-                completion(data)
-            }
-            else {
+            subId: timerId) { data in
+            guard let data = data else{
                 completion(nil)
+                return
             }
+                
+            completion(data)
         }
     }
     
     func resumeTimer(uid: String, timerId: String) {
         // Resumes a paused timer and updates endDate
         
-        var timerData: [String: Any] = [:]
-        
-        self.fetchTimer(uid: uid, timerId: timerId) { data in
-            if data != nil {
-                timerData = data!
+        self.fetchTimer(uid: uid, timerId: timerId) { timerData in
+            guard
+                let timerData = timerData,
+                let pauseTs = timerData["pausedAt"] as? Timestamp,
+                let endTs = timerData["endDate"] as? Timestamp
+            else {
+                return
             }
-        }
-        
-        if let pauseTs = timerData["pausedAt"] as? Timestamp,
-           let endTs = timerData["endDate"] as? Timestamp {
-            
+                    
             let pausedAt = pauseTs.dateValue()
             let endDate = endTs.dateValue()
-            
             let now = Date()
-            
+                    
             let pauseDuration = now.timeIntervalSince(pausedAt)
             let newEndDate = endDate.addingTimeInterval(pauseDuration)
-            
             self.updateDocumentFromSubcollection(
                 parentCollection: "users",
                 parentId: uid,
@@ -98,11 +96,11 @@ extension FireStoreService {
                 fieldsToUpdate: ([
                     "endDate": newEndDate,
                     "pausedAt": FieldValue.delete(),
-                    "status": "active"
+                    "status": "active",
+                    "updatedAt": FieldValue.serverTimestamp()
                 ])
             )
         }
-        
     }
     
     func updateTimer(uid: String, timerId: String, newDurationSeconds: Int) {
@@ -119,8 +117,20 @@ extension FireStoreService {
             fieldsToUpdate: ([
                 "startDate": FieldValue.serverTimestamp(),
                 "endDate": now.addingTimeInterval(TimeInterval(newDurationSeconds)),
-                "status": "active"
+                "status": "active",
+                "updatedAt": FieldValue.serverTimestamp()
             ])
+        )
+    }
+    
+    func deleteTimer(uid: String, timerId: String) {
+        // Deletes the specified timer document
+        
+        self.deleteDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "timers",
+            subId: timerId
         )
     }
 }
