@@ -29,10 +29,10 @@ struct SettingsView: View {
                     SettingsSectionView(title: "Preferences") {
                         SettingsToggleRow(
                             title: "Haptics",
-                            systemImage: "speaker.wave.2",
+                            systemImage: "iphone.radiowaves.left.and.right",
                             isOn: Binding(
-                                get: { viewModel.hapticsEnabled },
-                                set: { viewModel.updateHaptics($0) }
+                                get: { session.userSettings?.isHapticsEnabled ?? false },
+                                set: { session.updateHaptics($0) }
                             )
                         )
                         
