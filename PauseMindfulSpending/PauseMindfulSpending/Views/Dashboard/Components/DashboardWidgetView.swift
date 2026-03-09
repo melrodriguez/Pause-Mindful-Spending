@@ -1,16 +1,17 @@
 import SwiftUI
 
-// Changes the widget view depending on the type
 struct DashboardWidgetView: View {
     let widget: DashboardWidget
     let impulsesState: ImpulsesState
     let moneySavedState: MoneySavedState
+    let streakState: DashboardStreakState
 
     var body: some View {
         switch widget.kind {
         case .pauseStreaks:
             PauseStreaksWidgetView(
-                selectedCategories: widget.selectedPauseCategories
+                selectedCategories: widget.selectedPauseCategories,
+                streakState: streakState
             )
 
         case .moneySaved:

@@ -10,15 +10,28 @@ struct PauseStreak: Identifiable {
 
 struct PauseStreaksWidgetView: View {
     let selectedCategories: [String]
+    let streakState: DashboardStreakState
 
-    private let allStreaks: [PauseStreak] = [
-        .init(category: "Overall", days: 5, highlight: false),
-        .init(category: "Big Purchases", days: 23, highlight: false),
-        .init(category: "Coffee", days: 5, highlight: true),
-        .init(category: "Clothes", days: 12, highlight: false),
-        .init(category: "Beauty", days: 8, highlight: false),
-        .init(category: "Food Delivery", days: 3, highlight: false)
-    ]
+    private var allStreaks: [PauseStreak] {
+        var result: [PauseStreak] = [
+            PauseStreak(
+                category: "Overall",
+                days: streakState.overallCurrentStreak,
+                highlight: streakState.overallCurrentStreak == streakState.overallHighestStreak && streakState.overallCurrentStreak > 0
+            )
+        ]
+
+        let categoryStreaks = streakState.categorySummaries.map { summary in
+            PauseStreak(
+                category: summary.name,
+                days: summary.currentStreak,
+                highlight: summary.currentStreak == summary.highestStreak && summary.currentStreak > 0
+            )
+        }
+
+        result.append(contentsOf: categoryStreaks)
+        return result
+    }
 
     private var streaks: [PauseStreak] {
         let filtered = allStreaks.filter { selectedCategories.contains($0.category) }
@@ -26,7 +39,7 @@ struct PauseStreaksWidgetView: View {
     }
     
     private var chartHeight: CGFloat {
-        CGFloat(streaks.count) * 34
+        CGFloat(max(streaks.count, 1)) * 34
     }
 
     var body: some View {
@@ -39,39 +52,46 @@ struct PauseStreaksWidgetView: View {
                 .foregroundStyle(AppColors.accentGreen)
                 .italic()
 
-            Chart(streaks) { streak in
-                BarMark(
-                    x: .value("Days", streak.days),
-                    y: .value("Category", streak.category)
-                )
-                .foregroundStyle(AppColors.mainGreen)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .annotation(position: .trailing, alignment: .center) {
-                    HStack(spacing: 4) {
-                        Text("\(streak.days)")
-                            .font(AppFonts.subhead)
-                            .fontWeight(.bold)
-                            .foregroundStyle(AppColors.accentGreen)
+            if streaks.isEmpty {
+                Text("No streak data yet")
+                    .font(AppFonts.subhead)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .padding(.top, 12)
+            } else {
+                Chart(streaks) { streak in
+                    BarMark(
+                        x: .value("Days", streak.days),
+                        y: .value("Category", streak.category)
+                    )
+                    .foregroundStyle(AppColors.mainGreen)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .annotation(position: .trailing, alignment: .center) {
+                        HStack(spacing: 4) {
+                            Text("\(streak.days)")
+                                .font(AppFonts.subhead)
+                                .fontWeight(.bold)
+                                .foregroundStyle(AppColors.accentGreen)
 
-                        if streak.highlight {
-                            Text("🔥")
+                            if streak.highlight {
+                                Text("🔥")
+                            }
                         }
                     }
                 }
-            }
-            .chartXAxis(.hidden)
-            .chartYAxis {
-                AxisMarks(position: .leading) { _ in
-                    AxisValueLabel()
-                        .font(AppFonts.subhead)
-                        .foregroundStyle(AppColors.textPrimary)
+                .chartXAxis(.hidden)
+                .chartYAxis {
+                    AxisMarks(position: .leading) { _ in
+                        AxisValueLabel()
+                            .font(AppFonts.subhead)
+                            .foregroundStyle(AppColors.textPrimary)
+                    }
                 }
+                .chartXScale(domain: 0...maxXValue)
+                .chartPlotStyle { plotArea in
+                    plotArea.background(.clear)
+                }
+                .frame(height: chartHeight)
             }
-            .chartXScale(domain: 0...maxXValue)
-            .chartPlotStyle { plotArea in
-                plotArea.background(.clear)
-            }
-            .frame(height: chartHeight)
         }
         .padding(20)
         .background(
@@ -93,7 +113,8 @@ struct PauseStreaksWidgetView: View {
             .ignoresSafeArea()
 
         PauseStreaksWidgetView(
-            selectedCategories: ["Overall", "Big Purchases", "Coffee"]
+            selectedCategories: ["Overall"],
+            streakState: .empty
         )
         .frame(maxWidth: 380)
     }

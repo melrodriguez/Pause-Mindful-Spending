@@ -1,7 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-// Container for the dashboard widgets
 struct DashboardGrid: View {
     @Binding var widgets: [DashboardWidget]
     @Binding var isEditingDashboard: Bool
@@ -9,6 +8,7 @@ struct DashboardGrid: View {
 
     let impulsesState: ImpulsesState
     let moneySavedState: MoneySavedState
+    let streakState: DashboardStreakState
     let onRemove: (DashboardWidget) -> Void
     let onEditCategories: (DashboardWidget) -> Void
 
@@ -19,7 +19,8 @@ struct DashboardGrid: View {
                 DashboardWidgetView(
                     widget: widget,
                     impulsesState: impulsesState,
-                    moneySavedState: moneySavedState
+                    moneySavedState: moneySavedState,
+                    streakState: streakState
                 )
                 .wiggle(isEditingDashboard)
                 .scaleEffect(draggedWidget?.id == widget.id ? 1.03 : 1.0)

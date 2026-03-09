@@ -16,6 +16,7 @@ class DashboardViewModel: ObservableObject {
         monthlyData: [],
         allTimeData: []
     )
+    @Published var streakState: DashboardStreakState = .empty
 
     private let repo = DashboardRepository()
 
@@ -23,34 +24,32 @@ class DashboardViewModel: ObservableObject {
         self.dashboardConfig = repo.loadLocalDashboardConfig()
     }
 
-    // Loads categories from Firestore
     func loadCategories(uid: String) {
-        repo.fetchUserCategories(uid: uid) { [weak self] categories in
+        repo.fetchCategoryNames(uid: uid) { [weak self] categories in
             self?.categories = categories
         }
     }
 
-    // Saves dashboard config locally and updates UI
     func saveDashboardConfig(_ config: DashboardConfig) {
         dashboardConfig = config
         repo.saveLocalDashboardConfig(config)
     }
     
-    // Load impulses resisted state
     func loadImpulsesState(uid: String) {
         repo.fetchImpulsesState(uid: uid) { [weak self] state in
-            DispatchQueue.main.async {
-                self?.impulsesState = state
-            }
+            self?.impulsesState = state
         }
     }
     
-    
     func loadMoneySavedState(uid: String) {
         repo.fetchMoneySavedState(uid: uid) { [weak self] state in
-            DispatchQueue.main.async {
-                self?.moneySavedState = state
-            }
+            self?.moneySavedState = state
+        }
+    }
+    
+    func loadStreakState(uid: String) {
+        repo.fetchStreakState(uid: uid) { [weak self] state in
+            self?.streakState = state
         }
     }
 }

@@ -1,11 +1,8 @@
 import SwiftUI
 
-struct CurrentUser {
-    static let uid = "lADgRy5WsaCEpkERkcsE"
-}
-
 struct HomeView: View {
     
+    @EnvironmentObject var session: AppSessionViewModel
     @StateObject private var viewModel = DashboardViewModel()
     
     @State private var showingAddSheet = false
@@ -14,11 +11,12 @@ struct HomeView: View {
     @State private var widgets: [DashboardWidget] = []
     @State private var configuringWidget: DashboardWidget?
 
-    // Categories shown in the picker and streak widget config
     private var availableCategories: [String] {
-        viewModel.categories.isEmpty
-            ? ["Overall"]
-            : ["Overall"] + viewModel.categories
+        let cleaned = viewModel.categories
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        return cleaned.isEmpty ? ["Overall"] : ["Overall"] + cleaned
     }
 
     var body: some View {
@@ -68,6 +66,7 @@ struct HomeView: View {
                         draggedWidget: $draggedWidget,
                         impulsesState: viewModel.impulsesState,
                         moneySavedState: viewModel.moneySavedState,
+                        streakState: viewModel.streakState,
                         onRemove: { widget in
                             withAnimation {
                                 widgets.removeAll { $0.id == widget.id }
@@ -87,11 +86,17 @@ struct HomeView: View {
             }
         }
         .appBackground()
-        .onAppear {
-            viewModel.loadCategories(uid: CurrentUser.uid)
-            viewModel.loadImpulsesState(uid: CurrentUser.uid)
-            viewModel.loadMoneySavedState(uid: CurrentUser.uid)
-            widgets = makeWidgets(from: viewModel.dashboardConfig)
+        .task(id: session.userProfile?.id) {
+            guard let uid = session.userProfile?.id else { return }
+            
+            viewModel.loadCategories(uid: uid)
+            viewModel.loadImpulsesState(uid: uid)
+            viewModel.loadMoneySavedState(uid: uid)
+            viewModel.loadStreakState(uid: uid)
+            
+            if widgets.isEmpty {
+                widgets = makeWidgets(from: viewModel.dashboardConfig)
+            }
         }
         .sheet(isPresented: $showingAddSheet) {
             AddWidgetSheet(
@@ -111,10 +116,12 @@ struct HomeView: View {
                 allCategories: availableCategories,
                 selectedCategories: Set(widget.selectedPauseCategories),
                 onSave: { newCategories in
-                    updatePauseCategories(
-                        widgetID: widget.id,
-                        categories: newCategories
-                    )
+                    withAnimation {
+                        updatePauseCategories(
+                            widgetID: widget.id,
+                            categories: newCategories
+                        )
+                    }
                 }
             )
             .presentationDetents([.medium, .large])
@@ -122,18 +129,19 @@ struct HomeView: View {
         .toolbar(.hidden, for: .tabBar)
     }
 
-    // Converts local DashboardConfig into actual dashboard widgets
     private func makeWidgets(from config: DashboardConfig) -> [DashboardWidget] {
-        let savedCategories = config.enabledCategories.isEmpty
+        let validSavedCategories = config.enabledCategories.filter { category in
+            category == "Overall" || availableCategories.contains(category)
+        }
+
+        let savedCategories = validSavedCategories.isEmpty
             ? ["Overall"]
-            : config.enabledCategories
+            : validSavedCategories
 
         let orderedTypes = config.widgetOrder.compactMap { DashboardWidgetType(rawValue: $0) }
         let enabledSet = Set(config.enabledWidgets)
-
         let filteredTypes = orderedTypes.filter { enabledSet.contains($0.rawValue) }
 
-        // Default dashboard if nothing is saved yet
         if filteredTypes.isEmpty {
             return [
                 DashboardWidget(
@@ -160,7 +168,6 @@ struct HomeView: View {
         }
     }
 
-    // Converts current widgets into local DashboardConfig and saves it
     private func saveCurrentDashboard() {
         let pauseCategories =
             widgets.first(where: { $0.kind == .pauseStreaks })?.selectedPauseCategories ?? ["Overall"]
@@ -176,14 +183,24 @@ struct HomeView: View {
         viewModel.saveDashboardConfig(config)
     }
 
-    // Updates the categories for the pause streak widget and saves config
     private func updatePauseCategories(widgetID: UUID, categories: [String]) {
         guard let index = widgets.firstIndex(where: { $0.id == widgetID }) else { return }
-        widgets[index].selectedPauseCategories = categories
+
+        let cleanedCategories = categories.filter { category in
+            category == "Overall" || availableCategories.contains(category)
+        }
+
+        widgets[index].selectedPauseCategories = cleanedCategories.isEmpty ? ["Overall"] : cleanedCategories
+
+        if configuringWidget?.id == widgetID {
+            configuringWidget?.selectedPauseCategories = widgets[index].selectedPauseCategories
+        }
+
         saveCurrentDashboard()
     }
 }
 
 #Preview {
     HomeView()
+        .environmentObject(AppSessionViewModel())
 }

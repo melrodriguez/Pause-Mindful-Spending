@@ -8,4 +8,5 @@ struct DashboardEvent {
     let timerId: String?
     let category: String?
     let amount: Double?
+    let currencyCode: String?
 }

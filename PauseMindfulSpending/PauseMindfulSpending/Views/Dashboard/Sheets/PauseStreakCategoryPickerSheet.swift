@@ -20,7 +20,23 @@ struct PauseStreakCategoryPickerSheet: View {
         NavigationStack {
             List {
                 ForEach(allCategories, id: \.self) { category in
-                    categoryRow(for: category)
+                    Button {
+                        toggle(category)
+                    } label: {
+                        HStack {
+                            Text(category)
+                                .foregroundStyle(.primary)
+
+                            Spacer()
+
+                            if selectedCategories.contains(category) {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .navigationTitle("Pause Categories")
@@ -34,35 +50,18 @@ struct PauseStreakCategoryPickerSheet: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        onSave(Array(selectedCategories).sorted())
+                        let orderedSelection = allCategories.filter { selectedCategories.contains($0) }
+                        onSave(orderedSelection)
                         dismiss()
                     }
+                    .disabled(selectedCategories.isEmpty)
                 }
             }
         }
     }
 
-    private func categoryRow(for category: String) -> some View {
-        HStack {
-            Text(category)
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            if selectedCategories.contains(category) {
-                Image(systemName: "checkmark")
-                    .foregroundStyle(.green)
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            toggle(category)
-        }
-    }
-
     private func toggle(_ category: String) {
         if selectedCategories.contains(category) {
-            // Prevent the user from deselecting the last remaining category.
             guard selectedCategories.count > 1 else { return }
             selectedCategories.remove(category)
         } else {

@@ -1,5 +1,6 @@
 import Foundation
 
+// Helper functions to calculate data points needed for display
 struct MoneySavedCalculator {
 
     static func makeMoneySavedState(
@@ -15,9 +16,7 @@ struct MoneySavedCalculator {
         )
     }
 
-    // Builds cumulative savings for the current week (Mon–Sun).
     private static func makeWeeklySavingsData(from events: [DashboardEvent]) -> [SavingsPoint] {
-
         let calendar = Calendar.current
         let now = Date()
 
@@ -29,7 +28,7 @@ struct MoneySavedCalculator {
             $0.createdAt >= weekInterval.start && $0.createdAt < weekInterval.end
         }
 
-        let weekdaySymbols = ["Sun", "Mon","Tue","Wed","Thu","Fri","Sat"]
+        let labels = weekLabels(startingAt: weekInterval.start, calendar: calendar)
         let startOfWeek = weekInterval.start
 
         var dailyNet: [Int: Double] = [:]
@@ -46,7 +45,7 @@ struct MoneySavedCalculator {
             runningTotal += dailyNet[dayIndex, default: 0]
             points.append(
                 SavingsPoint(
-                    label: weekdaySymbols[dayIndex],
+                    label: labels[dayIndex],
                     amount: max(runningTotal, 0)
                 )
             )
@@ -55,9 +54,7 @@ struct MoneySavedCalculator {
         return points
     }
 
-    // Builds cumulative savings for the current month grouped by week.
     private static func makeMonthlySavingsData(from events: [DashboardEvent]) -> [SavingsPoint] {
-
         let calendar = Calendar.current
         let now = Date()
 
@@ -69,6 +66,9 @@ struct MoneySavedCalculator {
             $0.createdAt >= monthInterval.start && $0.createdAt < monthInterval.end
         }
 
+        let weekRange = calendar.range(of: .weekOfMonth, in: .month, for: now) ?? 1..<5
+        let weekCount = weekRange.count
+
         var weeklyNet: [Int: Double] = [:]
 
         for event in monthEvents {
@@ -79,9 +79,8 @@ struct MoneySavedCalculator {
         var runningTotal = 0.0
         var points: [SavingsPoint] = []
 
-        for weekIndex in 0..<4 {
+        for weekIndex in 0..<weekCount {
             runningTotal += weeklyNet[weekIndex, default: 0]
-
             points.append(
                 SavingsPoint(
                     label: "W\(weekIndex + 1)",
@@ -93,16 +92,13 @@ struct MoneySavedCalculator {
         return points
     }
 
-    // Builds the all-time savings chart grouped by month.
     private static func makeAllTimeSavingsData(from events: [DashboardEvent]) -> [SavingsPoint] {
-
         let calendar = Calendar.current
         let sortedEvents = events.sorted { $0.createdAt < $1.createdAt }
 
         var monthlyNet: [Date: Double] = [:]
 
         for event in sortedEvents {
-
             let comps = calendar.dateComponents([.year, .month], from: event.createdAt)
 
             guard let monthDate = calendar.date(from: comps) else { continue }
@@ -119,7 +115,6 @@ struct MoneySavedCalculator {
         formatter.dateFormat = "MMM"
 
         for month in sortedMonths {
-
             runningTotal += monthlyNet[month, default: 0]
 
             points.append(
@@ -133,13 +128,14 @@ struct MoneySavedCalculator {
         return points
     }
 
-    // Builds the all-time savings chart grouped by month.
     private static func signedAmount(for event: DashboardEvent) -> Double {
-
         let amount = event.amount ?? 0
 
         switch event.type {
         case "item_created":
+            return amount
+
+        case "item_completed":
             return amount
 
         case "item_deleted", "item_bought":
@@ -147,6 +143,18 @@ struct MoneySavedCalculator {
 
         default:
             return 0
+        }
+    }
+
+    private static func weekLabels(startingAt startDate: Date, calendar: Calendar) -> [String] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+
+        return (0..<7).compactMap { offset in
+            guard let date = calendar.date(byAdding: .day, value: offset, to: startDate) else {
+                return nil
+            }
+            return formatter.string(from: date)
         }
     }
 }
