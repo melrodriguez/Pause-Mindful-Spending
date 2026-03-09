@@ -4,7 +4,7 @@ extension FireStoreService {
     
     func fetchEventList(uid: String, completion: @escaping ([String]) -> Void) {
         // Fetches the categoryId list from user document. Returns result using
-        // hanlder
+        // handler
         
         self.fetchUser(uid: uid) { userData in
             guard let userData = userData else {

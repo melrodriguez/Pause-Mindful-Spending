@@ -145,7 +145,7 @@ class FireStoreService {
         subCollection: String,
         subId: String)
     {
-        // Helper funciton deletes a document in a subcollection.
+        // Helper function deletes a document in a subcollection.
         
         db.collection(parentCollection)
             .document(parentId)

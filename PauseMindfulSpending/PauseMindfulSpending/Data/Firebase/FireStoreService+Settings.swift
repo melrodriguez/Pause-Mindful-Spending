@@ -3,7 +3,7 @@ import FirebaseFirestore
 extension FireStoreService {
     func createSettings(uid: String, completion: @escaping (String?) -> Void) {
         let data:[String: Any] = [
-            "isNigthMode": false,
+            "isNightMode": false,
             "isHapticsEnabled": false,
             "wishlistLayout": "grid",
             "updatedAt": FieldValue.serverTimestamp()
