@@ -7,9 +7,9 @@ struct RootView: View {
     @State private var showAddItem: Bool = false
     
     var body: some View {
-        if session.isLoading {
-            // TODO - LoadingScreen()
-        } else {
+//        if session.isLoading {
+//            // TODO - LoadingScreen()
+//        } else {
             NavigationStack {
                 ZStack {
                     TabView(selection: $selectedTab) {
@@ -65,5 +65,5 @@ struct RootView: View {
                 }
             }
         }
-    }
+//    }
 }
