@@ -10,7 +10,7 @@ extension FireStoreService {
         ]
         
         self.addDocumentToSubcollection(
-            parentCollection: "user",
+            parentCollection: "users",
             parentId: uid,
             subCollection: "settings",
             data: data) { settingId in
