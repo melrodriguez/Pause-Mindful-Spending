@@ -57,10 +57,7 @@ enum AppFonts {
 
 // MARK: - Spacing / Corner Radius / Shadows - LATER!!
 enum AppLayout {
-// EX:
-//    static let cornerRadius: CGFloat = 16
-//    static let cardPadding: CGFloat = 16
-//    static let screenPadding: CGFloat = 16
+    static let horizontalScreenPadding: CGFloat = 20
 }
 
 // MARK: - Background View Modifier
