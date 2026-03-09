@@ -4,7 +4,7 @@ extension FireStoreService {
     
     func fetchCategoryList(uid: String, completion: @escaping ([String]) -> Void) {
         // Fetches the categoryId list from user document. Returns result using
-        // hanlder
+        // handler
         
         self.fetchUser(uid: uid) { userData in
             guard let userData = userData else {
@@ -64,6 +64,16 @@ extension FireStoreService {
             data: categoryId) { success in
             return
         }
+        
+        self.fetchItemsInCategory(uid: uid, categoryId: categoryId) { itemIds in
+            for itemId in itemIds {
+                self.updateItem(
+                    uid: uid,
+                    itemId: itemId,
+                    fieldsToUpdate: ["categoryId": FieldValue.delete()]
+                )
+            }
+        }
     }
 
     func fetchCategoryStringUsingId(
@@ -93,7 +103,7 @@ extension FireStoreService {
         completion: @escaping (String?) -> Void)
     {
         // Find the categoryId using a name of the category, then passes it through
-        // completion hanlder
+        // completion handler
         
         self.fetchCategoryList(uid: uid) { categoryIds in
             let group = DispatchGroup()

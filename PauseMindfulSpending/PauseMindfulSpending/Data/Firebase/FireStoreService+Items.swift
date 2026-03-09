@@ -107,21 +107,6 @@ extension FireStoreService {
         }
     }
     
-    func fetchAllItemDocuments(uid: String, completion: @escaping ([[String: Any]]) -> Void) {
-        // Fetches all the documents in item collection inside the user document. Will
-        // return results through completion handler
-        
-        db.collection("users").document(uid).collection("items").getDocuments{ snapshot, error in
-            guard let docs = snapshot?.documents else {
-                completion([])
-                return
-            }
-            
-            let items = docs.map{ $0.data() }
-            completion(items)
-        }
-    }
-    
     func fetchAllItemDocumentsIds(uid: String, completion: @escaping ([String]) -> Void) {
         db.collection("users").document(uid).collection("items").getDocuments{ snapshot, error in
             guard let docs = snapshot?.documents else {
@@ -129,6 +114,7 @@ extension FireStoreService {
                 return
                 
             }
+            
             let ids = docs.map { $0.documentID }
             completion(ids)
         }
@@ -139,19 +125,20 @@ extension FireStoreService {
         itemId: String,
         completion: @escaping ([String: Any]?) -> Void)
     {
-        // Gets all the infomration necesary to create Item struct. Will return results
+        // Gets all the information necessary to create Item struct. Will return results
         // through completion handler
         
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
             guard
                 let itemData = itemData,
-                let timerId = itemData["timerId"] as? String,
-                let categoryId = itemData["categoryId"] as? String
+                let timerId = itemData["timerId"] as? String
             else {
                 completion(nil)
                 return
             }
-                
+            
+            let categoryId = itemData["categoryId"] as? String
+            
             let dataToReturn: [String: Any] = [
                 "itemId": itemId,
                 "timerId": timerId,
@@ -231,34 +218,30 @@ extension FireStoreService {
         }
     }
     
-    func fetchWishlistItems(uid: String, completion: @escaping ([[String: Any]]?) -> Void) {
-        // Retrieves all the items in the wishlist and stores them as an array of
-        // dictionaries that each contain the item contents. It will pass the contents in
-        // a completion handler. If there are no items with this category then it will
-        // pass nil
+    func fetchItemsByStatus(uid: String, status: String ,completion: @escaping ([String]) -> Void) {
+        // Retrieves all the itemIds that belong in a specified status. Will return a
+        // list of itemIds or an empty list through completion handler.
         
         db.collection("items")
-            .whereField("status", isEqualTo: "wishlist")
+            .whereField("status", isEqualTo: status)
             .getDocuments{ snapshot, error in
-                guard let docs = snapshot?.documents else {
-                    completion(nil)
+                guard let documents = snapshot?.documents else {
+                    completion([])
                     return
                 }
                 
-                let items = docs.map{ $0.data() }
-                completion(items)
+                let itemIds = documents.map{ $0.documentID }
+                completion(itemIds)
             }
     }
     
     func fetchItemsInCategory(
         uid: String,
         categoryId: String,
-        completion: @escaping ([[String: Any]]?) -> Void)
+        completion: @escaping ([String]) -> Void)
     {
-        // Retrieves all the items in a category and stores them as an array of
-        // dictionaries that each contain the item contents. It will pass the contents in
-        // a completion handler. If there are no items with this category then it will
-        // pass nil
+        // Retrieves all the itemIds that belong in a specified category. Will return a
+        // list of itemIds or an empty list through completion handler.
         
         db.collection("users")
             .document(uid)
@@ -267,12 +250,12 @@ extension FireStoreService {
             .whereField("status", isEqualTo:  "wishlist")
             .getDocuments{ snapshot, error in
                 guard let docs = snapshot?.documents else {
-                    completion(nil)
+                    completion([])
                     return
                 }
                 
-                let items = docs.map{ $0.data() }
-                completion(items)
+                let itemIds = docs.map{ $0.documentID }
+                completion(itemIds)
             }
     }
     
