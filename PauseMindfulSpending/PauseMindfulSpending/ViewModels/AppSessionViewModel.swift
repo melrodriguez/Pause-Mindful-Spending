@@ -62,4 +62,20 @@ final class AppSessionViewModel: ObservableObject {
             }
         }
     }
+    
+    func updateNightMode(_ value: Bool) {
+            guard var settings = userSettings else { return }
+            
+            settings.isNightMode = value
+            userSettings = settings
+            
+            firestoreService.updateSettings(
+                uid: currentUID,
+                settingId: settings.id,
+                fieldsToUpdate: [
+                    "isNightMode": value,
+                    "updatedAt": FieldValue.serverTimestamp()
+                ]
+            )
+        }
 }
