@@ -82,7 +82,7 @@ class DashboardRepository {
                         let data = document.data()
                         let status = (data["status"] as? String ?? "").lowercased()
 
-                        if status == "item_bought" {
+                        if status == "bought" {
                             boughtCount += 1
                         }
                     }
@@ -123,36 +123,29 @@ class DashboardRepository {
             for eventId in eventIds {
                 group.enter()
 
-                service.fetchDocumentFromSubcollection(
-                    parentCollection: "users",
-                    parentId: uid,
-                    subCollection: "events",
-                    subId: eventId
-                ) { eventData in
+                service.fetchDetailsFromEvent(uid: uid, eventId: eventId) { details in
                     guard
-                        let eventData = eventData,
-                        let type = eventData["type"] as? String,
-                        let timestamp = eventData["createdAt"] as? Timestamp
+                        let details = details,
+                        let type = details["type"] as? String,
+                        let timestamp = details["createdAt"] as? Timestamp
                     else {
                         group.leave()
                         return
                     }
 
-                    service.fetchDetailsFromEvent(uid: uid, eventId: eventId) { details in
-                        let event = DashboardEvent(
-                            id: eventId,
-                            type: type,
-                            createdAt: timestamp.dateValue(),
-                            itemId: details?["itemId"] as? String,
-                            timerId: details?["timerId"] as? String,
-                            category: details?["categoryId"] as? String,
-                            amount: details?["amount"] as? Double,
-                            currencyCode: nil
-                        )
+                    let event = DashboardEvent(
+                        id: eventId,
+                        type: type,
+                        createdAt: timestamp.dateValue(),
+                        itemId: details["itemId"] as? String,
+                        timerId: details["timerId"] as? String,
+                        category: details["categoryId"] as? String,
+                        amount: details["amount"] as? Double,
+                        currencyCode: nil
+                    )
 
-                        events.append(event)
-                        group.leave()
-                    }
+                    events.append(event)
+                    group.leave()
                 }
             }
 

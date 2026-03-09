@@ -73,10 +73,17 @@ extension FireStoreService {
     }
     
     func fetchDetailsFromEvent(uid: String, eventId: String, completion: @escaping ([String: Any]?) -> Void) {
-        self.fetchDocumentFromSubcollection(parentCollection: "users", parentId: uid, subCollection: "events", subId: eventId) { data in
+        self.fetchDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "events",
+            subId: eventId
+        ) { data in
             guard
                 let data = data,
-                let itemId = data["itemId"] as? String
+                let itemId = data["itemId"] as? String,
+                let type = data["type"] as? String,
+                let timestamp = data["createdAt"] as? Timestamp
             else {
                 completion(nil)
                 return
@@ -85,17 +92,21 @@ extension FireStoreService {
             self.fetchItem(uid: uid, itemId: itemId) { document in
                 guard
                     let document = document,
-                    let amount = document["cost"] as? Double else {
+                    let amount = document["cost"] as? Double
+                else {
                     completion(nil)
                     return
                 }
+                
                 let categoryId = document["categoryId"] as? String
                 let timerId = document["timerId"] as? String
                 
                 completion([
                     "itemId": itemId,
-                    "categoryId": categoryId,
-                    "timerId": timerId,
+                    "type": type,
+                    "createdAt": timestamp,
+                    "categoryId": categoryId as Any,
+                    "timerId": timerId as Any,
                     "amount": amount
                 ])
             }
