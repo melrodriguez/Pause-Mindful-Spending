@@ -62,7 +62,16 @@ class UserManager {
             }
             
             let uid = user.uid
-            completion(uid)
+            self.fireStore.updateUserDocument(
+                uid: uid,
+                fieldName: "lastLoginAt",
+                data: FieldValue.serverTimestamp()) { success in
+                if success {
+                    completion(uid)
+                } else {
+                    completion(nil)
+                }
+            }
         }
     }
     
