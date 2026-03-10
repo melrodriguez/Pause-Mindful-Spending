@@ -8,9 +8,13 @@ struct RootView: View {
     
     var body: some View {
         if session.isLoading {
-            // TODO - LoadingScreen()
+            LoadingView()
         } else {
             NavigationStack {
+                // remove me if you want
+                Button("Logout (dev debugging mode)") {
+                    session.logout()
+                }
                 ZStack {
                     TabView(selection: $selectedTab) {
                         HomeView()
@@ -68,11 +72,6 @@ struct RootView: View {
                 }
                 .navigationDestination(isPresented: $showAddItem) {
                     AddItemLogView()
-                }
-                .onAppear {
-                    if session.userProfile == nil || session.userSettings == nil {
-                        session.loadSessionData()
-                    }
                 }
             }
         }

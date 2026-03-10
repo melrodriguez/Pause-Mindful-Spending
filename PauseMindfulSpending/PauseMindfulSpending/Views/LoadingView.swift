@@ -16,7 +16,11 @@ struct LoadingView: View {
             ProgressView()
                 .progressViewStyle(.circular)
                 .scaleEffect(1.4)
-
+                
+                // Load at a natural pace (not instant)
+                .task {
+                    try? await Task.sleep(for: .seconds(2))
+                }
         }
         .appBackground()
     }

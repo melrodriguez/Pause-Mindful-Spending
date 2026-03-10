@@ -6,21 +6,44 @@ final class AppSessionViewModel: ObservableObject {
     @Published var userProfile: UserProfile?
     @Published var userSettings: UserSettings?
     @Published var isLoading = false
+    @Published var isAuthenticated = false
     
     private let firestoreService = FireStoreService()
     
-    var currentUID: String {
-        // temp - hardcode user for testing
-        Auth.auth().currentUser?.uid ?? "KldBIFHuI45un0BgIet2"
+    init() {
+        listenToAuthState()
+    }
+        
+    // This listener waits for user to be authenticated (logged in)
+    private func listenToAuthState() {
+        Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                if let user = user {
+                    self.isAuthenticated = true
+                    self.loadSessionData(uid: user.uid)
+                } else {
+                    self.isAuthenticated = false
+                    self.userProfile = nil
+                    self.userSettings = nil
+                }
+            }
+        }
     }
     
-    func loadSessionData() {
-        guard !currentUID.isEmpty else { return }
+    // Temporary logout function for debugging
+    func logout() {
+        try? Auth.auth().signOut()
+    }
+    
+    func loadSessionData(uid: String) {
+        guard !uid.isEmpty else { return }
         guard !isLoading else { return }
         
         isLoading = true
         
-        firestoreService.fetchUser(uid: currentUID) { [weak self] data in
+        firestoreService.fetchUser(uid: uid) { [weak self] data in
             guard let self = self else { return }
             
             guard let data = data else {
@@ -30,7 +53,7 @@ final class AppSessionViewModel: ObservableObject {
                 return
             }
             
-            let profile = UserProfile(id: self.currentUID, data: data)
+            let profile = UserProfile(id: uid, data: data)
             
             DispatchQueue.main.async {
                 self.userProfile = profile
@@ -46,7 +69,7 @@ final class AppSessionViewModel: ObservableObject {
             
             self.firestoreService.fetchDocumentFromSubcollection(
                 parentCollection: "users",
-                parentId: self.currentUID,
+                parentId: uid,
                 subCollection: "settings",
                 subId: settingsId
             ) { settingsData in
@@ -69,8 +92,13 @@ final class AppSessionViewModel: ObservableObject {
         settings.isNightMode = value
         userSettings = settings
         
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("Authenticated user not found.")
+            return
+        }
+        
         firestoreService.updateSettings(
-            uid: currentUID,
+            uid: uid,
             settingId: settings.id,
             fieldsToUpdate: [
                 "isNightMode": value,
@@ -84,9 +112,14 @@ final class AppSessionViewModel: ObservableObject {
 
         settings.isHapticsEnabled = value
         userSettings = settings
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("Authenticated user not found.")
+            return
+        }
 
         firestoreService.updateSettings(
-            uid: currentUID,
+            uid: uid,
             settingId: settings.id,
             fieldsToUpdate: [
                 "isHapticsEnabled": value,
@@ -100,9 +133,14 @@ final class AppSessionViewModel: ObservableObject {
         
         settings.wishlistLayout = value
         userSettings = settings
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("Authenticated user not found.")
+            return
+        }
 
         firestoreService.updateSettings(
-            uid: currentUID,
+            uid: uid,
             settingId: settings.id,
             fieldsToUpdate: [
                 "wishlistLayout": value.rawValue,

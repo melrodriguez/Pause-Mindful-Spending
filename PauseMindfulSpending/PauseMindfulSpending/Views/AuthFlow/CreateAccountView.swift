@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CreateAccountView: View {
     
-    // send this to the backend
+    @Binding var showCreateAccount: Bool // flip between LoginView and CreateAccountView
     @StateObject var viewModel = CreateAccountViewModel()
 
     var body: some View {
@@ -23,7 +23,6 @@ struct CreateAccountView: View {
                         .foregroundColor(.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                
                                 
                 VStack(spacing: 5) {
                     Text("Name")
@@ -71,7 +70,7 @@ struct CreateAccountView: View {
                         .font(AppFonts.caption)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    SecureField("Confirm your password", text: $viewModel.passwwordConfirmation)
+                    SecureField("Confirm your password", text: $viewModel.passwordConfirmation)
                         .font(AppFonts.subhead)
                         .textFieldStyle(.roundedBorder)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -85,7 +84,7 @@ struct CreateAccountView: View {
                 HStack (spacing: 15) {
                     // Terms and conditions checkbox
                     Button {
-                        print("pressed agree to T&C")
+                        // print("pressed agree to T&C")
                         viewModel.hasAgreed.toggle()
                     } label: {
                         Image(viewModel.hasAgreed ? "CheckboxFilled" : "CheckboxUnfilled")
@@ -108,12 +107,8 @@ struct CreateAccountView: View {
             
             VStack(spacing: 7) {
                 Button(action: {
-                    print("pressed create account button")
-                    viewModel.pressedCreateAccountButton(
-                        name: viewModel.name,
-                        email: viewModel.email,
-                        password: viewModel.password,
-                        passwordConfirmation: viewModel.passwwordConfirmation)
+                    // print("pressed create account button")
+                    viewModel.pressedCreateAccountButton()
                 }) {
                     Text("Create Account")
                         .frame(maxWidth: .infinity)
@@ -129,8 +124,8 @@ struct CreateAccountView: View {
                         .font(AppFonts.caption)
                         .foregroundColor(AppColors.textSecondary)
                     Button(action: {
-                        print("pressed login button")
-                        // navigate to LoginView
+                        // print("pressed login button")
+                        showCreateAccount = false
                     }) {
                         Text("Login")
                             .font(AppFonts.caption)
@@ -144,7 +139,7 @@ struct CreateAccountView: View {
     }
 }
 
-#Preview {
-    CreateAccountView()
-}
+//#Preview {
+//    CreateAccountView(showRegister: $showRegister)
+//}
 
