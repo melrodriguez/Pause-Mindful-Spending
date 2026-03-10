@@ -1,11 +1,12 @@
 import FirebaseAuth
+import FirebaseFirestore
 
 class UserManager {
     // Handles interactions with Firebase Authentication and stores using
     // FireStoreService
     
     private let fireStore = FireStoreService()
-    
+
     func createUser(
         displayName: String,
         email: String,
@@ -17,18 +18,34 @@ class UserManager {
         
         Auth.auth().createUser(withEmail: email, password: password) {
             result, error in
-            if let user = result?.user {
-                let uid = user.uid
-                self.fireStore.createUser(
-                    displayName: displayName,
-                    email: email,
-                    uid: uid
-                )
-                
-                completion(uid)
-            }
-            else {
+            guard let user = result?.user else {
                 completion(nil)
+                return
+            }
+            
+            let uid = user.uid
+            self.fireStore.createUser(
+                displayName: displayName,
+                email: email,
+                uid: uid
+            )
+            self.fireStore.createSettings(uid: uid) { settingId in
+                guard let settingId = settingId else {
+                    completion(nil)
+                    return
+                }
+                
+                self.fireStore.updateUserDocument(
+                    uid: uid,
+                    fieldName: "settingsId",
+                    data: settingId) { success in
+                    if success {
+                        completion(uid)
+                    } else {
+                        completion(nil)
+                    }
+                    
+                }
             }
         }
     }
@@ -39,12 +56,21 @@ class UserManager {
         
         Auth.auth().signIn(withEmail: email, password: password) {
             result, error in
-            if let user = result?.user {
-                let uid = user.uid
-                completion(uid)
-            }
-            else {
+            guard let user = result?.user else {
                 completion(nil)
+                return
+            }
+            
+            let uid = user.uid
+            self.fireStore.updateUserDocument(
+                uid: uid,
+                fieldName: "lastLoginAt",
+                data: FieldValue.serverTimestamp()) { success in
+                if success {
+                    completion(uid)
+                } else {
+                    completion(nil)
+                }
             }
         }
     }
