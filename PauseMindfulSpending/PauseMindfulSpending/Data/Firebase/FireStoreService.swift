@@ -37,7 +37,7 @@ class FireStoreService {
         self.db.collection("users")
             .document(uid)
             .setData([fieldName: data], merge: true) { error in
-                if let error = error {
+                if let _ = error {
                     completion(false)
                 } else {
                     completion(true)
@@ -49,7 +49,7 @@ class FireStoreService {
         self.db.collection("users")
             .document(uid)
             .updateData([fieldName: FieldValue.arrayUnion([data])]) { error in
-                if let error = error {
+                if let _ = error {
                     completion(false)
                 } else {
                     completion(true)
@@ -61,7 +61,7 @@ class FireStoreService {
         self.db.collection("users")
             .document(uid)
             .updateData([fieldName: FieldValue.arrayRemove([data])]) { error in
-                if let error = error {
+                if let _ = error {
                     completion(false)
                 } else {
                     completion(true)
