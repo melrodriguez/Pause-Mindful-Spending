@@ -4,6 +4,7 @@ struct TimerCell: View {
     @ObservedObject var viewModel: TimerViewModel
     
     let item: TimerItem
+    let textSize: CGFloat
     
     var body: some View {
         ZStack {
@@ -15,9 +16,9 @@ struct TimerCell: View {
                     .fill(AppColors.ListCell)
                 VStack(spacing: 6) {
                     Text(item.itemName)
-                        .font(AppFonts.bold(15))
+                        .font(AppFonts.bold(textSize))
                     Text(viewModel.formattedRemaining(for: item))
-                        .font(AppFonts.bold(15))
+                        .font(AppFonts.bold(textSize))
                 }
             }
         }

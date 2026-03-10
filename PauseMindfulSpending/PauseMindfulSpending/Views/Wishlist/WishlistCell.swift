@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WishlistCell: View {
     let item: Item
+    let textSize: CGFloat
     
     var body: some View {
         ZStack {
@@ -12,7 +13,7 @@ struct WishlistCell: View {
                 Rectangle()
                     .fill(AppColors.ListCell)
                 Text(item.name)
-                    .font(AppFonts.bold(15))
+                    .font(AppFonts.bold(textSize))
             }
         }
         .aspectRatio(1, contentMode: .fit)
@@ -27,5 +28,7 @@ struct WishlistCell: View {
             timerId: "sweater",
             categoryId: nil,
             imageUrl: nil
-    ))
+        ),
+        textSize: 15
+    )
 }

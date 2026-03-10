@@ -95,6 +95,22 @@ final class AppSessionViewModel: ObservableObject {
         )
     }
     
+    func updateWishlistLayout(_ value: WishlistLayout) {
+        guard var settings = userSettings else { return }
+        
+        settings.wishlistLayout = value
+        userSettings = settings
+
+        firestoreService.updateSettings(
+            uid: currentUID,
+            settingId: settings.id,
+            fieldsToUpdate: [
+                "wishlistLayout": value.rawValue,
+                "updatedAt": FieldValue.serverTimestamp()
+            ]
+        )
+    }
+    
     func triggerHaptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
         guard userSettings?.isHapticsEnabled == true else { return }
         

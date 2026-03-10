@@ -3,18 +3,13 @@ import SwiftUI
 struct WishlistGrid: View {
     
     let items: [Item]
-    let columnsChange: [GridItem]
-    
-    let columns = [
-        GridItem(.fixed(120), spacing: 8),
-        GridItem(.fixed(120), spacing: 8),
-        GridItem(.fixed(120), spacing: 8)
-    ]
-    
+    let columns: [GridItem]
+    let textSize: CGFloat
+
     var body: some View {
-        LazyVGrid(columns: columnsChange, spacing: 8) {
+        LazyVGrid(columns: columns, spacing: 8) {
             ForEach(items) { item in
-                WishlistCell(item: item)
+                WishlistCell(item: item, textSize: textSize)
             }
         }
     }

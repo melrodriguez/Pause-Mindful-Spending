@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct WishlistView: View {
+    
     @StateObject private var viewModel: WishlistViewModel
     @EnvironmentObject var session: AppSessionViewModel
 
@@ -41,21 +42,25 @@ struct WishlistView: View {
                 .padding(.trailing, 20)
                 
                 switch session.userSettings?.wishlistLayout {
+                // TODO: Make this less hardcoded
                 case .grid:
-                    WishlistGrid(items: viewModel.items, columnsChange: [
+                    WishlistGrid(items: viewModel.items, columns: [
                         GridItem(.fixed(120), spacing: 8),
                         GridItem(.fixed(120), spacing: 8),
-                        GridItem(.fixed(120), spacing: 8)]
+                        GridItem(.fixed(120), spacing: 8)],
+                                 textSize: 15
                     )
                 case .single:
-                    WishlistGrid(items: viewModel.items, columnsChange: [
-                        GridItem(.fixed(350), spacing: 8)]
+                    WishlistGrid(items: viewModel.items, columns: [
+                        GridItem(.fixed(350), spacing: 8)],
+                                 textSize: 30
                     )
                 case .none:
-                    WishlistGrid(items: viewModel.items, columnsChange: [
+                    WishlistGrid(items: viewModel.items, columns: [
                         GridItem(.fixed(120), spacing: 8),
                         GridItem(.fixed(120), spacing: 8),
-                        GridItem(.fixed(120), spacing: 8)]
+                        GridItem(.fixed(120), spacing: 8)],
+                                 textSize: 15
                     )
                 }
             }

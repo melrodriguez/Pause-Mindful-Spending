@@ -3,7 +3,8 @@ import SwiftUI
 struct TimersView: View {
     
     @StateObject private var viewModel: TimerViewModel
-    
+    @EnvironmentObject var session: AppSessionViewModel
+
     init(viewModel: TimerViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -28,7 +29,26 @@ struct TimersView: View {
                 }
                 .padding(.trailing, 20)
                 
-                TimerGrid(viewModel: viewModel)
+                switch session.userSettings?.wishlistLayout {
+                // TODO: Make this less hardcoded
+                case .grid:
+                    TimerGrid(viewModel: viewModel, columns: [
+                        GridItem(.fixed(180), spacing: 8),
+                        GridItem(.fixed(180), spacing: 8)],
+                              textSize: 20
+                    )
+                case .single:
+                    TimerGrid(viewModel: viewModel, columns: [
+                        GridItem(.fixed(350), spacing: 8)],
+                              textSize: 30
+                    )
+                case .none:
+                    TimerGrid(viewModel: viewModel, columns: [
+                        GridItem(.fixed(180), spacing: 8),
+                        GridItem(.fixed(180), spacing: 8)],
+                              textSize: 20
+                    )
+                }
             }
             .onAppear {
                 viewModel.startTimer()
