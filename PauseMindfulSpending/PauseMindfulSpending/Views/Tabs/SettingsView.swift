@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     
     @StateObject private var viewModel: SettingsViewModel
+    @EnvironmentObject var session: AppSessionViewModel
     
     init(viewModel: SettingsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -28,10 +29,10 @@ struct SettingsView: View {
                     SettingsSectionView(title: "Preferences") {
                         SettingsToggleRow(
                             title: "Haptics",
-                            systemImage: "speaker.wave.2",
+                            systemImage: "iphone.radiowaves.left.and.right",
                             isOn: Binding(
-                                get: { viewModel.hapticsEnabled },
-                                set: { viewModel.updateHaptics($0) }
+                                get: { session.userSettings?.isHapticsEnabled ?? false },
+                                set: { session.updateHaptics($0) }
                             )
                         )
                         
@@ -41,8 +42,8 @@ struct SettingsView: View {
                             title: "Night mode",
                             systemImage: "moon",
                             isOn: Binding(
-                                get: { viewModel.nightMode },
-                                set: { viewModel.updateNightMode($0) }
+                                get: { session.userSettings?.isNightMode ?? false },
+                                set: { session.updateNightMode($0) }
                             )
                         )
                         
