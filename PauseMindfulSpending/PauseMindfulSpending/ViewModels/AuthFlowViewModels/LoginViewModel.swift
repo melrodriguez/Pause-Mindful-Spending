@@ -20,13 +20,9 @@ class LoginViewModel: ObservableObject {
         // Missing value handling
         if (email == "") {
             statusMessage = "Please enter your email.\n"
-        }
-        
-        else if (password == "") {
+        } else if (password == "") {
             statusMessage = "Please enter your password.\n"
-        }
-        
-        else {
+        } else {
             userManager.login(email: email, password: password) { [weak self] uid in
                 
                 // Run auth on a different thread

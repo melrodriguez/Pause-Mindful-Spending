@@ -8,8 +8,6 @@ struct LoginView: View {
     var body: some View {
         
         VStack(spacing: AppLayout.horizontalScreenPadding) {
-//            AppHeader(title:"")
-//                .frame(maxWidth: .infinity, alignment: .topLeading)
             
             Spacer()
             
@@ -42,10 +40,10 @@ struct LoginView: View {
                         .font(AppFonts.subhead)
                         .textFieldStyle(.roundedBorder)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .textInputAutocapitalization(.never)
                     
                 }
                 
-                // TODO: password visibility toggle
                 VStack(spacing: 5) {
                     Text("Password")
                         .font(AppFonts.caption)
@@ -55,6 +53,11 @@ struct LoginView: View {
                         .font(AppFonts.subhead)
                         .textFieldStyle(.roundedBorder)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        // Turn off autocaps and autofill
+                        .textContentType(.oneTimeCode)
+                        .autocorrectionDisabled(true)
+                        .textInputAutocapitalization(.never)
                 }
                 
                 Text(viewModel.statusMessage)
@@ -62,33 +65,33 @@ struct LoginView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
             }
-                                    
-            Button(action: {
-                print("pressed login")
-                viewModel.pressedLoginButton(email: viewModel.email, password: viewModel.password)
-            }) {
-                Text("Login")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .font(AppFonts.subhead)
-                    .background(AppColors.mainGreen)
-                    .foregroundColor(.black)
-                    .cornerRadius(15)
-            }
             
-            HStack(alignment: .center) {
-                Text("Haven't registered yet?")
-                    .font(AppFonts.caption)
-                    .foregroundColor(AppColors.textSecondary)
+            VStack(spacing: 7) {
                 Button(action: {
-                    print("pressed register button")
-//                    viewModel.pressedLoginButton(email: viewModel.email, password: viewModel.password)
+                    print("pressed login")
+                    viewModel.pressedLoginButton(email: viewModel.email, password: viewModel.password)
                 }) {
-                    Text("Register")
+                    Text("Login")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .font(AppFonts.subhead)
+                        .background(AppColors.mainGreen)
+                        .foregroundColor(.black)
+                        .cornerRadius(15)
+                }
+                
+                HStack(alignment: .center) {
+                    Text("Haven't registered yet?")
                         .font(AppFonts.caption)
+                        .foregroundColor(AppColors.textSecondary)
+                    Button(action: { // Navigate to CreateAccountView
+                        print("pressed register button")
+                    }) {
+                        Text("Register")
+                            .font(AppFonts.caption)
+                    }
                 }
             }
-
             
         }
         
