@@ -20,6 +20,9 @@ struct PauseMindfulSpendingApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(session)
+                .preferredColorScheme(
+                    session.userSettings?.isNightMode == true ? .dark : nil
+                )
         }
     }
 }

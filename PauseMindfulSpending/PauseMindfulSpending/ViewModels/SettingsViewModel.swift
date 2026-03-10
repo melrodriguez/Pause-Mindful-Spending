@@ -30,10 +30,6 @@ final class SettingsViewModel: ObservableObject {
         userSettings.isHapticsEnabled
     }
     
-    var nightMode: Bool {
-        userSettings.isNightMode
-    }
-    
     var singleCardView: Bool {
         userSettings.wishlistLayout == .single
     }
@@ -41,11 +37,6 @@ final class SettingsViewModel: ObservableObject {
     func updateHaptics(_ value: Bool) {
         userSettings.isHapticsEnabled = value
         sync(["isHapticsEnabled": value])
-    }
-    
-    func updateNightMode(_ value: Bool) {
-        userSettings.isNightMode = value
-        sync(["isNightMode": value])
     }
     
     func updateWishlistLayout(singleCard: Bool) {
