@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct EditItemLogView: View {
+struct ItemLogView: View {
     // temporary
     let moods = ["😐","🙂","😊","😍","🤩","😬"]
 
@@ -124,7 +124,6 @@ struct EditItemLogView: View {
 
 #Preview {
     NavigationStack {
-        EditItemLogView()
+        ItemLogView()
     }
 }
-
