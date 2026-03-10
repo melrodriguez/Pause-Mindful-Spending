@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct WishlistCell: View {
@@ -13,7 +12,7 @@ struct WishlistCell: View {
                 Rectangle()
                     .fill(AppColors.ListCell)
                 Text(item.name)
-                    .font(AppFonts.regular(15))
+                    .font(AppFonts.bold(15))
             }
         }
         .aspectRatio(1, contentMode: .fit)
@@ -30,4 +29,3 @@ struct WishlistCell: View {
             imageUrl: nil
     ))
 }
-

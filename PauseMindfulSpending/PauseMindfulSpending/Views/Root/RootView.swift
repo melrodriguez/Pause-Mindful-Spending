@@ -16,17 +16,13 @@ struct RootView: View {
                         HomeView()
                             .tag(NavBar.home)
                         
-                        TimersView()
-                            .tag(NavBar.timers)
-                        
                         if let profile = session.userProfile {
-                            WishlistView(
-                                viewModel: WishlistViewModel(
-                                    uid: profile.id,
-                                    userProfile: profile
+                            TimersView(
+                                viewModel: TimerViewModel(
+                                    uid: profile.id
                                 )
                             )
-                                .tag(NavBar.wishlist)
+                            .tag(NavBar.timers)
                         }
                         
                         if let profile = session.userProfile,
@@ -39,6 +35,14 @@ struct RootView: View {
                                 )
                             )
                             .tag(NavBar.settings)
+                            
+                            WishlistView(
+                                viewModel: WishlistViewModel(
+                                    uid: profile.id,
+                                    userProfile: profile
+                                )
+                            )
+                                .tag(NavBar.wishlist)
                         } else {
                             // TODO - handle error if profile and settings do not load
                         }

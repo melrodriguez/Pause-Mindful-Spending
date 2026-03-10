@@ -2,15 +2,11 @@ import SwiftUI
 
 struct WishlistView: View {
     @StateObject private var viewModel: WishlistViewModel
-    
+    @EnvironmentObject var session: AppSessionViewModel
+
     init(viewModel: WishlistViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-    
-    let columns = [
-        GridItem(.fixed(170), spacing: 20),
-        GridItem(.fixed(170), spacing: 20)
-    ]
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -44,7 +40,24 @@ struct WishlistView: View {
                 }
                 .padding(.trailing, 20)
                 
-                WishlistGrid(items: viewModel.items)
+                switch session.userSettings?.wishlistLayout {
+                case .grid:
+                    WishlistGrid(items: viewModel.items, columnsChange: [
+                        GridItem(.fixed(120), spacing: 8),
+                        GridItem(.fixed(120), spacing: 8),
+                        GridItem(.fixed(120), spacing: 8)]
+                    )
+                case .single:
+                    WishlistGrid(items: viewModel.items, columnsChange: [
+                        GridItem(.fixed(350), spacing: 8)]
+                    )
+                case .none:
+                    WishlistGrid(items: viewModel.items, columnsChange: [
+                        GridItem(.fixed(120), spacing: 8),
+                        GridItem(.fixed(120), spacing: 8),
+                        GridItem(.fixed(120), spacing: 8)]
+                    )
+                }
             }
             .onAppear {
                 viewModel.loadItems()
