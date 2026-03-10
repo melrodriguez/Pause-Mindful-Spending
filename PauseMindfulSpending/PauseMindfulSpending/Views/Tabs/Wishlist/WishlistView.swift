@@ -7,13 +7,16 @@ struct WishlistView: View {
             AppHeader(title: "Wishlist")
             HStack {
                 Spacer()
-                ProfileImageView(photoUrl: nil, size: 70)
+                ProfileImageView(photoUrl: nil, size: 80)
+                Spacer()
+            }
+            HStack {
+                Spacer()
                 Text("sarah")
                     .font(AppFonts.headline)
                     .foregroundColor(AppColors.mainGreen)
                 Spacer()
             }
-
             Spacer()
         }
         .appBackground()

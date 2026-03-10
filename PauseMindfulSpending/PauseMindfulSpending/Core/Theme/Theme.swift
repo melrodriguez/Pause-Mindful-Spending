@@ -15,6 +15,9 @@ enum AppColors {
     static let bg1 = Color("BG1") // #FFF9E5
     static let bg2 = Color("BG2") // #FFFCF2
     static let bg3 = Color("BG3") // #FFFFFF
+    
+    // Cell Color
+    static let ListCell = Color("ListCell")
 
     static var backgroundGradient: LinearGradient {
         LinearGradient(
