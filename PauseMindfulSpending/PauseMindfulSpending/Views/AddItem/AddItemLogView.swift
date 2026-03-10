@@ -17,6 +17,8 @@ struct AddItemLogView: View {
     @State private var imageCaptured: UIImage? = nil
     @State private var selectedMood: String? = nil
     @State private var showTimerSheet: Bool = false
+    @State private var showCamera: Bool = false
+    @State private var permissionDenied: Bool = false
     
     private func moodButton(mood: (imageName: String, label: String)) -> some View {
         Button {
@@ -90,20 +92,45 @@ struct AddItemLogView: View {
                 TextField("$0.00", text: $itemName).textFieldStyle(.roundedBorder).background(Color.gray)
             }
             
-            //photo gallery
-            //I still need to add camera stuff
-            PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                Label("From Gallery", systemImage: "folder")
-                    .frame(maxWidth: .infinity)
-                    .padding(10)
-                    .background(Color.mainGreen)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }.onChange(of: selectedPhoto) {
-                Task {
-                    if let data = try? await selectedPhoto?.loadTransferable(type: Data.self), let image = UIImage(data: data) {
-                        imageCaptured = image
+            //photo gallery and camera section
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Photo").font(AppFonts.subhead)
+                HStack(spacing: 12) {
+                    
+                    Button {
+                        showCamera = true
+                    } label: {
+                        Label("Take Photo", systemImage: "camera").frame(maxWidth: .infinity).padding(10).background(Color.mainGreen).foregroundColor(.white).cornerRadius(8)
                     }
+                    
+                    
+                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                        Label("From Gallery", systemImage: "folder")
+                            .frame(maxWidth: .infinity)
+                            .padding(10)
+                            .background(Color.mainGreen)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }.onChange(of: selectedPhoto) {
+                        Task {
+                            if let data = try? await selectedPhoto?.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                                imageCaptured = image
+                            }
+                        }
+                    }
+                }
+                if let imageCaptured = imageCaptured {
+                    Image(uiImage: imageCaptured)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 200)
+                        .cornerRadius(8)
+                    
+                    Button("Remove Photo") {
+                        self.imageCaptured = nil
+                    }
+                    .foregroundColor(.red)
+                    .font(.system(size: 12))
                 }
             }
             
@@ -152,6 +179,9 @@ struct AddItemLogView: View {
         .appBackground()
         .sheet(isPresented: $showTimerSheet) {
             TimerPauseSheetView().presentationDetents([.fraction(0.65)]).presentationDragIndicator(.visible).presentationCornerRadius(24)
+        }
+        .sheet(isPresented: $showCamera) {
+            CameraView(capturedImage: $imageCaptured, isPresented: $showCamera)
         }
     }
 }
