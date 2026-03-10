@@ -57,14 +57,12 @@ struct LoginView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                Text("Log in to continue building mindful spending habits and making intentional choices.")
+                Text(viewModel.statusMessage)
                     .font(AppFonts.caption)
                     .frame(maxWidth: .infinity, alignment: .leading)
-    
+                
             }
-            
-            Spacer()
-                        
+                                    
             Button(action: {
                 print("pressed login")
                 viewModel.pressedLoginButton(email: viewModel.email, password: viewModel.password)
@@ -77,10 +75,20 @@ struct LoginView: View {
                     .foregroundColor(.black)
                     .cornerRadius(15)
             }
-        
-            Text(viewModel.statusMessage)
-                .font(AppFonts.caption)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            HStack(alignment: .center) {
+                Text("Haven't registered yet?")
+                    .font(AppFonts.caption)
+                    .foregroundColor(AppColors.textSecondary)
+                Button(action: {
+                    print("pressed register button")
+//                    viewModel.pressedLoginButton(email: viewModel.email, password: viewModel.password)
+                }) {
+                    Text("Register")
+                        .font(AppFonts.caption)
+                }
+            }
+
             
         }
         
