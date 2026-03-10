@@ -53,8 +53,10 @@ struct SettingsView: View {
                             title: "Wishlist single card view",
                             systemImage: "rectangle.grid.1x2",
                             isOn: Binding(
-                                get: { viewModel.singleCardView },
-                                set: { viewModel.updateWishlistLayout(singleCard: $0) }
+                                get: { session.userSettings?.wishlistLayout == .single },
+                                set: { isSingle in
+                                    session.updateWishlistLayout(isSingle ? .single : .grid)
+                                }
                             )
                         )
                     }
@@ -75,11 +77,12 @@ struct SettingsView: View {
                         )
                     }
                     
-                    Color.clear.frame(height: 60)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
                 .padding(.bottom, 32)
+                
+                Color.clear.frame(height: 60)
             }
         }
         .appBackground()
