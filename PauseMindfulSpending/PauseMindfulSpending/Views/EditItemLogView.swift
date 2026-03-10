@@ -94,7 +94,6 @@ struct EditItemLogView: View {
                         .padding(8)
                         .background(AppColors.accentGreen.opacity(0.15))
                         .cornerRadius(10)
-                        
                 }
 
                 // timer
