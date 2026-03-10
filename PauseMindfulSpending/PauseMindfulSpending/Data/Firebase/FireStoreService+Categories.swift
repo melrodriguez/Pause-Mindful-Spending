@@ -24,7 +24,7 @@ extension FireStoreService {
     func addCategory(uid: String, name: String, enableStreak: Bool) {
         // Adds a category document then adds the categoryId to back to the user dcoument
         
-        var data: [String: Any] = [
+        let data: [String: Any] = [
             "name": name,
             "highestStreak": 0,
             "enableStreak": enableStreak,

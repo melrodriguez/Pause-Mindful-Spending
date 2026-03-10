@@ -1,6 +1,12 @@
 import SwiftUI
 
 struct WishlistView: View {
+    @StateObject private var viewModel: WishlistViewModel
+    
+    init(viewModel: WishlistViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+    
     let columns = [
         GridItem(.fixed(170), spacing: 20),
         GridItem(.fixed(170), spacing: 20)
@@ -18,15 +24,17 @@ struct WishlistView: View {
                 }
                 HStack {
                     Spacer()
-                    Text("sarah")
+                    Text(viewModel.displayName)
                         .font(AppFonts.headline)
                         .foregroundColor(AppColors.mainGreen)
                     Spacer()
                 }
                 HStack{
                     Spacer()
-                    Button {
-                        print("button tapped")
+                    Menu {
+                        Button("Category") {
+                            print("Sort by Category")
+                        }
                     } label: {
                         Image("Sort")
                             .resizable()
@@ -36,13 +44,12 @@ struct WishlistView: View {
                 }
                 .padding(.trailing, 20)
                 
-                WishlistGrid()
+                WishlistGrid(items: viewModel.items)
+            }
+            .onAppear {
+                viewModel.loadItems()
             }
         }
         .appBackground()
     }
-}
-
-#Preview {
-    WishlistView()
 }

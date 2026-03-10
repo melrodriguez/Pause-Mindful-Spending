@@ -19,8 +19,15 @@ struct RootView: View {
                         TimersView()
                             .tag(NavBar.timers)
                         
-                        WishlistView()
-                            .tag(NavBar.wishlist)
+                        if let profile = session.userProfile {
+                            WishlistView(
+                                viewModel: WishlistViewModel(
+                                    uid: profile.id,
+                                    userProfile: profile
+                                )
+                            )
+                                .tag(NavBar.wishlist)
+                        }
                         
                         if let profile = session.userProfile,
                            let settings = session.userSettings {
