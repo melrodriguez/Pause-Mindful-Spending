@@ -3,6 +3,8 @@ import SwiftUI
 struct AdjustTimerSheetView: View {
     @Environment(\.dismiss) var dismiss
     @State private var input: String = ""
+    var onConfirm: (Int) -> Void = { _ in }
+    
     
     var days: String {
         input.count >= 3 ? String(input.prefix(input.count - 2)) : "00"
@@ -14,6 +16,13 @@ struct AdjustTimerSheetView: View {
         input.count >= 1 ? String(input.suffix(1)) : "00"
     }
     
+    var totalSeconds: Int {
+        let d = Int(days) ?? 0
+        let h = Int(hours) ?? 0
+        let m = Int(minutes) ?? 0
+        return (d*86400) + (h*3600) + (m*60)
+    }
+    
     let buttons: [[String]] = [
         ["1", "2", "3"],
         ["4", "5", "6"],
@@ -23,11 +32,7 @@ struct AdjustTimerSheetView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.mainGreen.opacity(0.8), Color.gray],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            LinearGradient.timerGradient.ignoresSafeArea()
             .ignoresSafeArea()
             
             VStack(spacing: 20) {
@@ -61,6 +66,7 @@ struct AdjustTimerSheetView: View {
                 }
                 
                 Button {
+                    onConfirm(totalSeconds)
                     dismiss()
                 } label: {
                     Text("Set Timer")
@@ -85,7 +91,7 @@ struct AdjustTimerSheetView: View {
             Text(value)
                 .font(.system(size: 20, weight: .medium))
                 .frame(width: 64, height: 64)
-                .background(Color.white.opacity(0.6))
+                .background(Color.mainPink)
                 .clipShape(Circle())
         }
         .foregroundColor(.primary)
@@ -103,7 +109,9 @@ struct AdjustTimerSheetView: View {
 }
 
 #Preview {
-    AdjustTimerSheetView()
+    AdjustTimerSheetView(onConfirm: { seconds in
+        print("Confirmed: \(seconds) seconds")
+    })
 }
 
 

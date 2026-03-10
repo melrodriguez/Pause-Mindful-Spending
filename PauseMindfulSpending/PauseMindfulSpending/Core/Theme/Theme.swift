@@ -15,6 +15,9 @@ enum AppColors {
     static let bg1 = Color("BG1") // #FFF9E5
     static let bg2 = Color("BG2") // #FFFCF2
     static let bg3 = Color("BG3") // #FFFFFF
+    
+    
+
 
     static var backgroundGradient: LinearGradient {
         LinearGradient(
@@ -24,6 +27,19 @@ enum AppColors {
                 .init(color: bg3, location: 1.00)
             ]),
             startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+}
+
+extension LinearGradient {
+    static var timerGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(stops: [
+                .init(color: AppColors.mainGreen, location: 0.00),
+                .init(color: AppColors.bg1, location: 1.00)
+            ])
+            , startPoint: .top,
             endPoint: .bottom
         )
     }
