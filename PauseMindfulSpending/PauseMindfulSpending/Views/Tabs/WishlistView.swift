@@ -63,11 +63,15 @@ struct WishlistView: View {
                                  textSize: 15
                     )
                 }
+                
+                Color.clear
+                    .frame(height: 70)
             }
             .onAppear {
                 viewModel.loadItems()
             }
         }
         .appBackground()
+        .toolbar(.hidden, for: .tabBar)
     }
 }

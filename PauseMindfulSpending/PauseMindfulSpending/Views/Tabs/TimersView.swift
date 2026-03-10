@@ -49,6 +49,9 @@ struct TimersView: View {
                               textSize: 20
                     )
                 }
+                
+                Color.clear
+                    .frame(height: 70)
             }
             .onAppear {
                 viewModel.startTimer()
@@ -56,5 +59,6 @@ struct TimersView: View {
             }
         }
         .appBackground()
+        .toolbar(.hidden, for: .tabBar)
     }
 }

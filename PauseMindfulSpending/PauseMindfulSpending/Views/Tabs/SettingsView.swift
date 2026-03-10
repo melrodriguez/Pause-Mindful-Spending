@@ -77,11 +77,12 @@ struct SettingsView: View {
                         )
                     }
                     
-                    Color.clear.frame(height: 60)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
                 .padding(.bottom, 32)
+                
+                Color.clear.frame(height: 60)
             }
         }
         .appBackground()
