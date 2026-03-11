@@ -1,9 +1,3 @@
-//
-//  TimerPause.swift
-//  PauseMindfulSpending
-//
-//  Created by Caballero, Isabella on 3/10/26.
-//
 import SwiftUI
 
 struct TimerPauseSheetView: View {

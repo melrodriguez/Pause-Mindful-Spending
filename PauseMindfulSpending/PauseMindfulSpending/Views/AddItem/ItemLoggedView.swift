@@ -1,10 +1,3 @@
-//
-//  ItemLoggedView.swift
-//  PauseMindfulSpending
-//
-//  Created by Caballero, Isabella on 3/10/26.
-//
-
 import SwiftUI
 import ConfettiSwiftUI
 

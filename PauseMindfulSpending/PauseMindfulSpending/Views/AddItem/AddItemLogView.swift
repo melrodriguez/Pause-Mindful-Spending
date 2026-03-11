@@ -18,23 +18,11 @@ struct AddItemLogView: View {
     
     @StateObject private var vm = AddItemLogViewModel()
     @Environment(\.dismiss) var dismiss
-    
-//    @State private var itemName: String = ""
-//    @State private var selectedCategory: String? = nil
+
     @State private var isCategoryExpanded: Bool = false
     @State private var selectedPhoto: PhotosPickerItem? = nil
-//    @State private var imageCaptured: UIImage? = nil
-//    @State private var selectedMood: String? = nil
-//    @State private var showTimerSheet: Bool = false
     @State private var showCamera: Bool = false
     @State private var permissionDenied: Bool = false
-//    @State private var note: String = ""
-//    @State private var price: String = ""
-//    @State private var showValidationAlert: Bool = false
-    
-//    var isValid: Bool {
-//        !itemName.isEmpty && selectedMood != nil && !price.isEmpty && selectedCategory != nil
-//    }
     
     private func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
