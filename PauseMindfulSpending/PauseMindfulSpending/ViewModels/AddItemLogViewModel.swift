@@ -11,6 +11,9 @@ import FirebaseAuth
 
 @MainActor
 class AddItemLogViewModel: ObservableObject {
+    
+    private let repo = DashboardRepository()
+    
     @Published var itemName: String = ""
     @Published var selectedCategory: String? = nil
     @Published var imageCaptured: UIImage? = nil
@@ -23,7 +26,7 @@ class AddItemLogViewModel: ObservableObject {
     @Published var showValidationAlert: Bool = false
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
-    @Published var testCategories: [String] = []
+    @Published var categories: [String] = []
     
     @Published var createdItemId: String? = nil
     @Published var createdTimerId: String? = nil
@@ -35,8 +38,10 @@ class AddItemLogViewModel: ObservableObject {
         !itemName.isEmpty && selectedMood != nil && !price.isEmpty && selectedCategory != nil
     }
     
-    func loadCategories() {
-        testCategories = ["Food", "Online Shopping", "Clothes"]
+    func loadCategories(uid: String) {
+        repo.fetchCategoryNames(uid: uid) { [weak self] categories in
+            self?.categories = categories
+        }
     }
     
     func pressedAddItemButton() {

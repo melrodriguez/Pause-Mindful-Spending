@@ -3,6 +3,9 @@ import PhotosUI
 import AVFoundation
 
 struct AddItemLogView: View {
+    
+    @EnvironmentObject var session: AppSessionViewModel
+    
     var moods : [(imageName: String, label: String)] = [
         ("ExcitedFace", "Excited"),
         ("HappyFace", "Happy"),
@@ -85,7 +88,7 @@ struct AddItemLogView: View {
                 
                 if isCategoryExpanded {
                     Divider()
-                    ForEach(testCategories, id: \.self) { category in
+                    ForEach(vm.categories, id: \.self) { category in
                         Button {
                             vm.selectedCategory = category
                             withAnimation(.easeInOut(duration: 0.2)) {
@@ -107,7 +110,6 @@ struct AddItemLogView: View {
         }
     }
     
-    let testCategories = ["Food", "Online Shopping", "Clothes"]
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             Divider()
@@ -216,7 +218,8 @@ struct AddItemLogView: View {
         .padding(.horizontal, 20)
         
         .onAppear() {
-            vm.loadCategories()
+            guard let uid = session.userProfile?.id else { return }
+            vm.loadCategories(uid: uid)
         }
         .navigationTitle("Add Item")
         .navigationBarTitleDisplayMode(.inline)
