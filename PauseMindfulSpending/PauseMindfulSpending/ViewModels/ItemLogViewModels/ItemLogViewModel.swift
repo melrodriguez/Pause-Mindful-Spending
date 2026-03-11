@@ -103,15 +103,15 @@ class ItemLogViewModel: ObservableObject {
         }
     }
     
+    func deleteItem(uid: String) {
+        firestoreService.deleteItem(uid: uid, itemId: item.id)
+    }
+    
     func pressedEditTimerButton() {
         print("pressed edit timer")
     }
     
     func pressedEditItemButton() {
         print("pressed edit item")
-    }
-    
-    func pressedDeleteItemButton() {
-        print("pressed delete item")
     }
 }
