@@ -1,3 +1,5 @@
+// WORK IN PROGRESS
+
 import SwiftUI
 
 struct CategoryCell: View {

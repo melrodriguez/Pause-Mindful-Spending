@@ -4,7 +4,7 @@ struct DeleteItemPopup: View {
 
     @Binding var showDeletePopup: Bool
     
-    // When you call this method, return to ItemLogView()
+    // When you call this method, return to TimerView
     var deleteItem: () -> Void
     
     var body: some View {

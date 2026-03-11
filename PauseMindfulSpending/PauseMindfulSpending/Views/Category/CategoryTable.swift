@@ -1,3 +1,5 @@
+// WORK IN PROGRESS
+
 import SwiftUI
 
 // Based off of WishlistGrid
@@ -8,9 +10,9 @@ struct CategoryTable: View {
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(items) { item in
-                CategoryCell(category: "Test")
-            }
+//            ForEach(items) { item in
+//                CategoryCell(category: "Test")
+//            }
         }
     }
 }

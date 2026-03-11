@@ -5,6 +5,7 @@ struct ItemLogView: View {
     // and go back to where we came from (either Timers View or Wishlist View)
     @Environment(\.dismiss) private var dismiss
     @State private var showDeletePopup = false
+    @State private var showEditItemLog = false
     
     let item: Item
     let uid: String
@@ -62,7 +63,7 @@ struct ItemLogView: View {
                                 .font(AppFonts.title)
                             
                             Button {
-                                viewModel.pressedEditItemButton()
+                                showEditItemLog = true
                             } label: {
                                 Image("Pencil")
                                     .resizable()
@@ -129,7 +130,6 @@ struct ItemLogView: View {
                                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                             )
                             .cornerRadius(5)
-                            
                     }
 
                     // timer
@@ -140,7 +140,7 @@ struct ItemLogView: View {
                     HStack(spacing: 16) {
 
                         Button(action: {
-                            viewModel.pressedEditTimerButton()
+                            print("pressed edit timer - future release")
                         }) {
                             Text("Edit Timer")
                                 .frame(maxWidth: .infinity)
@@ -192,6 +192,19 @@ struct ItemLogView: View {
                 }
                 
             }
+            
+            if (showEditItemLog) {
+                EditItemLogView(
+                    item: item,
+                    showEditItemLog: $showEditItemLog,
+                    vm: viewModel,
+                    editItem: {
+                        viewModel.updateItem(uid: uid)
+                        showEditItemLog = false
+                        print("ItemLogView -> Pressed edit item")
+                    }
+                )
+            }
         }
     }
 }
@@ -202,7 +215,8 @@ struct ItemLogView: View {
     }
 }
 
-// image + gradient
+// image + gradient functionality
+
 //Image("MiffySweater")
 //    .resizable()
 //    .scaledToFill()

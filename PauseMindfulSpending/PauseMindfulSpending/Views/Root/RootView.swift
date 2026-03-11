@@ -66,9 +66,9 @@ struct RootView: View {
                         .padding(.horizontal, 20)
                     }
                 }
-//                .navigationDestination(isPresented: $showAddItem) {
-//                    AddItemLogView()
-//                }
+                .navigationDestination(isPresented: $showAddItem) {
+                    AddItemLogView()
+                }
             }
         }
     }

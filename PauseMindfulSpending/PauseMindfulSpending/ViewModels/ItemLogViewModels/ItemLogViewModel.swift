@@ -1,7 +1,11 @@
 import SwiftUI
 import FirebaseFirestore
 
+// Handles navigation and logic for ItemLogView and EditItemLogView
+
 class ItemLogViewModel: ObservableObject {
+    // Reusing components
+    private let repo = DashboardRepository()
     
     let item: Item
     
@@ -13,6 +17,8 @@ class ItemLogViewModel: ObservableObject {
     @Published var mood: String = ""
     @Published var imageUrl: String? // does nothing for now
     @Published var categoryName: String = "No category"
+    @Published var categoryId: String?
+    @Published var categories: [String] = []
     
     @Published var timerId: String?
     @Published var timerEndDate: Date?
@@ -46,13 +52,19 @@ class ItemLogViewModel: ObservableObject {
         return "\(days)d \(hours)hr \(minutes)min"
     }
     
+    func loadCategories(uid: String) {
+        repo.fetchCategoryNames(uid: uid) { [weak self] categories in
+            self?.categories = categories
+        }
+    }
+    
     func loadItem(uid: String) {
         firestoreService.fetchItem(uid: uid, itemId: item.id) { data in
             
             guard let data = data else { return }
             
             let name = data["name"] as? String ?? "My Item"
-            let cost = data["cost"] as? Double
+            let cost = data["cost"] as? Double ?? 0
             let currencyCode = data["currencyCode"] as? String ?? "USD"
             let notes = data["note"] as? String ?? ""
             let mood = data["mood"] as? String ?? ""
@@ -72,6 +84,7 @@ class ItemLogViewModel: ObservableObject {
                 self.notes = notes
                 self.mood = mood
                 self.imageUrl = imageUrl
+                self.categoryId = categoryId
                 self.createdAt = createdAt
                 self.timerId = timerId
             }
@@ -107,11 +120,33 @@ class ItemLogViewModel: ObservableObject {
         firestoreService.deleteItem(uid: uid, itemId: item.id)
     }
     
-    func pressedEditTimerButton() {
-        print("pressed edit timer")
+    // Mood and category never gets deselected
+    // -> Only required fields are name and cost
+    func updateIsValid(name: String, cost: Double) -> Bool {
+        return (name.isEmpty || cost == 0) ? false : true
     }
     
-    func pressedEditItemButton() {
-        print("pressed edit item")
+    // TODO: needs imageUrl logic
+    func updateItem(uid: String) {
+        // Add photos stuff later
+        var fieldsToUpdate: [String: Any] = [
+            "name": name,
+            "cost": cost!,
+            "currencyCode": currencyCode,
+            "note": notes,
+            "mood": mood
+        ]
+        
+        // TODO later: fix category grabbing logic..
+        if let categoryId {
+            fieldsToUpdate["categoryId"] = categoryId
+        }
+        
+        firestoreService.updateItem(
+            uid: uid,
+            itemId: item.id,
+            fieldsToUpdate: fieldsToUpdate
+        )
     }
+    
 }

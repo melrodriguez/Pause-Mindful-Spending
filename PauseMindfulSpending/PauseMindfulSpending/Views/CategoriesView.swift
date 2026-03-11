@@ -1,3 +1,5 @@
+// WORK IN PROGRESS
+
 import SwiftUI
 
 struct CategoriesView: View {
@@ -15,34 +17,33 @@ struct CategoriesView: View {
                 
                 AppHeader(title: "Edit Categories")
                 ScrollView {
-                    
-                    switch session.userSettings?.wishlistLayout {
-                    // TODO: Make this less hardcoded
-                    case .grid:
-                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
-                            GridItem(.fixed(120), spacing: 8),
-                            GridItem(.fixed(120), spacing: 8),
-                            GridItem(.fixed(120), spacing: 8)],
-                                     textSize: 15
-                        )
-                    case .single:
-                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
-                            GridItem(.fixed(350), spacing: 8)],
-                                     textSize: 30
-                        )
-                    case .none:
-                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
-                            GridItem(.fixed(120), spacing: 8),
-                            GridItem(.fixed(120), spacing: 8),
-                            GridItem(.fixed(120), spacing: 8)],
-                                     textSize: 15
-                        )
-                    }
-                    Color.clear
-                        .frame(height: 70)
+//                    
+//                    switch session.userSettings?.wishlistLayout {
+//                    case .grid:
+//                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
+//                            GridItem(.fixed(120), spacing: 8),
+//                            GridItem(.fixed(120), spacing: 8),
+//                            GridItem(.fixed(120), spacing: 8)],
+//                                     textSize: 15
+//                        )
+//                    case .single:
+//                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
+//                            GridItem(.fixed(350), spacing: 8)],
+//                                     textSize: 30
+//                        )
+//                    case .none:
+//                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
+//                            GridItem(.fixed(120), spacing: 8),
+//                            GridItem(.fixed(120), spacing: 8),
+//                            GridItem(.fixed(120), spacing: 8)],
+//                                     textSize: 15
+//                        )
+//                    }
+//                    Color.clear
+//                        .frame(height: 70)
                 }
                 .onAppear {
-                    viewModel.loadItems()
+                    // viewModel.loadItems()
                 }
             }
             .appBackground()
@@ -52,7 +53,7 @@ struct CategoriesView: View {
 }
 
 #Preview {
-    CategoriesView(viewModel: <#T##WishlistViewModel#>)
+    // CategoriesView(viewModel: <#T##WishlistViewModel#>)
 }
 
 
