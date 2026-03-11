@@ -75,7 +75,7 @@ class UserManager {
         }
     }
     
-    func logout(email: String, password: String) {
+    func logout() {
         // Sign out of existing account, if there are any failures will print out an
         // error for debugging purposes
         
@@ -87,5 +87,18 @@ class UserManager {
         }
     }
     
+    
+    func addAuthStateListener(completion: @escaping (String?) -> Void) {
+        // Waiting for the user to log in
+        
+        // warning here to fix: Result of call to 'addStateDidChangeListener' is unused
+        Auth.auth().addStateDidChangeListener { _, user in
+            completion(user?.uid)
+        }
+    }
+    
+    func getCurrentUserId() -> String? {
+        return Auth.auth().currentUser?.uid
+    }
     
 }

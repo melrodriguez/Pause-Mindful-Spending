@@ -8,7 +8,7 @@ struct RootView: View {
     
     var body: some View {
         if session.isLoading {
-            // TODO - LoadingScreen()
+            LoadingView()
         } else {
             NavigationStack {
                 ZStack {
@@ -68,11 +68,6 @@ struct RootView: View {
                 }
                 .navigationDestination(isPresented: $showAddItem) {
                     AddItemLogView()
-                }
-                .onAppear {
-                    if session.userProfile == nil || session.userSettings == nil {
-                        session.loadSessionData()
-                    }
                 }
             }
         }

@@ -77,6 +77,10 @@ struct SettingsView: View {
                         )
                     }
                     
+                    Button("Logout") {
+                        session.logout()
+                    }
+                    
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
