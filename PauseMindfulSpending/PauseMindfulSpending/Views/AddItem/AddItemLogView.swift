@@ -23,6 +23,9 @@ struct AddItemLogView: View {
     @State private var selectedPhoto: PhotosPickerItem? = nil
     @State private var showCamera: Bool = false
     @State private var permissionDenied: Bool = false
+    @State private var timerWasShown: Bool = false
+    
+    var itemLogged: () -> Void = { }
     
     private func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -216,6 +219,7 @@ struct AddItemLogView: View {
             TimerPauseSheetView(onSetTimer: { seconds in
                 vm.createItem(durationSeconds: seconds)
                 vm.showTimerSheet = false
+                itemLogged()
                 dismiss()
             }).presentationDetents([.fraction(0.65)]).presentationDragIndicator(.visible).presentationCornerRadius(24)
         }
