@@ -11,10 +11,6 @@ struct RootView: View {
             LoadingView()
         } else {
             NavigationStack {
-                // remove me if you want
-                Button("Logout (dev debugging mode)") {
-                    session.logout()
-                }
                 ZStack {
                     TabView(selection: $selectedTab) {
                         HomeView()
