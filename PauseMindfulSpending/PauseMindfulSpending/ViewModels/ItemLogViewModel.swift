@@ -54,7 +54,7 @@ class ItemLogViewModel: ObservableObject {
             let name = data["name"] as? String ?? "My Item"
             let cost = data["cost"] as? Double
             let currencyCode = data["currencyCode"] as? String ?? "USD"
-            let notes = data["notes"] as? String ?? ""
+            let notes = data["note"] as? String ?? ""
             let mood = data["mood"] as? String ?? ""
             let imageUrl = data["imageUrl"] as? String
             let categoryId = data["categoryId"] as? String

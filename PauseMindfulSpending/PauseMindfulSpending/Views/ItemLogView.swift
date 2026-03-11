@@ -45,7 +45,6 @@ struct ItemLogView: View {
     }
     
     var body: some View {
-        AppHeader(title: "")
         ScrollView {
             
             VStack(spacing: 20) {
