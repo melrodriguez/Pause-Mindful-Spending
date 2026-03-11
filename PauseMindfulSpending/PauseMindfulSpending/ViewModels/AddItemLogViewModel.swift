@@ -60,11 +60,7 @@ class AddItemLogViewModel: ObservableObject {
         selectedMood = selectedMood == mood ? nil : mood
     }
     
-    func createItem(durationSeconds: Int) {
-        self.itemLoggedSuccessfully = true
-    }
-    
-    func createItem2(durationSeconds: Int) {
+    func createItemx(durationSeconds: Int) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         guard let priceDouble = Double(price) else { return }
         
