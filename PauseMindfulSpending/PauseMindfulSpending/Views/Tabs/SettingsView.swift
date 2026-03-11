@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     
     @StateObject private var viewModel: SettingsViewModel
+    @EnvironmentObject var session: AppSessionViewModel
     
     init(viewModel: SettingsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -28,10 +29,10 @@ struct SettingsView: View {
                     SettingsSectionView(title: "Preferences") {
                         SettingsToggleRow(
                             title: "Haptics",
-                            systemImage: "speaker.wave.2",
+                            systemImage: "iphone.radiowaves.left.and.right",
                             isOn: Binding(
-                                get: { viewModel.hapticsEnabled },
-                                set: { viewModel.updateHaptics($0) }
+                                get: { session.userSettings?.isHapticsEnabled ?? false },
+                                set: { session.updateHaptics($0) }
                             )
                         )
                         
@@ -41,8 +42,8 @@ struct SettingsView: View {
                             title: "Night mode",
                             systemImage: "moon",
                             isOn: Binding(
-                                get: { viewModel.nightMode },
-                                set: { viewModel.updateNightMode($0) }
+                                get: { session.userSettings?.isNightMode ?? false },
+                                set: { session.updateNightMode($0) }
                             )
                         )
                         
@@ -52,8 +53,10 @@ struct SettingsView: View {
                             title: "Wishlist single card view",
                             systemImage: "rectangle.grid.1x2",
                             isOn: Binding(
-                                get: { viewModel.singleCardView },
-                                set: { viewModel.updateWishlistLayout(singleCard: $0) }
+                                get: { session.userSettings?.wishlistLayout == .single },
+                                set: { isSingle in
+                                    session.updateWishlistLayout(isSingle ? .single : .grid)
+                                }
                             )
                         )
                     }
@@ -74,11 +77,16 @@ struct SettingsView: View {
                         )
                     }
                     
-                    Color.clear.frame(height: 60)
+                    Button("Logout") {
+                        session.logout()
+                    }
+                    
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
                 .padding(.bottom, 32)
+                
+                Color.clear.frame(height: 60)
             }
         }
         .appBackground()

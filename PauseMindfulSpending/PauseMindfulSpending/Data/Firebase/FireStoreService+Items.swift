@@ -18,7 +18,7 @@ extension FireStoreService {
         updatedData["status"] = "wishlist"
         updatedData["lastUpdatedAt"] = FieldValue.serverTimestamp()
         
-        guard let amount = updatedData["cost"] as? Double else {
+        guard let _ = updatedData["cost"] as? Double else {
             // Misisng cost
             completion(nil)
             return
@@ -53,7 +53,7 @@ extension FireStoreService {
                             dataToReturn["itemId"] = itemId
                             
                             self.createEvent(uid: uid, type: "item_created", itemId: itemId) { eventId in
-                                guard let eventId = eventId else {
+                                guard let _ = eventId else {
                                     // Failed to make event
                                     completion(nil)
                                     return
@@ -77,7 +77,7 @@ extension FireStoreService {
                         dataToReturn["itemId"] = itemId
                         
                         self.createEvent(uid: uid, type: "item_created", itemId: itemId) { eventId in
-                            guard let eventId = eventId else {
+                            guard let _ = eventId else {
                                 // Failed to make event
                                 completion(nil)
                                 return
@@ -131,20 +131,30 @@ extension FireStoreService {
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
             guard
                 let itemData = itemData,
-                let timerId = itemData["timerId"] as? String
+                let timerId = itemData["timerId"] as? String,
+                let itemName = itemData["name"] as? String
             else {
                 completion(nil)
                 return
             }
             
             let categoryId = itemData["categoryId"] as? String
+            let photoUrl = itemData["photoUrl"] as? String
             
-            let dataToReturn: [String: Any] = [
+            var dataToReturn: [String: Any] = [
                 "itemId": itemId,
                 "timerId": timerId,
-                "categoryId": categoryId
+                "name": itemName
             ]
-                
+
+            if let categoryId = categoryId {
+                dataToReturn["categoryId"] = categoryId
+            }
+            
+            if let photoUrl = photoUrl {
+                dataToReturn["imageUrl"] = photoUrl
+            }
+
             completion(dataToReturn)
         }
     }
@@ -182,7 +192,7 @@ extension FireStoreService {
         var updatedData = fieldsToUpdate
         updatedData["lastUpdatedAt"] = FieldValue.serverTimestamp()
         
-        if let categoryId = fieldsToUpdate["categoryId"] as? String {
+        if let _ = fieldsToUpdate["categoryId"] as? String {
             self.createEvent(uid: uid, type: "update_item_category", itemId: itemId) { eventId in }
         }
         
@@ -200,7 +210,7 @@ extension FireStoreService {
             guard
                 let itemData = itemData,
                 let timerId = itemData["timerId"] as? String,
-                let amount = itemData["cost"] as? Double
+                let _ = itemData["cost"] as? Double
             else {
                 return
             }
@@ -263,8 +273,7 @@ extension FireStoreService {
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
             guard
                 let itemData = itemData,
-                let timerId = itemData["timerId"] as? String,
-                let amount = itemData["cost"] as? Double
+                let timerId = itemData["timerId"] as? String
             else {
                 return
             }
@@ -291,8 +300,7 @@ extension FireStoreService {
         self.fetchItem(uid: uid, itemId: itemId) { itemData in
             guard
                 let itemData = itemData,
-                let timerId = itemData["timerId"] as? String,
-                let amount = itemData["cost"] as? Double
+                let timerId = itemData["timerId"] as? String
             else {
                 return
             }

@@ -6,21 +6,43 @@ final class AppSessionViewModel: ObservableObject {
     @Published var userProfile: UserProfile?
     @Published var userSettings: UserSettings?
     @Published var isLoading = false
+    @Published var isAuthenticated = false
     
     private let firestoreService = FireStoreService()
+    private let userManager = UserManager()
     
-    var currentUID: String {
-        // temp - hardcode user for testing
-        Auth.auth().currentUser?.uid ?? "KldBIFHuI45un0BgIet2"
+    init() {
+        listenToAuthState()
+    }
+
+    private func listenToAuthState() {
+        userManager.addAuthStateListener { [weak self] uid in
+            guard let self = self else { return }
+
+            DispatchQueue.main.async {
+                if let uid = uid {
+                    self.isAuthenticated = true
+                    self.loadSessionData(uid: uid)
+                } else {
+                    self.isAuthenticated = false
+                    self.userProfile = nil
+                    self.userSettings = nil
+                }
+            }
+        }
+    }
+
+    func logout() {
+        userManager.logout()
     }
     
-    func loadSessionData() {
-        guard !currentUID.isEmpty else { return }
+    func loadSessionData(uid: String) {
+        guard !uid.isEmpty else { return }
         guard !isLoading else { return }
         
         isLoading = true
         
-        firestoreService.fetchUser(uid: currentUID) { [weak self] data in
+        firestoreService.fetchUser(uid: uid) { [weak self] data in
             guard let self = self else { return }
             
             guard let data = data else {
@@ -30,8 +52,9 @@ final class AppSessionViewModel: ObservableObject {
                 return
             }
             
-            let profile = UserProfile(id: self.currentUID, data: data)
-            
+            let profile = UserProfile(id: uid, data: data)
+            // print(uid)
+            // print(data)
             DispatchQueue.main.async {
                 self.userProfile = profile
             }
@@ -46,7 +69,7 @@ final class AppSessionViewModel: ObservableObject {
             
             self.firestoreService.fetchDocumentFromSubcollection(
                 parentCollection: "users",
-                parentId: self.currentUID,
+                parentId: uid,
                 subCollection: "settings",
                 subId: settingsId
             ) { settingsData in
@@ -61,5 +84,76 @@ final class AppSessionViewModel: ObservableObject {
                 }
             }
         }
+    }
+    
+    func updateNightMode(_ value: Bool) {
+        guard var settings = userSettings else { return }
+        
+        settings.isNightMode = value
+        userSettings = settings
+        
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
+            return
+        }
+        
+        firestoreService.updateSettings(
+            uid: uid,
+            settingId: settings.id,
+            fieldsToUpdate: [
+                "isNightMode": value,
+                "updatedAt": FieldValue.serverTimestamp()
+            ]
+        )
+    }
+    
+    func updateHaptics(_ value: Bool) {
+        guard var settings = userSettings else { return }
+
+        settings.isHapticsEnabled = value
+        userSettings = settings
+        
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
+            return
+        }
+
+        firestoreService.updateSettings(
+            uid: uid,
+            settingId: settings.id,
+            fieldsToUpdate: [
+                "isHapticsEnabled": value,
+                "updatedAt": FieldValue.serverTimestamp()
+            ]
+        )
+    }
+    
+    func updateWishlistLayout(_ value: WishlistLayout) {
+        guard var settings = userSettings else { return }
+        
+        settings.wishlistLayout = value
+        userSettings = settings
+        
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
+            return
+        }
+
+        firestoreService.updateSettings(
+            uid: uid,
+            settingId: settings.id,
+            fieldsToUpdate: [
+                "wishlistLayout": value.rawValue,
+                "updatedAt": FieldValue.serverTimestamp()
+            ]
+        )
+    }
+    
+    func triggerHaptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
+        guard userSettings?.isHapticsEnabled == true else { return }
+        
+        let generator = UIImpactFeedbackGenerator(style: style)
+        generator.prepare()
+        generator.impactOccurred()
     }
 }

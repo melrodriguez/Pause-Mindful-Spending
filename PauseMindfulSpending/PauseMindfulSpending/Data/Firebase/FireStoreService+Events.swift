@@ -27,7 +27,7 @@ extension FireStoreService {
         itemId: String,
         completion: @escaping (String?) -> Void)
     {
-        var data: [String: Any] = [
+        let data: [String: Any] = [
             "type": type,
             "itemId": itemId,
             "createdAt": FieldValue.serverTimestamp()
