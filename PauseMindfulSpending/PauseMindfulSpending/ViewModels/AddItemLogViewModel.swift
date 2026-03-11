@@ -60,7 +60,7 @@ class AddItemLogViewModel: ObservableObject {
         selectedMood = selectedMood == mood ? nil : mood
     }
     
-    func createItemx(durationSeconds: Int) {
+    func createItem(durationSeconds: Int) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         guard let priceDouble = Double(price) else { return }
         
@@ -68,7 +68,7 @@ class AddItemLogViewModel: ObservableObject {
         
         let newItem: [String: Any] = [
             "name" : itemName,
-            "cost" : price,
+            "cost" : priceDouble,
             "mood" : selectedMood ?? "",
             "note" : note,
             "imageURL" : ""

@@ -249,6 +249,10 @@ struct AddItemLogView: View {
         } message: {
             Text("Please fill in your item name, category, price, and mood before proceeding.")
         }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 }
 
