@@ -32,6 +32,19 @@ enum AppColors {
     }
 }
 
+extension LinearGradient {
+    static var timerGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(stops: [
+                .init(color: AppColors.mainGreen, location: 0.00),
+                .init(color: AppColors.bg1, location: 1.00)
+            ])
+            , startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+}
+
 // MARK: - Fonts (Inter)
 enum AppFonts {
 
