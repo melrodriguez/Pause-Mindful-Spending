@@ -31,5 +31,5 @@ struct CategoryCell: View {
 }
 
 #Preview {
-    CategoryCell(category: "Instagram Finds")
+    // CategoryCell(category: "Instagram Finds")
 }
