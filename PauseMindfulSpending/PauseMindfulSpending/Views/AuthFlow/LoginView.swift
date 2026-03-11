@@ -2,71 +2,79 @@ import SwiftUI
 
 struct LoginView: View {
     
-    @Binding var showCreateAccount: Bool // flip between LoginView and CreateAccountView
+    @Binding var showCreateAccount: Bool
     @StateObject var viewModel = LoginViewModel()
+    @State private var showPassword: Bool = false
 
     var body: some View {
         
-        VStack(spacing: AppLayout.horizontalScreenPadding) {
+        VStack(spacing: 0) {
+            
+            // Header
             Spacer()
             
-            VStack(spacing: 10) {
-                  
-                VStack(spacing: 5){
-                    Image("AppLogo")
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                    
-                    Text("Welcome to Pause: Mindful Spending")
-                        .font(AppFonts.title)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-            
-                    Text("Log in to continue building mindful spending habits and making intentional choices.")
-                        .font(AppFonts.caption)
-                        .foregroundColor(.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                                
-                VStack(spacing: 5) {
-                    
-                    Text("Email")
-                        .font(AppFonts.caption)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    TextField("Enter your email", text: $viewModel.email)
-                        .font(AppFonts.subhead)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .textInputAutocapitalization(.never)
-                    
-                }
+            HStack(spacing: 12) {
+                Image("AppLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 64, height: 64)
                 
-                VStack(spacing: 5) {
-                    Text("Password")
-                        .font(AppFonts.caption)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    SecureField("Enter your password", text: $viewModel.password)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Pause")
+                        .font(Font.custom("Inter18pt-Bold", size: 32))
+                    Text("for mindful spending")
                         .font(AppFonts.subhead)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        // Turn off autocaps and autofill
-                        .textContentType(.oneTimeCode)
-                        .autocorrectionDisabled(true)
-                        .textInputAutocapitalization(.never)
+                        .italic()
+                        .foregroundColor(AppColors.textSecondary)
                 }
-                
             }
             
             Spacer()
-                    
-            Text(viewModel.statusMessage)
-                .font(AppFonts.caption)
-                .frame(maxWidth: .infinity, alignment: .leading)
             
-            VStack(spacing: 7) {
+            // Login form and fields
+            VStack(spacing: 12) {
+                
+                TextField("Enter your email", text: $viewModel.email)
+                    .font(AppFonts.subhead)
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.systemGray4), lineWidth: 1))
+                    .textInputAutocapitalization(.never)
+                
+                ZStack(alignment: .trailing) {
+                    Group {
+                        if showPassword {
+                            TextField("Enter your password", text: $viewModel.password)
+                        } else {
+                            SecureField("Enter your password", text: $viewModel.password)
+                        }
+                    }
+                    .font(AppFonts.subhead)
+                    .padding()
+                    .padding(.trailing, 44)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.systemGray4), lineWidth: 1))
+                    .textContentType(.oneTimeCode)
+                    .autocorrectionDisabled(true)
+                    .textInputAutocapitalization(.never)
+                    
+                    Button(action: { showPassword.toggle() }) {
+                        Image(systemName: showPassword ? "eye.slash" : "eye")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.trailing, 14)
+                }
+                
+                if !viewModel.statusMessage.isEmpty {
+                    Text(viewModel.statusMessage)
+                        .font(AppFonts.caption)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                
                 Button(action: {
-                    // print("pressed login")
                     viewModel.pressedLoginButton()
                 }) {
                     Text("Login")
@@ -75,33 +83,46 @@ struct LoginView: View {
                         .font(AppFonts.subhead)
                         .background(AppColors.mainGreen)
                         .foregroundColor(.black)
-                        .cornerRadius(15)
+                        .cornerRadius(25)
                 }
                 
-                HStack(alignment: .center) {
-                    Text("Haven't registered yet?")
-                        .font(AppFonts.caption)
-                        .foregroundColor(AppColors.textSecondary)
-                    Button(action: { // Navigate to CreateAccountView
-                        // print("pressed register button")
-                        showCreateAccount = true
-                    }) {
-                        Text("Register")
-                            .font(AppFonts.caption)
-                    }
+                Button("Forgot Password?") {
+                    // TODO - handle forgot password
+                }
+                .font(AppFonts.caption)
+                .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, AppLayout.horizontalScreenPadding)
+            
+            Spacer()
+            Spacer()
+            
+            // Create account button
+            VStack(spacing: 7) {
+                Button(action: {
+                    showCreateAccount = true
+                }) {
+                    Text("Create new account")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .font(AppFonts.subhead)
+                        .foregroundColor(AppColors.mainGreen)
+                        .overlay(RoundedRectangle(cornerRadius: 25).stroke(AppColors.mainGreen, lineWidth: 2))
+                        .cornerRadius(25)
                 }
             }
-            
+            .padding(.horizontal, AppLayout.horizontalScreenPadding)
+            .padding(.bottom, AppLayout.horizontalScreenPadding)
         }
         .contentShape(Rectangle())
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
-        .padding(AppLayout.horizontalScreenPadding)
         .appBackground()
+        .ignoresSafeArea(.keyboard)
     }
 }
 
-//#Preview {
-//    LoginView()
-//}
+#Preview {
+    LoginView(showCreateAccount: .constant(false))
+}
