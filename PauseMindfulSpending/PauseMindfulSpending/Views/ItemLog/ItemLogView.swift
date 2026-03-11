@@ -29,23 +29,53 @@ struct ItemLogView: View {
         ("StressedFace", "Stressed")
     ]
     
-    private func moodButtonView(mood: (imageName: String, label: String)) -> some View {
-        VStack(spacing: 4) {
-            Image(mood.imageName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 38, height: 38)
-                .background(
-                    Circle().fill(
-                        viewModel.mood == mood.imageName
-                        ? Color.mainGreen
-                        : Color(.systemGray4)
-                    )
-                )
+    // I turned moodButton from AddItemLog into a view and spaced out the attributes
+    // This can be made into a reusable component in the future
+    struct MoodFaceView: View {
+        let mood: (imageName: String, label: String)
+        let selectedMood: String
 
-            Text(mood.label)
-                .font(.system(size: 10))
-                .foregroundColor(.primary)
+        var body: some View {
+            VStack(spacing: 4) {
+                Image(mood.imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 38, height: 38)
+                    .background(
+                        Circle()
+                            .fill(selectedMood == mood.imageName ?
+                                  AppColors.mainGreen : AppColors.textSecondary)
+                    )
+
+                Text(mood.label)
+                    .font(.system(size: 10))
+                    .foregroundColor(.primary)
+            }
+        }
+    }
+    
+    // Same here; just views instead of buttons
+    private func moodDisplayView() -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("How I felt when I logged this item")
+                .font(AppFonts.subhead)
+
+            HStack(spacing: 8) {
+                ForEach(moods, id: \.imageName) { mood in
+                    MoodFaceView(
+                        mood: mood,
+                        selectedMood: viewModel.mood
+                    )
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemGray6).opacity(0.8))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            )
         }
     }
     
@@ -95,22 +125,8 @@ struct ItemLogView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
                     // mood selector
-                    VStack(alignment: .leading) {
-                        Text("How I felt when I logged this item")
-                            .font(AppFonts.caption)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                        HStack(spacing: 8) {
-                            ForEach(moods, id: \.imageName) { mood in
-                                moodButtonView(mood: mood)
-                            }
-                        }
-                        .padding(12)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(.systemGray6).opacity(0.8))
-                        .cornerRadius(12)
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))
-                    }
+                    // Similar to that in AddItemLogView
+                    moodDisplayView()
                     
                     // description
                     VStack(alignment: .leading, spacing: 8) {
@@ -166,6 +182,7 @@ struct ItemLogView: View {
                 }
                 .padding()
             }
+            
             .appBackground()
             // Only show back button when not on the pop up
             .toolbar(showDeletePopup ? .hidden : .visible, for: .navigationBar)
