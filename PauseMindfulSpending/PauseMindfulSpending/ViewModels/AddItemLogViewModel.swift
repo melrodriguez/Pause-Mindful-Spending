@@ -28,7 +28,7 @@ class AddItemLogViewModel: ObservableObject {
     private let firestoreService = FireStoreService()
     
     var isValid: Bool {
-        !itemName.isEmpty && selectedMood != nil && !price.isEmpty && selectedCategory != nil
+        !itemName.isEmpty && selectedMood != nil && !price.isEmpty
     }
     
     func loadCategories(uid: String) {
