@@ -88,7 +88,7 @@ struct EditItemLogView: View {
                     }
                 } label: {
                     HStack {
-                        Text(vm.categoryName)
+                        Text(vm.categoryName ?? "")
                             .foregroundColor(.gray)
                         Spacer()
                         Image(systemName: isCategoryExpanded ? "chevron.up" : "chevron.down").foregroundColor(.gray) // fix
@@ -154,6 +154,7 @@ struct EditItemLogView: View {
     }
     
     // Does nothing for now
+    // Also took out some alerts/popups from AddItemLog
     private func photoSection() -> some View {
         // Photo gallery and camera section
         VStack(alignment: .leading, spacing: 10) {
@@ -180,27 +181,7 @@ struct EditItemLogView: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-//                .onChange(of: selectedPhoto) {
-//                    Task {
-//                        if let data = try? await selectedPhoto?.loadTransferable(type: Data.self), let image = UIImage(data: data) {
-//                            vm.imageCaptured = image
-//                        }
-//                    }
-//                }
             }
-//            if let imageCaptured = vm.imageCaptured {
-//                Image(uiImage: imageCaptured)
-//                    .resizable()
-//                    .scaledToFit()
-//                    .frame(maxHeight: 200)
-//                    .cornerRadius(8)
-//                
-//                Button("Remove Photo") {
-//                    vm.removeImage()
-//                }
-//                .foregroundColor(.red)
-//                .font(.system(size: 12))
-//            }
         }
     }
     
@@ -289,31 +270,7 @@ struct EditItemLogView: View {
         .navigationBarTitleDisplayMode(.inline)
         .appBackground()
         
-        
-        // Camera
-//        .sheet(isPresented: $showCamera) {
-//            CameraView(capturedImage: $vm.imageCaptured, isPresented: $showCamera)
-//        }
-        
-        // Error handling
-        
-//        .alert("Camera Access Denied", isPresented: $permissionDenied) {
-//            Button("Open Settings") {
-//                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
-//            }
-//            Button("Cancel", role: .cancel) {
-//            }
-//        } message: {
-//            Text("Please enable camera access in Settings to take a photo")
-//        }
-            
-        // Moved validation alert upward ^
-        
-//        .contentShape(Rectangle())
-//        .onTapGesture {
-//            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-//        }
-//        
+        // Insert camera alert/popup handling here
     }
 }
 

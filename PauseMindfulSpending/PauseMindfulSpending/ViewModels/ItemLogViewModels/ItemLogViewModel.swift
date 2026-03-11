@@ -16,7 +16,7 @@ class ItemLogViewModel: ObservableObject {
     @Published var notes: String = ""
     @Published var mood: String = ""
     @Published var imageUrl: String? // does nothing for now
-    @Published var categoryName: String = "No category"
+    @Published var categoryName: String?
     @Published var categoryId: String?
     @Published var categories: [String] = []
     
@@ -95,7 +95,7 @@ class ItemLogViewModel: ObservableObject {
                     guard let categoryData = categoryData else { return }
                     
                     DispatchQueue.main.async {
-                        self.categoryName = categoryData["name"] as? String ?? ""
+                        self.categoryName = categoryData["name"] as? String
                     }
                 }
             }

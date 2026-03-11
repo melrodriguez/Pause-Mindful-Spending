@@ -108,7 +108,7 @@ struct ItemLogView: View {
                             .font(AppFonts.subhead)
                         
                         // item category
-                        Text(viewModel.categoryName)
+                        Text(viewModel.categoryName ?? "")
                             .font(AppFonts.caption)
                             .foregroundStyle(.textPrimary)
                             .padding(.horizontal, 10)
@@ -231,24 +231,3 @@ struct ItemLogView: View {
         // ItemLogView()
     }
 }
-
-// image + gradient functionality
-
-//Image("MiffySweater")
-//    .resizable()
-//    .scaledToFill()
-//    .frame(height: 400)
-//    .clipped()
-//
-//LinearGradient(
-//    gradient: Gradient(colors: [
-//        Color.clear,
-//        AppColors.bg1
-//    ]),
-//    startPoint: .top,
-//    endPoint: .bottom
-//)
-//// Push the gradient down to the bottom
-//.frame(height: 120)
-//.frame(maxHeight: .infinity, alignment: .bottom)
-
