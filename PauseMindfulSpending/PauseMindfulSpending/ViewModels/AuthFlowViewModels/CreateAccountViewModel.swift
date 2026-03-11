@@ -29,6 +29,11 @@ class CreateAccountViewModel: ObservableObject {
             return
         }
         
+        guard password.count >= 6 else {
+            statusMessage = "Password must be at least 6 characters."
+            return
+        }
+        
         guard !passwordConfirmation.isEmpty else {
             statusMessage = "Please confirm your password.\n"
             return
@@ -58,7 +63,7 @@ class CreateAccountViewModel: ObservableObject {
                     self.statusMessage = "Account could not be created. Try again.\n"
                 }
                 
-                self.statusMessage = "Success! Logging in...\n"
+                self.statusMessage = "Success! You can now log in with your account.\n"
             }
         }
     }

@@ -6,6 +6,8 @@ class LoginViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var statusMessage: String = ""
         
+    private let userManager = UserManager()
+    
     func pressedLoginButton() {
         
         // Input validation
@@ -20,16 +22,15 @@ class LoginViewModel: ObservableObject {
         }
         
         // Try to login
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+        userManager.login(email: email, password: password) { [weak self] uid in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 
-                if let error = error {
-                    self.statusMessage = error.localizedDescription
-                    return
+                if uid != nil {
+                    self.statusMessage = "Success! Logging in..."
+                } else {
+                    self.statusMessage = "Login failed. Please try again."
                 }
-                
-                self.statusMessage = "Success! Logging in..."
             }
         }
     }

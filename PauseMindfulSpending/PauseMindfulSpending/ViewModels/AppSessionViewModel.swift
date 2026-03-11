@@ -9,20 +9,20 @@ final class AppSessionViewModel: ObservableObject {
     @Published var isAuthenticated = false
     
     private let firestoreService = FireStoreService()
+    private let userManager = UserManager()
     
     init() {
         listenToAuthState()
     }
-        
-    // This listener waits for user to be authenticated (logged in)
+
     private func listenToAuthState() {
-        Auth.auth().addStateDidChangeListener { [weak self] _, user in
+        userManager.addAuthStateListener { [weak self] uid in
             guard let self = self else { return }
-            
+
             DispatchQueue.main.async {
-                if let user = user {
+                if let uid = uid {
                     self.isAuthenticated = true
-                    self.loadSessionData(uid: user.uid)
+                    self.loadSessionData(uid: uid)
                 } else {
                     self.isAuthenticated = false
                     self.userProfile = nil
@@ -31,10 +31,9 @@ final class AppSessionViewModel: ObservableObject {
             }
         }
     }
-    
-    // Temporary logout function for debugging
+
     func logout() {
-        try? Auth.auth().signOut()
+        userManager.logout()
     }
     
     func loadSessionData(uid: String) {
@@ -54,7 +53,8 @@ final class AppSessionViewModel: ObservableObject {
             }
             
             let profile = UserProfile(id: uid, data: data)
-            
+            // print(uid)
+            // print(data)
             DispatchQueue.main.async {
                 self.userProfile = profile
             }
@@ -92,8 +92,8 @@ final class AppSessionViewModel: ObservableObject {
         settings.isNightMode = value
         userSettings = settings
         
-        guard let uid = Auth.auth().currentUser?.uid else {
-            print("Authenticated user not found.")
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
             return
         }
         
@@ -113,8 +113,8 @@ final class AppSessionViewModel: ObservableObject {
         settings.isHapticsEnabled = value
         userSettings = settings
         
-        guard let uid = Auth.auth().currentUser?.uid else {
-            print("Authenticated user not found.")
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
             return
         }
 
@@ -134,8 +134,8 @@ final class AppSessionViewModel: ObservableObject {
         settings.wishlistLayout = value
         userSettings = settings
         
-        guard let uid = Auth.auth().currentUser?.uid else {
-            print("Authenticated user not found.")
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
             return
         }
 
