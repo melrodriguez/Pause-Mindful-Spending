@@ -40,7 +40,7 @@ struct TimerPauseSheetView: View {
                 
                 Text(adjustedSeconds == nil ? "Suggested Pause" : "Adjusted Pause").font(.system(size: 24, weight: .semibold))
                 
-                Text(timerDisplay).font(.system(size: 32, weight: .medium)).frame(maxWidth: .infinity).padding(20).background(Color.white).cornerRadius(12).padding(.horizontal)
+                Text(timerDisplay).font(.system(size: 32, weight: .medium)).frame(maxWidth: .infinity).padding(20).background(Color.backgroundFill).cornerRadius(12).padding(.horizontal)
                 
                 Button {
                     showAdjustTimer = true
