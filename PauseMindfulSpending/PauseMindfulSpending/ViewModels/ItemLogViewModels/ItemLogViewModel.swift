@@ -89,6 +89,7 @@ class ItemLogViewModel: ObservableObject {
                 self.timerId = timerId
             }
                     
+            // Get the category from the collection
             if let categoryId = categoryId {
                 self.firestoreService.fetchCategory(uid: uid, categoryId: categoryId) { categoryData in
                     
@@ -99,7 +100,8 @@ class ItemLogViewModel: ObservableObject {
                     }
                 }
             }
-                        
+            
+            // Get the timer from the collection
             if let timerId = timerId {
                 self.firestoreService.fetchTimer(uid: uid, timerId: timerId) { timerData in
                     
@@ -128,25 +130,26 @@ class ItemLogViewModel: ObservableObject {
     
     // TODO: needs imageUrl logic
     func updateItem(uid: String) {
-        // Add photos stuff later
-        var fieldsToUpdate: [String: Any] = [
-            "name": name,
-            "cost": cost!,
-            "currencyCode": currencyCode,
-            "note": notes,
-            "mood": mood
-        ]
-        
-        // TODO later: fix category grabbing logic..
-        if let categoryId {
-            fieldsToUpdate["categoryId"] = categoryId
+        firestoreService.fetchCategoryIdUsingName(uid: uid, name: categoryName ?? "") { categoryId in
+            
+            var fieldsToUpdate: [String: Any] = [
+                "name": self.name,
+                "cost": self.cost!,
+                "currencyCode": self.currencyCode,
+                "note": self.notes,
+                "mood": self.mood
+            ]
+            
+            if let categoryId = categoryId {
+                fieldsToUpdate["categoryId"] = categoryId
+            }
+
+            self.firestoreService.updateItem(
+                uid: uid,
+                itemId: self.item.id,
+                fieldsToUpdate: fieldsToUpdate
+            )
         }
-        
-        firestoreService.updateItem(
-            uid: uid,
-            itemId: item.id,
-            fieldsToUpdate: fieldsToUpdate
-        )
     }
     
 }

@@ -118,8 +118,8 @@ struct EditItemLogView: View {
                 }
             }
             .overlay(RoundedRectangle(cornerRadius: 8)
-            .stroke(Color.gray.opacity(0.4), lineWidth: 1))
-            .cornerRadius(8)
+                .stroke(Color.gray.opacity(0.4), lineWidth: 1))
+                .cornerRadius(8)
         }
     }
     
@@ -171,7 +171,6 @@ struct EditItemLogView: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-                
                 
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     Label("From Gallery", systemImage: "folder")
@@ -273,7 +272,6 @@ struct EditItemLogView: View {
         // Insert camera alert/popup handling here
     }
 }
-
 
 #Preview {
     // EditItemLogView()

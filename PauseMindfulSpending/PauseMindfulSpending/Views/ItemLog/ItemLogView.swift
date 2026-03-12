@@ -85,7 +85,7 @@ struct ItemLogView: View {
                 
                 VStack(spacing: 20) {
         
-                    // title, date, category
+                    // Title, date, category
                     VStack(alignment: .leading, spacing: 4) {
 
                         HStack {
@@ -107,10 +107,9 @@ struct ItemLogView: View {
                         Text(viewModel.formattedDate)
                             .font(AppFonts.subhead)
                         
-                        // item category
                         Text(viewModel.categoryName ?? "")
                             .font(AppFonts.caption)
-                            .foregroundStyle(.textPrimary)
+                            .foregroundColor(.black)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .background(.white)
@@ -119,19 +118,20 @@ struct ItemLogView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // price
+                    // Price
                     Text(viewModel.formattedPrice)
                         .font(AppFonts.headline)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    // mood selector
+                    // Mood selector
                     // Similar to that in AddItemLogView
                     moodDisplayView()
                     
-                    // description
+                    // Notes
                     VStack(alignment: .leading, spacing: 8) {
                         Text("What prompted me to want to purchase this item was...")
                             .font(AppFonts.caption)
+                            .foregroundColor(.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Text(viewModel.notes)
@@ -148,11 +148,11 @@ struct ItemLogView: View {
                             .cornerRadius(5)
                     }
 
-                    // timer
+                    // Timer
                     Text(viewModel.formattedTimer)
                         .font(AppFonts.headline)
 
-                    // buttons
+                    // Buttons
                     HStack(spacing: 16) {
 
                         Button(action: {
@@ -189,6 +189,17 @@ struct ItemLogView: View {
             .onAppear {
                 viewModel.loadItem(uid: self.uid)
             }
+            .navigationDestination(isPresented: $showEditItemLog) {
+                EditItemLogView(
+                    item: item,
+                    showEditItemLog: $showEditItemLog,
+                    vm: viewModel,
+                    editItem: {
+                        viewModel.updateItem(uid: uid)
+                        print("ItemLogView -> Pressed edit item")
+                    }
+                )
+            }
             
             // Be careful with this!
             if (showDeletePopup) {
@@ -208,19 +219,6 @@ struct ItemLogView: View {
                     )
                 }
                 
-            }
-            
-            if (showEditItemLog) {
-                EditItemLogView(
-                    item: item,
-                    showEditItemLog: $showEditItemLog,
-                    vm: viewModel,
-                    editItem: {
-                        viewModel.updateItem(uid: uid)
-                        showEditItemLog = false
-                        print("ItemLogView -> Pressed edit item")
-                    }
-                )
             }
         }
     }
