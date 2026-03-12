@@ -1,17 +1,18 @@
 {
   "images" : [
     {
-      "filename" : "Logo.png",
-      "idiom" : "universal",
-      "scale" : "1x"
+      "filename" : "LogoNoItems.pdf",
+      "idiom" : "universal"
     },
     {
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "idiom" : "universal",
-      "scale" : "3x"
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "LogoNoItemsDark.pdf",
+      "idiom" : "universal"
     }
   ],
   "info" : {
