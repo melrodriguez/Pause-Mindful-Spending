@@ -32,7 +32,7 @@ struct ItemLoggedView: View {
                 Button {
                     onContinue()
                 } label: {
-                    Text("Continue to Homepage").font(AppFonts.subhead).foregroundColor(.primary).frame(maxWidth: .infinity).padding(14).background(Color.buttonBack).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.buttonBorder))
+                    Text("Done").font(AppFonts.subhead).foregroundColor(.primary).frame(maxWidth: .infinity).padding(14).background(Color.buttonBack).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.buttonBorder))
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
