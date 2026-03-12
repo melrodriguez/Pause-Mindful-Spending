@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct WishlistGrid: View {
-    let viewModel: WishlistViewModel
-    let items: [Item]
+    @ObservedObject var viewModel: WishlistViewModel
+    
     let columns: [GridItem]
     let textSize: CGFloat
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(items) { item in
+            ForEach(viewModel.items) { item in
                 NavigationLink {
                     ItemLogView(
                         item: item,

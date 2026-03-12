@@ -45,19 +45,19 @@ struct WishlistView: View {
                     switch session.userSettings?.wishlistLayout {
                     // TODO: Make this less hardcoded
                     case .grid:
-                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
+                        WishlistGrid(viewModel: viewModel, columns: [
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8)],
                                      textSize: 15
                         )
                     case .single:
-                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
+                        WishlistGrid(viewModel: viewModel, columns: [
                             GridItem(.fixed(350), spacing: 8)],
                                      textSize: 30
                         )
                     case .none:
-                        WishlistGrid(viewModel: viewModel, items: viewModel.items, columns: [
+                        WishlistGrid(viewModel: viewModel, columns: [
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8)],
