@@ -70,7 +70,7 @@ struct ItemLogView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity)
-            .background(Color(.systemGray6).opacity(0.8))
+            .background(AppColors.ListCell)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -109,10 +109,10 @@ struct ItemLogView: View {
                         
                         Text(viewModel.categoryName ?? "")
                             .font(AppFonts.caption)
-                            .foregroundColor(.black)
+                            .foregroundColor(AppColors.textPrimary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(.white)
+                            .background(AppColors.ListCell)
                             .cornerRadius(6)
                 
                     }
@@ -136,11 +136,11 @@ struct ItemLogView: View {
                         
                         Text(viewModel.notes)
                             .font(AppFonts.caption)
+                            .foregroundStyle(AppColors.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .topLeading)
                             .frame(minHeight: 150, alignment: .topLeading)
                             .padding(16)
-                            .background(.white)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .background(AppColors.ListCell)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
