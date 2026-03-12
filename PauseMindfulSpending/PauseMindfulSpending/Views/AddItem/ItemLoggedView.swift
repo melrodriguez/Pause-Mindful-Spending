@@ -14,7 +14,7 @@ struct ItemLoggedView: View {
                 Text("Your Item was Logged!").font(AppFonts.headline).multilineTextAlignment(.center).padding(.top, 20)
                 
                 ZStack {
-                    ForEach(0..<8) { i in
+                    ForEach(0..<7) { i in
                         Rectangle()
                             .fill(.mainPink)
                             .frame(width: 2, height: 12)
@@ -32,12 +32,12 @@ struct ItemLoggedView: View {
                 Button {
                     onContinue()
                 } label: {
-                    Text("Continue to Homepage").font(AppFonts.subhead).foregroundColor(.primary).frame(maxWidth: .infinity).padding(14).background(Color.backgroundFill).cornerRadius(12)
+                    Text("Done").font(AppFonts.subhead).foregroundColor(.primary).frame(maxWidth: .infinity).padding(14).background(Color.buttonBack).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.buttonBorder))
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
             }
-            background(Color.gray)
+            .background(AppColors.backgroundGradient)
                 .cornerRadius(24).padding(.horizontal, 40)
         }
         .onAppear {

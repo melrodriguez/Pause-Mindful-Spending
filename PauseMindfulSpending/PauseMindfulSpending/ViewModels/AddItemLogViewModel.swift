@@ -23,7 +23,6 @@ class AddItemLogViewModel: ObservableObject {
     
     @Published var createdItemId: String? = nil
     @Published var createdTimerId: String? = nil
-    @Published var itemLoggedSuccessfully: Bool = false
     
     private let firestoreService = FireStoreService()
     
@@ -68,17 +67,14 @@ class AddItemLogViewModel: ObservableObject {
         ]
         
         firestoreService.createItem(uid: uid, data: newItem, durationSeconds: durationSeconds, category: selectedCategory) { result in
-            self.isLoading = false
-            guard let result = result else {
-                self.errorMessage = "Failed to create item, please try again."
-                return
-            }
-            self.createdItemId = result["itemId"] as? String
-            self.createdTimerId = result["timerId"] as? String
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.isLoading = false
+                guard let result = result else {
+                    self.errorMessage = "Failed to create item, please try again."
+                    return
+                }
+                self.createdItemId = result["itemId"] as? String
+                self.createdTimerId = result["timerId"] as? String
                 print("Setting up log success to true")
-                self.itemLoggedSuccessfully = true
-            }
         }
     }
 }

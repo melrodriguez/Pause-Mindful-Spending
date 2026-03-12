@@ -6,6 +6,8 @@ struct RootView: View {
     @State private var selectedTab: NavBar = .home
     @State private var showAddItem: Bool = false
     
+    @State private var showItemLogged: Bool = false
+    
     var body: some View {
         if session.isLoading {
             LoadingView()
@@ -42,7 +44,7 @@ struct RootView: View {
                                     userProfile: profile
                                 )
                             )
-                                .tag(NavBar.wishlist)
+                            .tag(NavBar.wishlist)
                         } else {
                             // TODO - handle error if profile and settings do not load
                         }
@@ -65,9 +67,19 @@ struct RootView: View {
                         .padding(.bottom, 18)
                         .padding(.horizontal, 20)
                     }
+                    
+                    if showItemLogged {
+                        ItemLoggedView(onContinue: {
+                            showItemLogged = false
+                        })
+                    }
                 }
                 .navigationDestination(isPresented: $showAddItem) {
-                    AddItemLogView()
+                    AddItemLogView(itemLogged: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showItemLogged = true
+                        }
+                    })
                 }
             }
         }
