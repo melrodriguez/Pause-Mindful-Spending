@@ -13,9 +13,7 @@ struct TimersView: View {
         VStack(alignment: .leading) {
             
             AppHeader(title: "Timers")
-            if viewModel.isLoading {
-                LoadingView()
-            } else if (viewModel.timerItems.isEmpty) {
+            if (session.timerItems.isEmpty) {
                 EmptyListView()
             } else {
                 ScrollView {
@@ -64,7 +62,6 @@ struct TimersView: View {
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
             viewModel.startTimer()
-            viewModel.loadTimerItems()
         }
     }
 }

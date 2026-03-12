@@ -5,6 +5,9 @@ import FirebaseFirestore
 final class AppSessionViewModel: ObservableObject {
     @Published var userProfile: UserProfile?
     @Published var userSettings: UserSettings?
+    @Published var timerItems: [TimerItem] = []
+    @Published var items: [Item] = []
+    
     @Published var isLoading = false
     @Published var isAuthenticated = false
     
@@ -79,8 +82,9 @@ final class AppSessionViewModel: ObservableObject {
                     } else {
                         self.userSettings = nil
                     }
-                    
                     self.isLoading = false
+                    self.loadTimerItems()
+                    self.loadItems()
                 }
             }
         }
@@ -155,5 +159,90 @@ final class AppSessionViewModel: ObservableObject {
         let generator = UIImpactFeedbackGenerator(style: style)
         generator.prepare()
         generator.impactOccurred()
+    }
+    
+    func loadTimerItems() {
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
+            return
+        }
+        
+        self.firestoreService.fetchItemsForList(uid: uid) { results in
+            var loadedTimers: [TimerItem] = []
+            let group = DispatchGroup()
+            
+            for data in results {
+                guard
+                    let _ = data["itemId"] as? String,
+                    let timerId = data["timerId"] as? String,
+                    let itemName = data["name"] as? String
+                else { continue }
+                
+                group.enter()
+                
+                self.firestoreService.fetchTimer(uid: uid, timerId: timerId) { document in
+                    defer { group.leave() }
+                    guard
+                        let document = document,
+                        let timestamp = document["endDate"] as? Timestamp
+                    else { return }
+                    
+                    let endDate = timestamp.dateValue()
+                    let duration = max(0, endDate.timeIntervalSince(Date()))
+                    let imageUrl = data["imageUrl"] as? String
+                    
+                    let timer = TimerItem(
+                        id: timerId,
+                        itemName: itemName,
+                        startTime: Date(),
+                        duration: duration,
+                        imageUrl: imageUrl
+                    )
+                    
+                    loadedTimers.append(timer)
+                }
+                
+            }
+            
+            group.notify(queue: .main) {
+                self.timerItems = loadedTimers
+            }
+        }
+    }
+    
+    func loadItems() {
+        guard let uid = userManager.getCurrentUserId() else {
+            print("Authenticated user not found")
+            return
+        }
+        
+        self.firestoreService.fetchItemsForList(uid: uid) { results in
+            var loadedItems: [Item] = []
+            
+            for data in results {
+                guard
+                    let itemId = data["itemId"] as? String,
+                    let timerId = data["timerId"] as? String,
+                    let itemName = data["name"] as? String
+                else { continue }
+                
+                let categoryId = data["categoryId"] as? String
+                let photoUrl = data["photoUrl"] as? String
+
+                let item = Item(
+                    id: itemId,
+                    name: itemName,
+                    timerId: timerId,
+                    categoryId: categoryId,
+                    imageUrl: photoUrl
+                )
+                
+                loadedItems.append(item)
+            }
+            
+            DispatchQueue.main.async {
+                self.items = loadedItems
+            }
+        }
     }
 }

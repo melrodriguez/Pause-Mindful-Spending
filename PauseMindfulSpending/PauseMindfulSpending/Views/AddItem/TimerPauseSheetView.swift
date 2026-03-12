@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct TimerPauseSheetView: View {
+    
+    @EnvironmentObject var session: AppSessionViewModel
     @Environment(\.dismiss) var dismiss
     @State private var showAdjustTimer: Bool = false
     var onSetTimer: (Int) -> Void = { _ in }
@@ -43,6 +45,8 @@ struct TimerPauseSheetView: View {
                 }.padding(.horizontal)
                 
                 Button {
+                    session.loadItems()
+                    session.loadTimerItems()
                     onSetTimer(suggestedSeconds)
                     dismiss()
                 } label: {

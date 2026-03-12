@@ -13,20 +13,17 @@ struct RootView: View {
             NavigationStack {
                 ZStack {
                     TabView(selection: $selectedTab) {
-                        HomeView()
-                            .tag(NavBar.home)
-                        
-                        if let profile = session.userProfile {
-                            TimersView(
-                                viewModel: TimerViewModel(
-                                    uid: profile.id
-                                )
-                            )
-                            .tag(NavBar.timers)
-                        }
                         
                         if let profile = session.userProfile,
                            let settings = session.userSettings {
+                            HomeView()
+                                .tag(NavBar.home)
+                            
+                            TimersView(
+                                viewModel: TimerViewModel()
+                            )
+                            .tag(NavBar.timers)
+                            
                             SettingsView(
                                 viewModel: SettingsViewModel(
                                     uid: profile.id,
@@ -42,7 +39,7 @@ struct RootView: View {
                                     userProfile: profile
                                 )
                             )
-                                .tag(NavBar.wishlist)
+                            .tag(NavBar.wishlist)
                         } else {
                             // TODO - handle error if profile and settings do not load
                         }

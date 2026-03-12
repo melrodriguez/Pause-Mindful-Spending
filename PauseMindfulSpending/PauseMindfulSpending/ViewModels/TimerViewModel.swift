@@ -2,26 +2,17 @@ import SwiftUI
 import FirebaseFirestore
 
 final class TimerViewModel: ObservableObject {
-    
-    @Published var isLoading = false
-    
-    @Published var timerItems: [TimerItem] = []
     @Published var currentDate = Date()
     
     private var timer: Timer?
-    private let firestoreService = FireStoreService()
-    let uid: String
     private var secondsInDay = 86400
     private var secondsInHour = 3600
     private var secondsInMinute = 60
 
-    init(uid: String) {
-        self.uid = uid
-    }
+    init() {}
     
     func startTimer() {
         timer?.invalidate()
-        
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.currentDate = Date()
         }
@@ -34,57 +25,6 @@ final class TimerViewModel: ObservableObject {
     
     deinit {
         timer?.invalidate()
-    }
-
-    func loadTimerItems() {
-        if timerItems.isEmpty {
-            isLoading = true
-        }
-        
-        self.firestoreService.fetchItemsForList(uid: uid) { results in
-            var loadedTimers: [TimerItem] = []
-            let group = DispatchGroup()
-            
-            for data in results {
-                guard
-                    let _ = data["itemId"] as? String,
-                    let timerId = data["timerId"] as? String,
-                    let itemName = data["name"] as? String
-                else { continue }
-                
-                group.enter()
-                
-                self.firestoreService.fetchTimer(uid: self.uid, timerId: timerId) { document in
-                    defer { group.leave() }
-                    guard
-                        let document = document,
-                        let timestamp = document["endDate"] as? Timestamp
-                    else { return }
-                    
-                    let endDate = timestamp.dateValue()
-                    let duration = max(0, endDate.timeIntervalSince(self.currentDate))
-                    let imageUrl = data["imageUrl"] as? String
-                    
-                    let timer = TimerItem(
-                        id: timerId,
-                        itemName: itemName,
-                        startTime: self.currentDate,
-                        duration: duration,
-                        imageUrl: imageUrl
-                    )
-                    
-                    loadedTimers.append(timer)
-                }
-                
-            }
-            
-            group.notify(queue: .main) {
-                if self.isLoading { 
-                    self.isLoading = false
-                }
-                self.timerItems = loadedTimers
-            }
-        }
     }
     
     func formattedRemaining(for item: TimerItem) -> String {

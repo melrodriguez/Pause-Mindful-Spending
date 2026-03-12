@@ -13,9 +13,7 @@ struct WishlistView: View {
         VStack(alignment: .leading) {
             
             AppHeader(title: "Wishlist")
-            if viewModel.isLoading {
-                LoadingView()
-            } else if viewModel.items.isEmpty {
+            if session.items.isEmpty {
                 EmptyListView()
             } else {
                 ScrollView {
@@ -49,19 +47,19 @@ struct WishlistView: View {
                     switch session.userSettings?.wishlistLayout {
                         // TODO: Make this less hardcoded
                     case .grid:
-                        WishlistGrid(items: viewModel.items, columns: [
+                        WishlistGrid(items: session.items, columns: [
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8)],
                                      textSize: 15
                         )
                     case .single:
-                        WishlistGrid(items: viewModel.items, columns: [
+                        WishlistGrid(items: session.items, columns: [
                             GridItem(.fixed(350), spacing: 8)],
                                      textSize: 30
                         )
                     case .none:
-                        WishlistGrid(items: viewModel.items, columns: [
+                        WishlistGrid(items: session.items, columns: [
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8),
                             GridItem(.fixed(120), spacing: 8)],
@@ -76,6 +74,5 @@ struct WishlistView: View {
         }
         .appBackground()
         .toolbar(.hidden, for: .tabBar)
-        .onAppear { viewModel.loadItems() }
     }
 }

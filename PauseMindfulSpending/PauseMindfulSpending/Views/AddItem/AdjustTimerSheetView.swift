@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct AdjustTimerSheetView: View {
+    
+    @EnvironmentObject var session: AppSessionViewModel
     @Environment(\.dismiss) var dismiss
     @State private var input: String = ""
     var onConfirm: (Int) -> Void = { _ in }
-    
     
     var days: String {
         input.count >= 3 ? String(input.prefix(input.count - 2)) : "00"
