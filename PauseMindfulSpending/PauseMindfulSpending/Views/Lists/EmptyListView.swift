@@ -14,13 +14,14 @@ struct EmptyListView: View {
                 .font(AppFonts.bold(30))
                 .foregroundColor(AppColors.textSecondary)
             
-            Text("Add beore you buy - mindfu spending stars with a single pause")
+            Text("Add before you buy - mindful spending starts with a single pause")
                 .font(AppFonts.regular(15))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 280)
                 .foregroundColor(AppColors.textTertiary)
         }
         .appBackground()
+        .opacity(0.7)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
