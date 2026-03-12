@@ -13,7 +13,9 @@ struct WishlistView: View {
         VStack(alignment: .leading) {
             
             AppHeader(title: "Wishlist")
-            if viewModel.items.isEmpty {
+            if viewModel.isLoading {
+                LoadingView()
+            } else if viewModel.items.isEmpty {
                 EmptyListView()
             } else {
                 ScrollView {

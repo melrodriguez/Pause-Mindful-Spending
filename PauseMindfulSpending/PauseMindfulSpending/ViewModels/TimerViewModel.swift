@@ -2,6 +2,9 @@ import SwiftUI
 import FirebaseFirestore
 
 final class TimerViewModel: ObservableObject {
+    
+    @Published var isLoading = false
+    
     @Published var timerItems: [TimerItem] = []
     @Published var currentDate = Date()
     
@@ -34,6 +37,10 @@ final class TimerViewModel: ObservableObject {
     }
 
     func loadTimerItems() {
+        if timerItems.isEmpty {
+            isLoading = true
+        }
+        
         self.firestoreService.fetchItemsForList(uid: uid) { results in
             var loadedTimers: [TimerItem] = []
             let group = DispatchGroup()
@@ -72,6 +79,9 @@ final class TimerViewModel: ObservableObject {
             }
             
             group.notify(queue: .main) {
+                if self.isLoading { 
+                    self.isLoading = false
+                }
                 self.timerItems = loadedTimers
             }
         }

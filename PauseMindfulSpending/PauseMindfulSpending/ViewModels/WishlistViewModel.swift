@@ -2,6 +2,8 @@ import SwiftUI
 import FirebaseFirestore
 
 final class WishlistViewModel: ObservableObject {
+    @Published var isLoading = false
+    
     @Published var userProfile: UserProfile
     @Published var items: [Item] = []
     
@@ -18,6 +20,10 @@ final class WishlistViewModel: ObservableObject {
     }
     
     func loadItems() {
+        if items.isEmpty {
+            isLoading = true
+        }
+        
         self.firestoreService.fetchItemsForList(uid: uid) { results in
             var loadedItems: [Item] = []
             
@@ -43,6 +49,9 @@ final class WishlistViewModel: ObservableObject {
             }
             
             DispatchQueue.main.async {
+                if self.isLoading {
+                    self.isLoading = false
+                }
                 self.items = loadedItems
             }
         }

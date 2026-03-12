@@ -13,7 +13,9 @@ struct TimersView: View {
         VStack(alignment: .leading) {
             
             AppHeader(title: "Timers")
-            if (viewModel.timerItems.isEmpty) {
+            if viewModel.isLoading {
+                LoadingView()
+            } else if (viewModel.timerItems.isEmpty) {
                 EmptyListView()
             } else {
                 ScrollView {
