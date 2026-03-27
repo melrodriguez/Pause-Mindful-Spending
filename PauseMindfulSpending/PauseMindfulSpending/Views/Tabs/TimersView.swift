@@ -12,8 +12,8 @@ struct TimersView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
-                
                 AppHeader(title: "Timers")
+                
                 ScrollView {
                     HStack{
                         Spacer()

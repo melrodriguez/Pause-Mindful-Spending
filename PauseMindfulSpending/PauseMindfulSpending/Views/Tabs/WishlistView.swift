@@ -12,8 +12,8 @@ struct WishlistView: View {
     var body: some View {
         NavigationStack { // wrap entire body in nav stack
             VStack(alignment: .leading) {
-                
                 AppHeader(title: "Wishlist")
+                
                 ScrollView {
                     HStack {
                         Spacer()
