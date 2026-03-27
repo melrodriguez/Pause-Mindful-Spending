@@ -3,6 +3,7 @@ import FirebaseFirestore
 extension FireStoreService {
     func createItem(
         uid: String,
+        itemName: String,
         data: [String: Any],
         durationSeconds: Int,
         category: String?,
@@ -14,6 +15,7 @@ extension FireStoreService {
         var updatedData = data
         var dataToReturn: [String: Any] = [:]
         
+        updatedData["name"] = itemName
         updatedData["createdAt"] = FieldValue.serverTimestamp()
         updatedData["status"] = "wishlist"
         updatedData["lastUpdatedAt"] = FieldValue.serverTimestamp()
@@ -23,8 +25,8 @@ extension FireStoreService {
             completion(nil)
             return
         }
-
-        self.createTimer(uid: uid, durationSeconds: durationSeconds) {timerId in
+        
+        self.createTimer(uid: uid, itemName: itemName, durationSeconds: durationSeconds) {timerId in
             guard let timerId = timerId else {
                 completion(nil)
                 return
@@ -104,84 +106,6 @@ extension FireStoreService {
             }
                 
             completion(itemData)
-        }
-    }
-    
-    func fetchAllItemDocumentsIds(uid: String, completion: @escaping ([String]) -> Void) {
-        db.collection("users").document(uid).collection("items").getDocuments{ snapshot, error in
-            guard let docs = snapshot?.documents else {
-                completion([])
-                return
-                
-            }
-            
-            let ids = docs.map { $0.documentID }
-            completion(ids)
-        }
-    }
-    
-    func fetchItemDetailsForStruct(
-        uid: String,
-        itemId: String,
-        completion: @escaping ([String: Any]?) -> Void)
-    {
-        // Gets all the information necessary to create Item struct. Will return results
-        // through completion handler
-        
-        self.fetchItem(uid: uid, itemId: itemId) { itemData in
-            guard
-                let itemData = itemData,
-                let timerId = itemData["timerId"] as? String,
-                let itemName = itemData["name"] as? String
-            else {
-                completion(nil)
-                return
-            }
-            
-            let categoryId = itemData["categoryId"] as? String
-            let photoUrl = itemData["photoUrl"] as? String
-            
-            var dataToReturn: [String: Any] = [
-                "itemId": itemId,
-                "timerId": timerId,
-                "name": itemName
-            ]
-
-            if let categoryId = categoryId {
-                dataToReturn["categoryId"] = categoryId
-            }
-            
-            if let photoUrl = photoUrl {
-                dataToReturn["imageUrl"] = photoUrl
-            }
-
-            completion(dataToReturn)
-        }
-    }
-    
-    func fetchItemsForList(uid: String, completion: @escaping ([[String: Any]]) -> Void) {
-        // Gets all the information necessary to create Item struct for all documents in
-        // item collection. Will return through completion handler
-        
-        var itemList: [[String: Any]] = []
-        
-        self.fetchAllItemDocumentsIds(uid: uid) { itemIds in
-            let group = DispatchGroup()
-            
-            for itemId in itemIds {
-                group.enter()
-                
-                self.fetchItemDetailsForStruct(uid: uid, itemId: itemId) { itemStructData in
-                    if let itemStructData = itemStructData {
-                        itemList.append(itemStructData)
-                    }
-                    group.leave()
-                }
-            }
-            
-            group.notify(queue: .main) {
-                completion(itemList)
-            }
         }
     }
     

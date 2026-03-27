@@ -5,46 +5,44 @@ final class WishlistViewModel: ObservableObject {
     @Published var userProfile: UserProfile
     @Published var items: [Item] = []
     
-    private let firestoreService = FireStoreService()
+    private var db = Firestore.firestore()
+    private var listener: ListenerRegistration?
+    
     let uid: String
     
     init(uid: String, userProfile: UserProfile) {
         self.uid = uid
         self.userProfile = userProfile
     }
+    
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+    }
+    
+    deinit {
+        stopListening()
+    }
 
     var displayName: String {
         userProfile.displayName
     }
     
-    func loadItems() {
-        self.firestoreService.fetchItemsForList(uid: uid) { results in
-            var loadedItems: [Item] = []
-            
-            for data in results {
-                guard
-                    let itemId = data["itemId"] as? String,
-                    let timerId = data["timerId"] as? String,
-                    let itemName = data["name"] as? String
-                else { continue }
+    func getItems() {
+        listener = db.collection("users")
+            .document(uid)
+            .collection("items")
+            .whereField("status", isEqualTo: "wishlist")
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    print("Error getting items: \(error)")
+                    return
+                }
                 
-                let categoryId = data["categoryId"] as? String
-                let photoUrl = data["photoUrl"] as? String
-
-                let item = Item(
-                    id: itemId,
-                    name: itemName,
-                    timerId: timerId,
-                    categoryId: categoryId,
-                    imageUrl: photoUrl
-                )
-                
-                loadedItems.append(item)
+                self.items = snapshot?.documents.compactMap { document in
+                    try? document.data(as: Item.self)
+                } ?? []
             }
-            
-            DispatchQueue.main.async {
-                self.items = loadedItems
-            }
-        }
     }
+    
 }

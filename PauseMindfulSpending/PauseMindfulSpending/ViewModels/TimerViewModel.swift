@@ -6,7 +6,9 @@ final class TimerViewModel: ObservableObject {
     @Published var currentDate = Date()
     
     private var timer: Timer?
-    private let firestoreService = FireStoreService()
+    private var listener: ListenerRegistration?
+    private var db = Firestore.firestore()
+
     let uid: String
     private var secondsInDay = 86400
     private var secondsInHour = 3600
@@ -24,62 +26,44 @@ final class TimerViewModel: ObservableObject {
         }
     }
     
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+    }
+
     func stopTimer() {
         timer?.invalidate()
         timer = nil
     }
     
     deinit {
-        timer?.invalidate()
-    }
-
-    func loadTimerItems() {
-        self.firestoreService.fetchItemsForList(uid: uid) { results in
-            var loadedTimers: [TimerItem] = []
-            let group = DispatchGroup()
-            
-            for data in results {
-                guard
-                    let _ = data["itemId"] as? String,
-                    let timerId = data["timerId"] as? String,
-                    let itemName = data["name"] as? String
-                else { continue }
-                
-                group.enter()
-                
-                self.firestoreService.fetchTimer(uid: self.uid, timerId: timerId) { document in
-                    defer { group.leave() }
-                    guard
-                        let document = document,
-                        let timestamp = document["endDate"] as? Timestamp
-                    else { return }
-                    
-                    let endDate = timestamp.dateValue()
-                    let duration = max(0, endDate.timeIntervalSince(self.currentDate))
-                    let imageUrl = data["imageUrl"] as? String
-                    
-                    let timer = TimerItem(
-                        id: timerId,
-                        itemName: itemName,
-                        startTime: self.currentDate,
-                        duration: duration,
-                        imageUrl: imageUrl
-                    )
-                    
-                    loadedTimers.append(timer)
-                }
-                
-            }
-            
-            group.notify(queue: .main) {
-                self.timerItems = loadedTimers
-            }
-        }
+        stopListening()
+        stopTimer()
     }
     
+    func calcDuration(endDate: Date) -> TimeInterval {
+        return max(0, endDate.timeIntervalSinceNow)
+    }
+    
+    func getTimerItems() {
+        listener = db.collection("users")
+            .document(uid)
+            .collection("timers")
+            .whereField("status", isEqualTo: "active")
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    print("Error getting items: \(error)")
+                    return
+                }
+                
+                self.timerItems = snapshot?.documents.compactMap { document in
+                    try? document.data(as: TimerItem.self)
+                } ?? []
+            }
+    }
+
     func formattedRemaining(for item: TimerItem) -> String {
-        let endDate = item.startTime.addingTimeInterval(item.duration)
-        let remaining = max(0, endDate.timeIntervalSince(currentDate))
+        let remaining = calcDuration(endDate: item.endDate.dateValue())
         let totalSeconds = Int(remaining)
         let days = totalSeconds / secondsInDay
         let hours = (totalSeconds % secondsInDay) / secondsInHour

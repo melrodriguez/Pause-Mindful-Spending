@@ -56,7 +56,7 @@ struct TimersView: View {
                 }
                 .onAppear {
                     viewModel.startTimer()
-                    viewModel.loadTimerItems()
+                    viewModel.getTimerItems()
                 }
             }
             .appBackground()

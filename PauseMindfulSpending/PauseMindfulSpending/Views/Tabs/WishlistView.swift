@@ -69,7 +69,7 @@ struct WishlistView: View {
                         .frame(height: 70)
                 }
                 .onAppear {
-                    viewModel.loadItems()
+                    viewModel.getItems()
                 }
             }
             .appBackground()
