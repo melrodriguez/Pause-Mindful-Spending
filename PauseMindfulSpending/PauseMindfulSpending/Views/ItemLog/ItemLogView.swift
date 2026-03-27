@@ -212,7 +212,6 @@ struct ItemLogView: View {
                     Spacer()
                     DeleteItemPopup(showDeletePopup: $showDeletePopup,
                         deleteItem: {
-                            print("deleted item")
                             viewModel.deleteItem(uid: uid)
                             dismiss()
                         }

@@ -10,6 +10,7 @@ enum AppColors {
     // Text
     static let textPrimary   = Color("TextPrimary")
     static let textSecondary = Color("TextSecondary")
+    static let textTertiary = Color("TextTertiary")
 
     // Background gradient stops
     static let bg1 = Color("BG1") // #FFF9E5

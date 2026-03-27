@@ -73,7 +73,6 @@ class AddItemLogViewModel: ObservableObject {
                 }
                 self.createdItemId = result["itemId"] as? String
                 self.createdTimerId = result["timerId"] as? String
-                print("Setting up log success to true")
         }
     }
 }
