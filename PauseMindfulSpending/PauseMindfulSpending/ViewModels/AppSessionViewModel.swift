@@ -53,8 +53,6 @@ final class AppSessionViewModel: ObservableObject {
             }
             
             let profile = UserProfile(id: uid, data: data)
-            // print(uid)
-            // print(data)
             DispatchQueue.main.async {
                 self.userProfile = profile
             }

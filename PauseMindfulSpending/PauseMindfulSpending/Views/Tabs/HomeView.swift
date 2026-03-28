@@ -10,6 +10,7 @@ struct HomeView: View {
     @State private var draggedWidget: DashboardWidget?
     @State private var widgets: [DashboardWidget] = []
     @State private var configuringWidget: DashboardWidget?
+    @State private var hasRestoredWidgets = false
 
     private var availableCategories: [String] {
         let cleaned = viewModel.categories
@@ -67,6 +68,7 @@ struct HomeView: View {
                         impulsesState: viewModel.impulsesState,
                         moneySavedState: viewModel.moneySavedState,
                         streakState: viewModel.streakState,
+                        activityCalendarData: viewModel.activityCalendarData,
                         onRemove: { widget in
                             withAnimation {
                                 widgets.removeAll { $0.id == widget.id }
@@ -88,15 +90,23 @@ struct HomeView: View {
         .appBackground()
         .task(id: session.userProfile?.id) {
             guard let uid = session.userProfile?.id else { return }
+            hasRestoredWidgets = false
             
-            viewModel.loadCategories(uid: uid)
+            viewModel.loadCategories(uid: uid) { [self] in
+                guard !hasRestoredWidgets else { return }
+                hasRestoredWidgets = true
+                widgets = makeWidgets(from: viewModel.dashboardConfig)
+            }
+            
             viewModel.loadImpulsesState(uid: uid)
             viewModel.loadMoneySavedState(uid: uid)
             viewModel.loadStreakState(uid: uid)
-            
-            if widgets.isEmpty {
-                widgets = makeWidgets(from: viewModel.dashboardConfig)
-            }
+            viewModel.loadActivityCalendarData(uid: uid)
+        }
+        .onChange(of: viewModel.categories) { _, _ in
+            guard !hasRestoredWidgets else { return }
+            hasRestoredWidgets = true
+            widgets = makeWidgets(from: viewModel.dashboardConfig)
         }
         .sheet(isPresented: $showingAddSheet) {
             AddWidgetSheet(
@@ -130,13 +140,6 @@ struct HomeView: View {
     }
 
     private func makeWidgets(from config: DashboardConfig) -> [DashboardWidget] {
-        let validSavedCategories = config.enabledCategories.filter { category in
-            category == "Overall" || availableCategories.contains(category)
-        }
-
-        let savedCategories = validSavedCategories.isEmpty
-            ? ["Overall"]
-            : validSavedCategories
 
         let orderedTypes = config.widgetOrder.compactMap { DashboardWidgetType(rawValue: $0) }
         let enabledSet = Set(config.enabledWidgets)
@@ -152,6 +155,11 @@ struct HomeView: View {
                 DashboardWidget(kind: .impulsesResisted)
             ]
         }
+        
+        let validSavedCategories = config.enabledCategories.filter { category in
+                    availableCategories.contains(category)
+            }
+        let savedCategories = validSavedCategories.isEmpty ? ["Overall"] : validSavedCategories
 
         return filteredTypes.map { type in
             switch type {
@@ -164,6 +172,8 @@ struct HomeView: View {
                 return DashboardWidget(kind: .moneySaved)
             case .impulsesResisted:
                 return DashboardWidget(kind: .impulsesResisted)
+            case .activityCalendar:
+                return DashboardWidget(kind: .activityCalendar)
             }
         }
     }
