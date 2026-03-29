@@ -3,6 +3,7 @@ import FirebaseFirestore
 extension FireStoreService {
     func createTimer(
         uid: String,
+        itemName: String,
         durationSeconds: Int,
         completion: @escaping (String?) -> Void) {
         // Used when creating an item. Creates a timer given a duration in seconds and
@@ -11,6 +12,7 @@ extension FireStoreService {
         var data: [String: Any] = [:]
         let now = Date()
         
+        data["itemName"] = itemName
         data["startDate"] = FieldValue.serverTimestamp()
         data["status"] = "active"
         data["createdAt"] = FieldValue.serverTimestamp()

@@ -59,7 +59,9 @@ class ItemLogViewModel: ObservableObject {
     }
     
     func loadItem(uid: String) {
-        firestoreService.fetchItem(uid: uid, itemId: item.id) { data in
+        guard let itemId = item.id  else { return }
+        
+        firestoreService.fetchItem(uid: uid, itemId: itemId) { data in
             
             guard let data = data else { return }
             
@@ -119,7 +121,9 @@ class ItemLogViewModel: ObservableObject {
     }
     
     func deleteItem(uid: String) {
-        firestoreService.deleteItem(uid: uid, itemId: item.id)
+        guard let itemId = item.id else { return }
+        
+        firestoreService.deleteItem(uid: uid, itemId: itemId)
     }
     
     // Mood and category never gets deselected
@@ -130,6 +134,8 @@ class ItemLogViewModel: ObservableObject {
     
     // TODO: needs imageUrl logic
     func updateItem(uid: String) {
+        guard let itemId = item.id  else { return }
+        
         firestoreService.fetchCategoryIdUsingName(uid: uid, name: categoryName ?? "") { categoryId in
             
             var fieldsToUpdate: [String: Any] = [
@@ -146,7 +152,7 @@ class ItemLogViewModel: ObservableObject {
 
             self.firestoreService.updateItem(
                 uid: uid,
-                itemId: self.item.id,
+                itemId: itemId,
                 fieldsToUpdate: fieldsToUpdate
             )
         }

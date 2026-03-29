@@ -59,14 +59,13 @@ class AddItemLogViewModel: ObservableObject {
         isLoading = true
         
         let newItem: [String: Any] = [
-            "name" : itemName,
             "cost" : priceDouble,
             "mood" : selectedMood ?? "",
             "note" : note,
             "imageURL" : ""
         ]
         
-        firestoreService.createItem(uid: uid, data: newItem, durationSeconds: durationSeconds, category: selectedCategory) { result in
+        firestoreService.createItem(uid: uid, itemName: itemName, data: newItem, durationSeconds: durationSeconds, category: selectedCategory) { result in
                 self.isLoading = false
                 guard let result = result else {
                     self.errorMessage = "Failed to create item, please try again."
@@ -74,7 +73,6 @@ class AddItemLogViewModel: ObservableObject {
                 }
                 self.createdItemId = result["itemId"] as? String
                 self.createdTimerId = result["timerId"] as? String
-                print("Setting up log success to true")
         }
     }
 }

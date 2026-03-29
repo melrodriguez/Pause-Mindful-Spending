@@ -43,7 +43,7 @@ struct TimerPauseSheetView: View {
                 }.padding(.horizontal)
                 
                 Button {
-                    onSetTimer(suggestedSeconds)
+                    onSetTimer(activeSeconds)
                     dismiss()
                 } label: {
                     Text("Set Timer").foregroundColor(.white).frame(maxWidth: .infinity).padding(14).background(Color.mainGreen).cornerRadius(24)

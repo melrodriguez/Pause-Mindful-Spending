@@ -1,9 +1,10 @@
 import Foundation
+import FirebaseFirestore
 
-struct Item: Identifiable {
-    let id: String
-    let name: String
-    let timerId: String
-    let categoryId: String?
-    let imageUrl: String?
+struct Item: Identifiable, Codable {
+    @DocumentID var id: String?
+    var name: String
+    var timerId: String
+    var categoryId: String?
+    var imageUrl: String?
 }
