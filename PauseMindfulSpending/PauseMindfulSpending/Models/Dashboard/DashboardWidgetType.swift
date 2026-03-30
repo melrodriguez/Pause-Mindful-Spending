@@ -5,6 +5,7 @@ enum DashboardWidgetType: String, Codable, CaseIterable, Identifiable {
     case moneySaved
     case impulsesResisted
     case activityCalendar
+    case budget
 
     var id: String { rawValue }
 
@@ -14,6 +15,7 @@ enum DashboardWidgetType: String, Codable, CaseIterable, Identifiable {
         case .moneySaved: return "Money Saved"
         case .impulsesResisted: return "Impules Resisted"
         case .activityCalendar: return "Activity Calendar"
+        case .budget:           return "Budget"
         }
     }
 
@@ -21,7 +23,7 @@ enum DashboardWidgetType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .pauseStreaks:
             return true
-        case .moneySaved, .impulsesResisted, .activityCalendar:
+        case .moneySaved, .impulsesResisted, .activityCalendar, .budget:
             return false
         }
     }

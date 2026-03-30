@@ -4,7 +4,6 @@ import FirebaseFirestore
 class DashboardRepository {
 
     private let firestoreService = FireStoreService()
-    private let dashboardConfigKey = "dashboard_config"
     private let db = Firestore.firestore()
 
     // Fetch the users categories
@@ -34,17 +33,18 @@ class DashboardRepository {
     }
 
     // Saves dashboard configuration locally
-    func saveLocalDashboardConfig(_ config: DashboardConfig) {
+    func saveLocalDashboardConfig(_ config: DashboardConfig, uid: String) {
         guard let encoded = try? JSONEncoder().encode(config) else { return }
-        UserDefaults.standard.set(encoded, forKey: dashboardConfigKey)
+        UserDefaults.standard.set(encoded, forKey: "dashboard_config_\(uid)")
     }
-
-    func loadLocalDashboardConfig() -> DashboardConfig {
-        guard let data = UserDefaults.standard.data(forKey: dashboardConfigKey),
-              let decoded = try? JSONDecoder().decode(DashboardConfig.self, from: data) else {
+     
+    func loadLocalDashboardConfig(uid: String) -> DashboardConfig {
+        guard
+            let data = UserDefaults.standard.data(forKey: "dashboard_config_\(uid)"),
+            let decoded = try? JSONDecoder().decode(DashboardConfig.self, from: data)
+        else {
             return .empty
         }
-
         return decoded
     }
 
@@ -280,6 +280,102 @@ class DashboardRepository {
 
             group.notify(queue: .main) {
                 completion(activityByDay)
+            }
+        }
+    }
+    
+    // Saves budget limits to Firestore, then caches locally as a fallback.
+    // Also deletes any categories the user removed from their budget.
+    func saveBudgetConfig(
+        uid: String,
+        budgets: [BudgetCategory],
+        previousBudgets: [BudgetCategory],
+        completion: @escaping (Bool) -> Void
+    ) {
+        // Delete categories that were removed
+        let removedIds = Set(previousBudgets.map(\.id)).subtracting(Set(budgets.map(\.id)))
+        for id in removedIds {
+            firestoreService.deleteBudget(uid: uid, categoryId: id)
+        }
+
+        // Save to Firestore
+        firestoreService.saveBudgets(uid: uid, budgets: budgets) { success in
+            if success {
+                // Also cache locally so the widget loads instantly on next open
+                if let encoded = try? JSONEncoder().encode(budgets) {
+                    UserDefaults.standard.set(encoded, forKey: "budget_config_\(uid)")
+                }
+            }
+            completion(success)
+        }
+    }
+
+    func loadCachedBudgetConfig(uid: String) -> [BudgetCategory] {
+        guard
+            let data = UserDefaults.standard.data(forKey: "budget_config_\(uid)"),
+            let decoded = try? JSONDecoder().decode([BudgetCategory].self, from: data)
+        else { return [] }
+        return decoded
+    }
+
+    // Fetches budget limits from Firestore, then applies spending from item_bought events.
+    func fetchBudgetState(
+        uid: String,
+        completion: @escaping (BudgetState) -> Void
+    ) {
+        let service = FireStoreService()
+
+        // Fetch saved limits from Firestore
+        service.fetchBudgets(uid: uid) { savedBudgets in
+            guard !savedBudgets.isEmpty else {
+                completion(BudgetState(categories: [], currencySymbol: "$"))
+                return
+            }
+
+            // Cache locally for fast next load
+            if let encoded = try? JSONEncoder().encode(savedBudgets) {
+                UserDefaults.standard.set(encoded, forKey: "budget_config_\(uid)")
+            }
+
+            // Fetch events to calculate spending
+            service.fetchEventList(uid: uid) { eventIds in
+                guard !eventIds.isEmpty else {
+                    completion(BudgetState(categories: savedBudgets, currencySymbol: "$"))
+                    return
+                }
+
+                let group = DispatchGroup()
+                var events: [DashboardEvent] = []
+
+                for eventId in eventIds {
+                    group.enter()
+                    service.fetchDetailsFromEvent(uid: uid, eventId: eventId) { details in
+                        defer { group.leave() }
+
+                        guard
+                            let details = details,
+                            let type = details["type"] as? String,
+                            type == "item_bought",
+                            let timestamp = details["createdAt"] as? Timestamp
+                        else { return }
+
+                        events.append(DashboardEvent(
+                            id: eventId,
+                            type: type,
+                            createdAt: timestamp.dateValue(),
+                            itemId: details["itemId"] as? String,
+                            timerId: details["timerId"] as? String,
+                            category: details["categoryId"] as? String,
+                            amount: details["amount"] as? Double,
+                            currencyCode: nil
+                        ))
+                    }
+                }
+
+                group.notify(queue: .main) {
+                    let withSpending = BudgetCalculator.applySpending(to: savedBudgets, from: events)
+                    completion(BudgetState(categories: withSpending, currencySymbol: "$"))
+                }
             }
         }
     }
