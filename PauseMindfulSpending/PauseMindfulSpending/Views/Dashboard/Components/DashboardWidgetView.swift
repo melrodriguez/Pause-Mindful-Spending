@@ -5,6 +5,7 @@ struct DashboardWidgetView: View {
     let impulsesState: ImpulsesState
     let moneySavedState: MoneySavedState
     let streakState: DashboardStreakState
+    let activityCalendarData: [String: Int]
 
     var body: some View {
         switch widget.kind {
@@ -22,6 +23,11 @@ struct DashboardWidgetView: View {
         case .impulsesResisted:
             ImpulsesResistedView(
                 state: impulsesState
+            )
+        
+        case .activityCalendar:
+            ActivityCalendarView(
+                activityData: activityCalendarData
             )
         }
     }

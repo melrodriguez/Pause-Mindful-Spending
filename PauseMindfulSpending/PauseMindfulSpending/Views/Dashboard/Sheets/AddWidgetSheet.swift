@@ -58,6 +58,11 @@ struct AddWidgetSheet: View {
             onAdd(
                 DashboardWidget(kind: .impulsesResisted)
             )
+            
+        case .activityCalendar:
+            onAdd(
+                DashboardWidget(kind: .activityCalendar)
+            )
         }
 
         dismiss()
@@ -91,6 +96,8 @@ struct AddWidgetSheet: View {
             return "Money Saved"
         case .impulsesResisted:
             return "Impulses Resisted"
+        case .activityCalendar:
+            return "Activity Calendar"
         }
     }
 
@@ -102,6 +109,8 @@ struct AddWidgetSheet: View {
             return "Show total money saved over time"
         case .impulsesResisted:
             return "Show resisted vs bought items"
+        case .activityCalendar: 
+            return "Show your activity day by day"
         }
     }
 
@@ -113,6 +122,8 @@ struct AddWidgetSheet: View {
             return "dollarsign.circle"
         case .impulsesResisted:
             return "chart.pie"
+        case .activityCalendar:
+            return "calendar"
         }
     }
 }

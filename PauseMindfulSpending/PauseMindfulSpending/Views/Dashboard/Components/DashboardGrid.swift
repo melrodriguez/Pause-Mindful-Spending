@@ -9,6 +9,8 @@ struct DashboardGrid: View {
     let impulsesState: ImpulsesState
     let moneySavedState: MoneySavedState
     let streakState: DashboardStreakState
+    let activityCalendarData: [String: Int]
+    
     let onRemove: (DashboardWidget) -> Void
     let onEditCategories: (DashboardWidget) -> Void
 
@@ -20,7 +22,8 @@ struct DashboardGrid: View {
                     widget: widget,
                     impulsesState: impulsesState,
                     moneySavedState: moneySavedState,
-                    streakState: streakState
+                    streakState: streakState,
+                    activityCalendarData: activityCalendarData
                 )
                 .wiggle(isEditingDashboard)
                 .scaleEffect(draggedWidget?.id == widget.id ? 1.03 : 1.0)

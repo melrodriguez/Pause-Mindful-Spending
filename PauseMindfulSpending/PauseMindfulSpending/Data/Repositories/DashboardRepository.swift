@@ -229,4 +229,58 @@ class DashboardRepository {
             completion(state)
         }
     }
+    
+    func fetchActivityCalendarState(
+        uid: String,
+        completion: @escaping ([String: Int]) -> Void
+    ) {
+        let service = FireStoreService()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        // Reuses the existing fetchEventList already in FireStoreService+Events.swift
+        service.fetchEventList(uid: uid) { eventIds in
+            guard !eventIds.isEmpty else {
+                completion([:])
+                return
+            }
+
+            let group = DispatchGroup()
+            var activityByDay: [String: Int] = [:]
+            let lock = NSLock()
+
+            for eventId in eventIds {
+                group.enter()
+
+                service.fetchDetailsFromEvent(uid: uid, eventId: eventId) { details in
+                    defer { group.leave() }
+
+                    guard
+                        let details = details,
+                        let type = details["type"] as? String,
+                        let timestamp = details["createdAt"] as? Timestamp
+                    else { return }
+
+                    let countedTypes: Set<String> = [
+                        "item_created",
+                        "item_bought",
+                        "item_completed",
+                        "item_deleted"
+                    ]
+
+                    guard countedTypes.contains(type) else { return }
+
+                    let dateKey = formatter.string(from: timestamp.dateValue())
+
+                    lock.lock()
+                    activityByDay[dateKey, default: 0] += 1
+                    lock.unlock()
+                }
+            }
+
+            group.notify(queue: .main) {
+                completion(activityByDay)
+            }
+        }
+    }
 }

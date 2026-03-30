@@ -17,6 +17,7 @@ class DashboardViewModel: ObservableObject {
         allTimeData: []
     )
     @Published var streakState: DashboardStreakState = .empty
+    @Published var activityCalendarData: [String: Int] = [:]
 
     private let repo = DashboardRepository()
 
@@ -24,9 +25,10 @@ class DashboardViewModel: ObservableObject {
         self.dashboardConfig = repo.loadLocalDashboardConfig()
     }
 
-    func loadCategories(uid: String) {
+    func loadCategories(uid: String, completion: (() -> Void)? = nil) {
         repo.fetchCategoryNames(uid: uid) { [weak self] categories in
             self?.categories = categories
+            completion?()
         }
     }
 
@@ -50,6 +52,12 @@ class DashboardViewModel: ObservableObject {
     func loadStreakState(uid: String) {
         repo.fetchStreakState(uid: uid) { [weak self] state in
             self?.streakState = state
+        }
+    }
+    
+    func loadActivityCalendarData(uid: String) {
+        repo.fetchActivityCalendarState(uid: uid) { [weak self] data in
+            self?.activityCalendarData = data
         }
     }
 }
