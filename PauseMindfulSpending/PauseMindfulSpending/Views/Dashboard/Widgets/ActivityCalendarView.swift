@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - Data Model
+
 struct DayActivity: Identifiable {
     let id = UUID()
     let date: Date
@@ -21,6 +23,7 @@ enum ActivityLevel {
     }
 }
 
+// MARK: - Main View
 
 struct ActivityCalendarView: View {
     let activityData: [String: Int]
@@ -33,6 +36,8 @@ struct ActivityCalendarView: View {
     private let calendar = Calendar.current
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 7)
     private let dayLabels = ["S", "M", "T", "W", "Th", "F", "Sa"]
+
+    // MARK: Computed helpers
 
     private var monthTitle: String {
         let formatter = DateFormatter()
@@ -79,11 +84,14 @@ struct ActivityCalendarView: View {
         calendar.isDate(displayedMonth, equalTo: Date(), toGranularity: .month)
     }
 
+    // MARK: Body
+
     var body: some View {
         VStack(spacing: 14) {
             // Header
             Text("Activity")
                 .font(AppFonts.headline)
+                .foregroundStyle(AppColors.textPrimary)
 
             // Month navigation
             HStack {
@@ -92,9 +100,9 @@ struct ActivityCalendarView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(AppColors.accentGreen)
+                        .foregroundStyle(AppColors.textSecondary)
                         .frame(width: 32, height: 32)
-                        .background(.white.opacity(0.25), in: Circle())
+                        .background(AppColors.textPrimary.opacity(0.06), in: Circle())
                 }
 
                 Spacer()
@@ -111,9 +119,9 @@ struct ActivityCalendarView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(isCurrentMonth ? AppColors.accentGreen.opacity(0.3) : AppColors.accentGreen)
+                        .foregroundStyle(isCurrentMonth ? AppColors.textSecondary.opacity(0.3) : AppColors.textSecondary)
                         .frame(width: 32, height: 32)
-                        .background(.white.opacity(isCurrentMonth ? 0.1 : 0.25), in: Circle())
+                        .background(AppColors.textPrimary.opacity(isCurrentMonth ? 0.02 : 0.06), in: Circle())
                 }
                 .disabled(isCurrentMonth)
             }
@@ -123,7 +131,7 @@ struct ActivityCalendarView: View {
                 ForEach(dayLabels, id: \.self) { label in
                     Text(label)
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(AppColors.accentGreen.opacity(0.7))
+                        .foregroundStyle(AppColors.textSecondary)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -148,7 +156,7 @@ struct ActivityCalendarView: View {
             HStack(spacing: 6) {
                 Text("Less")
                     .font(.system(size: 10))
-                    .foregroundStyle(AppColors.accentGreen.opacity(0.6))
+                    .foregroundStyle(AppColors.textSecondary)
 
                 ForEach([ActivityLevel.none, .light, .moderate, .heavy, .intense], id: \.hashValue) { level in
                     RoundedRectangle(cornerRadius: 3)
@@ -158,15 +166,15 @@ struct ActivityCalendarView: View {
 
                 Text("More")
                     .font(.system(size: 10))
-                    .foregroundStyle(AppColors.accentGreen.opacity(0.6))
+                    .foregroundStyle(AppColors.textSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(AppColors.mainGreen)
-                .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
         )
         .padding()
         .animation(.spring(duration: 0.3), value: displayedMonth)
@@ -188,11 +196,11 @@ struct ActivityCalendarView: View {
 
     func cellColor(for level: ActivityLevel) -> Color {
         switch level {
-        case .none:     return .white.opacity(0.15)
-        case .light:    return AppColors.accentGreen.opacity(0.35)
-        case .moderate: return AppColors.accentGreen.opacity(0.55)
-        case .heavy:    return AppColors.accentGreen.opacity(0.78)
-        case .intense:  return AppColors.accentGreen
+        case .none:     return AppColors.calendarCell
+        case .light:    return AppColors.mainGreen.opacity(0.35)
+        case .moderate: return AppColors.mainGreen.opacity(0.55)
+        case .heavy:    return AppColors.mainGreen.opacity(0.78)
+        case .intense:  return AppColors.mainGreen
         }
     }
 }
@@ -228,17 +236,17 @@ private struct DayCell: View {
 
     private var cellColor: Color {
         switch level {
-        case .none:     return .white.opacity(0.15)
-        case .light:    return AppColors.accentGreen.opacity(0.35)
-        case .moderate: return AppColors.accentGreen.opacity(0.55)
-        case .heavy:    return AppColors.accentGreen.opacity(0.78)
-        case .intense:  return AppColors.accentGreen
+        case .none:     return AppColors.calendarCell
+        case .light:    return AppColors.mainGreen.opacity(0.35)
+        case .moderate: return AppColors.mainGreen.opacity(0.55)
+        case .heavy:    return AppColors.mainGreen.opacity(0.78)
+        case .intense:  return AppColors.mainGreen
         }
     }
 
     private var labelColor: Color {
         switch level {
-        case .none:  return AppColors.textPrimary.opacity(0.45)
+        case .none:  return AppColors.textSecondary.opacity(0.6)
         default:     return AppColors.textPrimary
         }
     }
@@ -249,13 +257,13 @@ private struct DayCell: View {
 extension ActivityLevel: Hashable {}
 
 // MARK: - Preview
- 
+
 private func mockActivityData() -> [String: Int] {
     let calendar = Calendar.current
     var data: [String: Int] = [:]
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd"
- 
+
     for daysAgo in 0..<60 {
         if let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date()) {
             if Bool.random() {
@@ -265,12 +273,12 @@ private func mockActivityData() -> [String: Int] {
     }
     return data
 }
- 
+
 #Preview {
     ZStack {
         Color(red: 0.97, green: 0.95, blue: 0.90)
             .ignoresSafeArea()
- 
+
         ScrollView {
             ActivityCalendarView(
                 activityData: mockActivityData()
