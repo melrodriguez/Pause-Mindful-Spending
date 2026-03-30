@@ -157,4 +157,41 @@ class FireStoreService {
             .delete()
     }
     
+    func deleteAllUserData(uid: String, completion: @escaping (Bool) -> Void) {
+        let userRef = db.collection("users").document(uid)
+        let subcollections = ["items", "categories", "timers", "events", "settings", "budgets"]
+        let group = DispatchGroup()
+        var allSucceeded = true
+
+        for subcollection in subcollections {
+            group.enter()
+            userRef.collection(subcollection).getDocuments { snapshot, error in
+                guard let docs = snapshot?.documents, error == nil else {
+                    allSucceeded = false
+                    group.leave()
+                    return
+                }
+
+                let batch = self.db.batch()
+                docs.forEach { batch.deleteDocument($0.reference) }
+
+                batch.commit { error in
+                    if error != nil { allSucceeded = false }
+                    group.leave()
+                }
+            }
+        }
+
+        group.notify(queue: .main) {
+            guard allSucceeded else {
+                completion(false)
+                return
+            }
+            // Delete the user document itself
+            userRef.delete { error in
+                completion(error == nil)
+            }
+        }
+    }
+    
 }
