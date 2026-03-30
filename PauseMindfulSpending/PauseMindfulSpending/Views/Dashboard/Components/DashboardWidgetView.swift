@@ -6,6 +6,11 @@ struct DashboardWidgetView: View {
     let moneySavedState: MoneySavedState
     let streakState: DashboardStreakState
     let activityCalendarData: [String: Int]
+    let budgetState: BudgetState
+    let allCategories: [String]
+    let onSaveBudget: ([BudgetCategory]) -> Void
+    
+    @Binding var showingBudgetEditor: Bool
 
     var body: some View {
         switch widget.kind {
@@ -28,6 +33,14 @@ struct DashboardWidgetView: View {
         case .activityCalendar:
             ActivityCalendarView(
                 activityData: activityCalendarData
+            )
+            
+        case .budget:
+            BudgetWidgetView(
+                state: budgetState,
+                allCategories: allCategories,
+                onSaveBudget: onSaveBudget,
+                showingEditor: $showingBudgetEditor
             )
         }
     }

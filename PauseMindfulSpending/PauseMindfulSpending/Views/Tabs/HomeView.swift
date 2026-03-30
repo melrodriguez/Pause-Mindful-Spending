@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct HomeView: View {
-    
+
     @EnvironmentObject var session: AppSessionViewModel
     @StateObject private var viewModel = DashboardViewModel()
-    
+
     @State private var showingAddSheet = false
     @State private var isEditingDashboard = false
     @State private var draggedWidget: DashboardWidget?
@@ -16,12 +16,10 @@ struct HomeView: View {
         let cleaned = viewModel.categories
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
-
         return cleaned.isEmpty ? ["Overall"] : ["Overall"] + cleaned
     }
 
     var body: some View {
-        
         VStack(alignment: .leading, spacing: 12) {
             AppHeader(title: "Pause")
 
@@ -69,6 +67,8 @@ struct HomeView: View {
                         moneySavedState: viewModel.moneySavedState,
                         streakState: viewModel.streakState,
                         activityCalendarData: viewModel.activityCalendarData,
+                        budgetState: viewModel.budgetState,
+                        allCategories: availableCategories,
                         onRemove: { widget in
                             withAnimation {
                                 widgets.removeAll { $0.id == widget.id }
@@ -77,12 +77,15 @@ struct HomeView: View {
                         },
                         onEditCategories: { widget in
                             configuringWidget = widget
+                        },
+                        onSaveBudget: { budgets in
+                            guard let uid = session.userProfile?.id else { return }
+                            viewModel.saveBudgetCategories(budgets, uid: uid)
                         }
                     )
                     .padding(.top, 6)
 
-                    Color.clear
-                        .frame(height: 60)
+                    Color.clear.frame(height: 60)
                 }
                 .padding(.horizontal, AppLayout.horizontalScreenPadding)
             }
@@ -90,23 +93,21 @@ struct HomeView: View {
         .appBackground()
         .task(id: session.userProfile?.id) {
             guard let uid = session.userProfile?.id else { return }
+
             hasRestoredWidgets = false
-            
-            viewModel.loadCategories(uid: uid) { [self] in
-                guard !hasRestoredWidgets else { return }
-                hasRestoredWidgets = true
-                widgets = makeWidgets(from: viewModel.dashboardConfig)
-            }
-            
+            viewModel.loadConfig(uid: uid)
+
             viewModel.loadImpulsesState(uid: uid)
             viewModel.loadMoneySavedState(uid: uid)
             viewModel.loadStreakState(uid: uid)
             viewModel.loadActivityCalendarData(uid: uid)
-        }
-        .onChange(of: viewModel.categories) { _, _ in
-            guard !hasRestoredWidgets else { return }
-            hasRestoredWidgets = true
-            widgets = makeWidgets(from: viewModel.dashboardConfig)
+            viewModel.loadBudgetState(uid: uid)
+
+            viewModel.loadCategories(uid: uid) {
+                guard !hasRestoredWidgets else { return }
+                hasRestoredWidgets = true
+                widgets = makeWidgets(from: viewModel.dashboardConfig)
+            }
         }
         .sheet(isPresented: $showingAddSheet) {
             AddWidgetSheet(
@@ -127,10 +128,7 @@ struct HomeView: View {
                 selectedCategories: Set(widget.selectedPauseCategories),
                 onSave: { newCategories in
                     withAnimation {
-                        updatePauseCategories(
-                            widgetID: widget.id,
-                            categories: newCategories
-                        )
+                        updatePauseCategories(widgetID: widget.id, categories: newCategories)
                     }
                 }
             )
@@ -140,77 +138,61 @@ struct HomeView: View {
     }
 
     private func makeWidgets(from config: DashboardConfig) -> [DashboardWidget] {
-
         let orderedTypes = config.widgetOrder.compactMap { DashboardWidgetType(rawValue: $0) }
         let enabledSet = Set(config.enabledWidgets)
         let filteredTypes = orderedTypes.filter { enabledSet.contains($0.rawValue) }
 
         if filteredTypes.isEmpty {
             return [
-                DashboardWidget(
-                    kind: .pauseStreaks,
-                    selectedPauseCategories: ["Overall"]
-                ),
+                DashboardWidget(kind: .pauseStreaks, selectedPauseCategories: ["Overall"]),
                 DashboardWidget(kind: .moneySaved),
                 DashboardWidget(kind: .impulsesResisted)
             ]
         }
-        
-        let validSavedCategories = config.enabledCategories.filter { category in
-                    availableCategories.contains(category)
-            }
+
+        let validSavedCategories = config.enabledCategories.filter { availableCategories.contains($0) }
         let savedCategories = validSavedCategories.isEmpty ? ["Overall"] : validSavedCategories
 
         return filteredTypes.map { type in
             switch type {
             case .pauseStreaks:
-                return DashboardWidget(
-                    kind: .pauseStreaks,
-                    selectedPauseCategories: savedCategories
-                )
+                return DashboardWidget(kind: .pauseStreaks, selectedPauseCategories: savedCategories)
             case .moneySaved:
                 return DashboardWidget(kind: .moneySaved)
             case .impulsesResisted:
                 return DashboardWidget(kind: .impulsesResisted)
             case .activityCalendar:
                 return DashboardWidget(kind: .activityCalendar)
+            case .budget:
+                return DashboardWidget(kind: .budget)
             }
         }
     }
 
     private func saveCurrentDashboard() {
+        guard let uid = session.userProfile?.id else { return }
         let pauseCategories =
             widgets.first(where: { $0.kind == .pauseStreaks })?.selectedPauseCategories ?? ["Overall"]
-
         let widgetKinds = widgets.map(\.kind.rawValue)
-
         let config = DashboardConfig(
             enabledWidgets: widgetKinds,
             widgetOrder: widgetKinds,
             enabledCategories: pauseCategories
         )
-
-        viewModel.saveDashboardConfig(config)
+        viewModel.saveDashboardConfig(config, uid: uid)
     }
 
     private func updatePauseCategories(widgetID: UUID, categories: [String]) {
         guard let index = widgets.firstIndex(where: { $0.id == widgetID }) else { return }
-
-        let cleanedCategories = categories.filter { category in
-            category == "Overall" || availableCategories.contains(category)
-        }
-
+        let cleanedCategories = categories.filter { availableCategories.contains($0) }
         widgets[index].selectedPauseCategories = cleanedCategories.isEmpty ? ["Overall"] : cleanedCategories
-
         if configuringWidget?.id == widgetID {
             configuringWidget?.selectedPauseCategories = widgets[index].selectedPauseCategories
         }
-
         saveCurrentDashboard()
     }
 }
 
 #Preview {
-    HomeView()
-        .environmentObject(AppSessionViewModel())
+    HomeView().environmentObject(AppSessionViewModel())
 }

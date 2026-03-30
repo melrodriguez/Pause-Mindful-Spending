@@ -10,20 +10,28 @@ struct DashboardGrid: View {
     let moneySavedState: MoneySavedState
     let streakState: DashboardStreakState
     let activityCalendarData: [String: Int]
-    
+    let budgetState: BudgetState
+    let allCategories: [String]
     let onRemove: (DashboardWidget) -> Void
     let onEditCategories: (DashboardWidget) -> Void
+    let onSaveBudget: ([BudgetCategory]) -> Void
+
+    @State private var showingBudgetEditor = false
 
     var body: some View {
         LazyVStack(spacing: 5) {
             ForEach(widgets) { widget in
-                
+
                 DashboardWidgetView(
                     widget: widget,
                     impulsesState: impulsesState,
                     moneySavedState: moneySavedState,
                     streakState: streakState,
-                    activityCalendarData: activityCalendarData
+                    activityCalendarData: activityCalendarData,
+                    budgetState: budgetState,
+                    allCategories: allCategories,
+                    onSaveBudget: onSaveBudget,
+                    showingBudgetEditor: $showingBudgetEditor
                 )
                 .wiggle(isEditingDashboard)
                 .scaleEffect(draggedWidget?.id == widget.id ? 1.03 : 1.0)
@@ -36,12 +44,22 @@ struct DashboardGrid: View {
                     } label: {
                         Label("Edit Dashboard", systemImage: "square.grid.2x2")
                     }
-                    
+
+                    // Pause streaks category editor
                     if widget.kind == .pauseStreaks {
                         Button {
                             onEditCategories(widget)
                         } label: {
                             Label("Edit Categories", systemImage: "slider.horizontal.3")
+                        }
+                    }
+
+                    // Budget editor
+                    if widget.kind == .budget {
+                        Button {
+                            showingBudgetEditor = true
+                        } label: {
+                            Label("Edit Budget", systemImage: "slider.horizontal.3")
                         }
                     }
 

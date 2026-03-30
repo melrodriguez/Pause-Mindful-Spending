@@ -18,13 +18,14 @@ class DashboardViewModel: ObservableObject {
     )
     @Published var streakState: DashboardStreakState = .empty
     @Published var activityCalendarData: [String: Int] = [:]
+    @Published var budgetState: BudgetState = .empty
 
-    private let repo = DashboardRepository()
+    let repo = DashboardRepository()
 
     init() {
-        self.dashboardConfig = repo.loadLocalDashboardConfig()
+        self.dashboardConfig = .empty
     }
-
+    
     func loadCategories(uid: String, completion: (() -> Void)? = nil) {
         repo.fetchCategoryNames(uid: uid) { [weak self] categories in
             self?.categories = categories
@@ -32,9 +33,9 @@ class DashboardViewModel: ObservableObject {
         }
     }
 
-    func saveDashboardConfig(_ config: DashboardConfig) {
+    func saveDashboardConfig(_ config: DashboardConfig, uid: String) {
         dashboardConfig = config
-        repo.saveLocalDashboardConfig(config)
+        repo.saveLocalDashboardConfig(config, uid: uid)
     }
     
     func loadImpulsesState(uid: String) {
@@ -59,5 +60,28 @@ class DashboardViewModel: ObservableObject {
         repo.fetchActivityCalendarState(uid: uid) { [weak self] data in
             self?.activityCalendarData = data
         }
+    }
+
+    func loadBudgetState(uid: String) {
+        let cached = repo.loadCachedBudgetConfig(uid: uid)
+        if !cached.isEmpty {
+            budgetState = BudgetState(categories: cached, currencySymbol: "$")
+        }
+
+        repo.fetchBudgetState(uid: uid) { [weak self] state in
+            self?.budgetState = state
+        }
+    }
+
+    func saveBudgetCategories(_ budgets: [BudgetCategory], uid: String) {
+        let previous = budgetState.categories
+        repo.saveBudgetConfig(uid: uid, budgets: budgets, previousBudgets: previous) { [weak self] success in
+            guard success else { return }
+            self?.loadBudgetState(uid: uid)
+        }
+    }
+    
+    func loadConfig(uid: String) {
+        dashboardConfig = repo.loadLocalDashboardConfig(uid: uid)
     }
 }
