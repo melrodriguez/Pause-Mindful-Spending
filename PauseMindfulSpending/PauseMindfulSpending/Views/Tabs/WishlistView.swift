@@ -4,6 +4,8 @@ struct WishlistView: View {
     
     @StateObject private var viewModel: WishlistViewModel
     @EnvironmentObject var session: AppSessionViewModel
+    
+    @State private var showingSortBySheet = false
 
     init(viewModel: WishlistViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -31,10 +33,8 @@ struct WishlistView: View {
                         }
                         HStack{
                             Spacer()
-                            Menu {
-                                Button("Category") {
-                                    print("Sort by Category")
-                                }
+                            Button() {
+                                showingSortBySheet = true
                             } label: {
                                 Image("Sort")
                                     .resizable()
@@ -76,6 +76,9 @@ struct WishlistView: View {
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
                 viewModel.getItems()
+            }
+            .sheet(isPresented: $showingSortBySheet) {
+                SortBySheet(viewModel: viewModel).presentationDetents([.medium, .large])
             }
         }
     }
