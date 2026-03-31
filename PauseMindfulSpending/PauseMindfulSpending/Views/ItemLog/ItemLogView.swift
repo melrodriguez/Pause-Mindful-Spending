@@ -180,9 +180,7 @@ struct ItemLogView: View {
                         }
                         
                         Button(action: {
-                            //viewModel.setItemAsBought(uid: uid)
-                            showItemBoughtView = true
-                            print("bought")
+                            viewModel.setItemAsBought(uid: uid)
                         }) {
                             Text("Bought item")
                                 .frame(maxWidth: .infinity)
