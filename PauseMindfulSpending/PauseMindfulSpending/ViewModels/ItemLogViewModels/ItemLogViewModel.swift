@@ -132,6 +132,13 @@ class ItemLogViewModel: ObservableObject {
         firestoreService.setItemAsBought(uid: uid, itemId: itemId)
     }
     
+    func setItemAsCompleted(uid: String) {
+        // Temporary function
+        guard let itemId = item.id else { return }
+        
+        firestoreService.setItemAsCompleted(uid: uid, itemId: itemId)
+    }
+
     // Mood and category never gets deselected
     // -> Only required fields are name and cost
     func updateIsValid(name: String, cost: Double) -> Bool {

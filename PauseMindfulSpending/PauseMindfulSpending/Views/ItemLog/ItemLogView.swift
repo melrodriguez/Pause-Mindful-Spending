@@ -191,6 +191,20 @@ struct ItemLogView: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(5)
                         }
+                        
+                        // TEMPORARY BUTTON
+                        Button(action: {
+                            viewModel.setItemAsCompleted(uid: uid)
+                            dismiss()
+                        }) {
+                            Text("Complete item")
+                                .frame(maxWidth: .infinity)
+                                .padding(15)
+                                .font(AppFonts.subhead)
+                                .background(AppColors.mainGreen)
+                                .foregroundColor(.white)
+                                .cornerRadius(5)
+                        }
                     }
                 }
                 .padding()
