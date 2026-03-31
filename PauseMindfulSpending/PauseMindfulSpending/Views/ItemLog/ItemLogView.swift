@@ -181,6 +181,7 @@ struct ItemLogView: View {
                         
                         Button(action: {
                             viewModel.setItemAsBought(uid: uid)
+                            dismiss()
                         }) {
                             Text("Bought item")
                                 .frame(maxWidth: .infinity)
