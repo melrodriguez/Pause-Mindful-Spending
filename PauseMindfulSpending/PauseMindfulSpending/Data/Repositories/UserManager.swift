@@ -101,4 +101,47 @@ class UserManager {
         return Auth.auth().currentUser?.uid
     }
     
+    func deleteAccount(
+        email: String,
+        password: String,
+        completion: @escaping (Bool, String?) -> Void
+    ) {
+        // Re-authenticate first, then delete Firestore data, then delete the Auth user
+        guard let user = Auth.auth().currentUser else {
+            completion(false, "No user is signed in.")
+            return
+        }
+
+        let credential = EmailAuthProvider.credential(withEmail: email, password: password)
+
+        // Re-authenticate
+        user.reauthenticate(with: credential) { _, error in
+            if let error = error {
+                // Wrong password or network error
+                completion(false, "Incorrect password. Please try again.")
+                return
+            }
+
+            let uid = user.uid
+
+            // Delete all Firestore data for this user
+            self.fireStore.deleteAllUserData(uid: uid) { success in
+                guard success else {
+                    completion(false, "Failed to delete account data. Please try again.")
+                    return
+                }
+
+                // Delete the Firebase Auth account
+                user.delete { error in
+                    if let error = error {
+                        print("DEBUG: Failed to delete auth user \(error.localizedDescription)")
+                        completion(false, "Failed to delete account. Please try again.")
+                    } else {
+                        completion(true, nil)
+                    }
+                }
+            }
+        }
+    }
+    
 }

@@ -36,6 +36,18 @@ final class AppSessionViewModel: ObservableObject {
         userManager.logout()
     }
     
+    func deleteAccount(password: String) {
+        guard let email = userProfile?.email else { return }
+
+        userManager.deleteAccount(email: email, password: password) { success, errorMessage in
+            if success {
+                // Route the user back to login
+            } else {
+                print(errorMessage!)
+            }
+        }
+    }
+    
     func loadSessionData(uid: String) {
         guard !uid.isEmpty else { return }
         guard !isLoading else { return }
