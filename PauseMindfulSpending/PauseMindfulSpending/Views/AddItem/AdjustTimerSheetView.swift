@@ -2,24 +2,22 @@ import SwiftUI
 
 struct AdjustTimerSheetView: View {
     @Environment(\.dismiss) var dismiss
+    @State private var dayInput: String = ""
+    @State private var hourInput: String = ""
+    @State private var minuteInput: String = ""
+    @State private var userClicked: Field = .day
+    
+    enum Field {
+        case day, hour, minute
+    }
+    
     @State private var input: String = ""
     var onConfirm: (Int) -> Void = { _ in }
     
-    
-    var days: String {
-        input.count >= 3 ? String(input.prefix(input.count - 2)) : "00"
-    }
-    var hours: String {
-        input.count >= 2 ? String(input.suffix(min(input.count, 2)).prefix(1)) : "00"
-    }
-    var minutes: String {
-        input.count >= 1 ? String(input.suffix(1)) : "00"
-    }
-    
     var totalSeconds: Int {
-        let d = Int(days) ?? 0
-        let h = Int(hours) ?? 0
-        let m = Int(minutes) ?? 0
+        let d = Int(dayInput) ?? 0
+        let h = Int(hourInput) ?? 0
+        let m = Int(minuteInput) ?? 0
         return (d*86400) + (h*3600) + (m*60)
     }
     
@@ -33,7 +31,7 @@ struct AdjustTimerSheetView: View {
     var body: some View {
         ZStack {
             LinearGradient.timerGradient.ignoresSafeArea()
-            .ignoresSafeArea()
+                .ignoresSafeArea()
             
             VStack(spacing: 20) {
                 HStack {
@@ -47,13 +45,14 @@ struct AdjustTimerSheetView: View {
                 Text("Set Timer")
                     .font(AppFonts.headline)
                 
-                Text("\(days)d \(hours)h \(minutes)m")
-                    .font(.system(size: 32, weight: .bold))
-                    .frame(maxWidth: .infinity)
-                    .padding(20)
-                    .background(Color.white.opacity(0.5))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
+                HStack(spacing: 12) {
+                    fieldBox(label: "Days", value: dayInput, Field: .day)
+                    Text(":").font(.system(size: 24, weight: .bold))
+                    fieldBox(label: "Hours", value: hourInput, Field: .hour)
+                    Text(":").font(.system(size: 24, weight: .bold))
+                    fieldBox(label: "Mins", value: minuteInput, Field: .minute)
+                }
+                .padding(.horizontal)
                 
                 VStack(spacing: 12) {
                     ForEach(buttons, id: \.self) { row in
@@ -84,6 +83,15 @@ struct AdjustTimerSheetView: View {
         }
     }
     
+    private func fieldBox(label: String, value: String, Field: Field) -> some View {
+        VStack(spacing: 4) {
+            Text(value.isEmpty ? "00" : value).font(.system(size: 32, weight: .bold)).frame(maxWidth: .infinity).padding(12).background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(userClicked == Field ? 0.8 : 0.4)).overlay(RoundedRectangle(cornerRadius: 12).stroke(userClicked == Field ? Color.mainGreen : Color.clear, lineWidth: 2)))
+            Text(label).font(.caption)
+        }
+        .onTapGesture {
+            userClicked = Field
+        }
+    }
     private func numberButton(_ value: String) -> some View {
         Button {
             handleInput(value)
@@ -98,11 +106,31 @@ struct AdjustTimerSheetView: View {
     }
     
     private func handleInput(_ value: String) {
+        let current: String
+        let maxDigits: Int
+        let maxValue: Int
+        
+        switch userClicked {
+        case .day:    current = dayInput;    maxDigits = 3; maxValue = 999
+        case .hour:   current = hourInput;   maxDigits = 2; maxValue = 23
+        case .minute: current = minuteInput; maxDigits = 2; maxValue = 59
+        }
+        
         if value == "⌫" {
-            if !input.isEmpty { input.removeLast() }
+            let trimmed = String(current.dropLast())
+            switch userClicked {
+            case .day:    dayInput = trimmed
+            case .hour:   hourInput = trimmed
+            case .minute: minuteInput = trimmed
+            }
         } else {
-            if input.count < 6 {
-                input += value
+            let newVal = current + value
+            if newVal.count <= maxDigits, let num = Int(newVal), num <= maxValue {
+                switch userClicked {
+                case .day:    dayInput = newVal
+                case .hour:   hourInput = newVal
+                case .minute: minuteInput = newVal
+                }
             }
         }
     }
