@@ -81,6 +81,12 @@ struct RootView: View {
                         }
                     })
                 }
+                .onOpenURL { url in
+                    // Launched via share extension deep link
+                    if url.scheme == "pause" && url.host == "add-item" {
+                        showAddItem = true
+                    }
+                }
             }
         }
     }
