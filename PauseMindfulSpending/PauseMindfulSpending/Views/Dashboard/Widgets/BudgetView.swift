@@ -27,7 +27,7 @@ struct BudgetWidgetView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(AppColors.blue)
+                .fill(AppColors.mainGreen)
                 .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
         )
         .padding()
@@ -129,7 +129,7 @@ struct BudgetBarRow: View {
                         .frame(height: 10)
 
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(category.isOverBudget ? AppColors.pink : AppColors.mainGreen)
+                        .fill(category.isOverBudget ? AppColors.pink : AppColors.accentGreen)
                         .frame(
                             width: geo.size.width * category.progress,
                             height: 10
@@ -205,7 +205,7 @@ struct BudgetCategoryDetailSheet: View {
                 statBlock(
                     label: "Spent",
                     value: "\(currencySymbol)\(String(format: "%.2f", category.spent))",
-                    color: category.isOverBudget ? AppColors.pink : AppColors.mainGreen
+                    color: category.isOverBudget ? AppColors.pink : AppColors.accentGreen
                 )
 
                 Divider().frame(height: 40)
@@ -234,7 +234,7 @@ struct BudgetCategoryDetailSheet: View {
                             .frame(height: 14)
 
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(category.isOverBudget ? AppColors.pink : AppColors.mainGreen)
+                            .fill(category.isOverBudget ? AppColors.pink : AppColors.accentGreen)
                             .frame(
                                 width: geo.size.width * category.progress,
                                 height: 14
@@ -293,7 +293,7 @@ struct BudgetCategoryDetailSheet: View {
 
                                 Image(systemName: "bag")
                                     .font(.system(size: 14))
-                                    .foregroundStyle(AppColors.mainGreen)
+                                    .foregroundStyle(AppColors.accentGreen)
                             }
 
                             VStack(alignment: .leading, spacing: 2) {
