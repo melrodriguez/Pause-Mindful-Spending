@@ -44,6 +44,32 @@ struct AddItemLogView: View {
         let minutes = (timerSeconds % 3600) / 60
         return String(format: "%02dd %02dh %02dm", days, hours, minutes)
     }
+    
+    // MARK: - Shared item pre-fill, SSE
+
+    private func loadSharedItemIfPresent() {
+        let defaults = UserDefaults(suiteName: "group.utcs.PauseMindfulSpending")
+        
+        guard defaults?.bool(forKey: "has_pending_shared_item") == true else { return }
+
+        if let name = defaults?.string(forKey: "shared_item_name") {
+            vm.itemName = name
+        }
+        if let price = defaults?.string(forKey: "shared_item_price") {
+            vm.price = price
+        }
+        if let imageData = defaults?.data(forKey: "shared_item_image"),
+           let image = UIImage(data: imageData) {
+            vm.imageCaptured = image
+        }
+
+        defaults?.removeObject(forKey: "shared_item_name")
+        defaults?.removeObject(forKey: "shared_item_price")
+        defaults?.removeObject(forKey: "shared_item_image")
+        defaults?.removeObject(forKey: "shared_item_url")
+        defaults?.set(false, forKey: "has_pending_shared_item")
+        defaults?.synchronize()
+    }
 
     // MARK: - Camera
 
@@ -328,6 +354,7 @@ struct AddItemLogView: View {
         .onAppear {
             guard let uid = session.userProfile?.id else { return }
             vm.loadCategories(uid: uid)
+            loadSharedItemIfPresent()
         }
         .navigationTitle("Add Item")
         .navigationBarTitleDisplayMode(.inline)

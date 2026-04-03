@@ -20,43 +20,32 @@ class ShareViewController: UIViewController {
         let group = DispatchGroup()
 
         var extractedTitle: String? = nil
-        var extractedPrice: String? = nil
         var extractedImageData: Data? = nil
         var extractedURL: String? = nil
 
         for provider in attachments {
 
-            // URL — parse title and try to extract price from page title
             if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.url.identifier) { item, _ in
                     if let url = item as? URL {
                         extractedURL = url.absoluteString
-                        // try to get product name in the URL or page title
                     }
                     group.leave()
                 }
             }
 
-            // Plain text — page title or a copied price
             if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.plainText.identifier) { item, _ in
-                    if let text = item as? String {
-                        // Try to pull a price out of the text (e.g. "$24.99")
-                        if let price = Self.extractPrice(from: text) {
-                            extractedPrice = price
-                        }
-                        // Use the text as the item name if we don't have one yet
-                        if extractedTitle == nil {
-                            extractedTitle = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                        }
+                    if let text = item as? String, extractedTitle == nil {
+                        print("DEBUG plain text payload:", text)
+                        extractedTitle = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     }
                     group.leave()
                 }
             }
 
-            // Image
             if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.image.identifier) { item, _ in
@@ -70,11 +59,11 @@ class ShareViewController: UIViewController {
                 }
             }
 
-            // Property list (Safari sends this with page title + URL together)
             if provider.hasItemConformingToTypeIdentifier("com.apple.property-list") {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: "com.apple.property-list") { item, _ in
                     if let dict = item as? [String: Any] {
+                        print("DEBUG plist payload:", dict)
                         if let title = dict["title"] as? String {
                             extractedTitle = title
                         }
@@ -88,21 +77,86 @@ class ShareViewController: UIViewController {
         }
 
         group.notify(queue: .main) {
-            self.saveToSharedDefaults(
-                title: extractedTitle,
-                price: extractedPrice,
-                imageData: extractedImageData,
-                url: extractedURL
-            )
-            self.openMainApp()
+            let cleanedTitle = Self.cleanTitle(extractedTitle)
+
+            // Try to fetch price from the URL if we have one
+            if let urlString = extractedURL, let url = URL(string: urlString) {
+                Self.fetchPrice(from: url) { price in
+                    self.saveToSharedDefaults(
+                        title: cleanedTitle,
+                        price: price,
+                        imageData: extractedImageData,
+                        url: extractedURL
+                    )
+                    self.openMainApp()
+                }
+            } else {
+                self.saveToSharedDefaults(
+                    title: cleanedTitle,
+                    price: nil,
+                    imageData: extractedImageData,
+                    url: extractedURL
+                )
+                self.openMainApp()
+            }
         }
+    }
+
+    // MARK: - Title cleanup
+
+    private static func cleanTitle(_ title: String?) -> String? {
+        guard let title = title, !title.isEmpty else { return nil }
+
+        let separators = [" - ", " | ", " – ", " — ", ": "]
+        for sep in separators {
+            if let range = title.range(of: sep) {
+                let before = String(title[..<range.lowerBound]).trimmingCharacters(in: .whitespaces)
+                if before.count > 5 { return before }
+            }
+        }
+
+        if let commaRange = title.range(of: ", ") {
+            let before = String(title[..<commaRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+            if before.count > 5 { return before }
+        }
+
+        return title.count > 60 ? String(title.prefix(60)) : title
+    }
+
+    // MARK: - Price fetching
+
+    private static func fetchPrice(from url: URL, completion: @escaping (String?) -> Void) {
+        // Only attempt for known shopping domains to keep it fast
+        let host = url.host ?? ""
+        let shoppingDomains = ["amazon.com", "amazon.co.uk", "amazon.ca", "ebay.com",
+                               "walmart.com", "target.com", "bestbuy.com", "etsy.com"]
+        guard shoppingDomains.contains(where: { host.contains($0) }) else {
+            completion(nil)
+            return
+        }
+
+        var request = URLRequest(url: url, timeoutInterval: 5)
+        request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+                         forHTTPHeaderField: "User-Agent")
+
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            guard let data = data,
+                  let html = String(data: data, encoding: .utf8) else {
+                completion(nil)
+                return
+            }
+
+            let price = extractPrice(from: html)
+            DispatchQueue.main.async {
+                completion(price)
+            }
+        }.resume()
     }
 
     // MARK: - Price extraction
 
-    // Looks for patterns like $24.99, £12, €8.50 in a string
     private static func extractPrice(from text: String) -> String? {
-        let pattern = #"[\$£€¥]\s*\d+(?:[.,]\d{1,2})?"#
+        let pattern = #"[\$£€¥]\s*\d{1,5}(?:[.,]\d{1,2})?"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(
                 in: text,
@@ -127,9 +181,6 @@ class ShareViewController: UIViewController {
         imageData: Data?,
         url: String?
     ) {
-        // IMPORTANT: Replace "group.com.yourcompany.pause" with your actual
-        // App Group identifier (set up in Signing & Capabilities for both
-        // the main app target AND this extension target)
         let defaults = UserDefaults(suiteName: "group.utcs.PauseMindfulSpending")
         defaults?.set(title, forKey: "shared_item_name")
         defaults?.set(price, forKey: "shared_item_price")
@@ -142,8 +193,6 @@ class ShareViewController: UIViewController {
     // MARK: - Open main app
 
     private func openMainApp() {
-        // Deep link URL — register "pause://" as a URL scheme in your main
-        // app's Info.plist under URL Types
         guard let url = URL(string: "pause://add-item") else {
             cancel()
             return

@@ -268,7 +268,7 @@
 				INFOPLIST_FILE = PauseShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PauseShareExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -298,7 +298,7 @@
 				INFOPLIST_FILE = PauseShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PauseShareExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
