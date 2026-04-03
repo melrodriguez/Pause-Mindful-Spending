@@ -206,7 +206,7 @@ extension FireStoreService {
                 self.updateCategoryStreak(uid: uid, categoryId: categoryId, dateItemBought: Date())
             }
                 
-            self.deleteTimer(uid: uid, timerId: timerId)
+            self.pauseTimer(uid: uid, timerId: timerId)
             self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
                 "status": "bought",
                 "timerId": FieldValue.delete(),

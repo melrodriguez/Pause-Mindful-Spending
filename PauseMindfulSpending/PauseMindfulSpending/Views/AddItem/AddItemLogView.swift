@@ -239,7 +239,7 @@ struct AddItemLogView: View {
             Button("Ok", role: .cancel) {
             }
         } message: {
-            Text("Please fill in your item name, category, price, and mood before proceeding.")
+            Text("Please fill in your item name, price, and mood before proceeding.")
         }
         .contentShape(Rectangle())
         .onTapGesture {
