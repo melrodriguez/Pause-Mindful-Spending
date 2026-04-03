@@ -2,6 +2,7 @@ import UIKit
 import Social
 import MobileCoreServices
 import UniformTypeIdentifiers
+import SystemConfiguration
 
 class ShareViewController: UIViewController {
 
@@ -39,7 +40,6 @@ class ShareViewController: UIViewController {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.plainText.identifier) { item, _ in
                     if let text = item as? String, extractedTitle == nil {
-                        print("DEBUG plain text payload:", text)
                         extractedTitle = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     }
                     group.leave()
@@ -63,7 +63,6 @@ class ShareViewController: UIViewController {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: "com.apple.property-list") { item, _ in
                     if let dict = item as? [String: Any] {
-                        print("DEBUG plist payload:", dict)
                         if let title = dict["title"] as? String {
                             extractedTitle = title
                         }
@@ -79,8 +78,11 @@ class ShareViewController: UIViewController {
         group.notify(queue: .main) {
             let cleanedTitle = Self.cleanTitle(extractedTitle)
 
-            // Try to fetch price from the URL if we have one
-            if let urlString = extractedURL, let url = URL(string: urlString) {
+            // Only attempt price fetch if we have a URL and network is reachable
+            // (skips the fetch on simulator which has no network route)
+            if let urlString = extractedURL,
+               let url = URL(string: urlString),
+               Self.isNetworkReachable() {
                 Self.fetchPrice(from: url) { price in
                     self.saveToSharedDefaults(
                         title: cleanedTitle,
@@ -91,6 +93,7 @@ class ShareViewController: UIViewController {
                     self.openMainApp()
                 }
             } else {
+                // No network or no URL — save title and open immediately
                 self.saveToSharedDefaults(
                     title: cleanedTitle,
                     price: nil,
@@ -103,10 +106,11 @@ class ShareViewController: UIViewController {
     }
 
     // MARK: - Title cleanup
-
+    
     private static func cleanTitle(_ title: String?) -> String? {
         guard let title = title, !title.isEmpty else { return nil }
 
+        // Take the first meaningful chunk
         let separators = [" - ", " | ", " – ", " — ", ": "]
         for sep in separators {
             if let range = title.range(of: sep) {
@@ -120,13 +124,31 @@ class ShareViewController: UIViewController {
             if before.count > 5 { return before }
         }
 
+        // Fall back to truncating at 60 chars
         return title.count > 60 ? String(title.prefix(60)) : title
+    }
+
+    // MARK: - Network check
+
+    private static func isNetworkReachable() -> Bool {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+
+        guard let reachability = withUnsafePointer(to: &zeroAddress, {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                SCNetworkReachabilityCreateWithAddress(nil, $0)
+            }
+        }) else { return false }
+
+        var flags: SCNetworkReachabilityFlags = []
+        SCNetworkReachabilityGetFlags(reachability, &flags)
+        return flags.contains(.reachable) && !flags.contains(.connectionRequired)
     }
 
     // MARK: - Price fetching
 
     private static func fetchPrice(from url: URL, completion: @escaping (String?) -> Void) {
-        // Only attempt for known shopping domains to keep it fast
         let host = url.host ?? ""
         let shoppingDomains = ["amazon.com", "amazon.co.uk", "amazon.ca", "ebay.com",
                                "walmart.com", "target.com", "bestbuy.com", "etsy.com"]
