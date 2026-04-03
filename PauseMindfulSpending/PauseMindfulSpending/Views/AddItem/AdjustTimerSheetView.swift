@@ -34,16 +34,11 @@ struct AdjustTimerSheetView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
-                HStack {
-                    Spacer()
-                    Image("AppLogo")
-                        .resizable()
-                        .frame(width: 40, height: 40)
-                }
-                .padding(.horizontal)
+                Spacer()
                 
                 Text("Set Timer")
                     .font(AppFonts.headline)
+                    .padding(.top, 20)
                 
                 HStack(spacing: 12) {
                     fieldBox(label: "Days", value: dayInput, Field: .day)
