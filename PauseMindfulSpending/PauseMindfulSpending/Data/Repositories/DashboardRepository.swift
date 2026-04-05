@@ -318,26 +318,22 @@ class DashboardRepository {
         return decoded
     }
 
-    // Fetches budget limits from Firestore, then applies spending from item_bought events.
     func fetchBudgetState(
         uid: String,
         completion: @escaping (BudgetState) -> Void
     ) {
         let service = FireStoreService()
 
-        // Fetch saved limits from Firestore
         service.fetchBudgets(uid: uid) { savedBudgets in
             guard !savedBudgets.isEmpty else {
                 completion(BudgetState(categories: [], currencySymbol: "$"))
                 return
             }
 
-            // Cache locally for fast next load
             if let encoded = try? JSONEncoder().encode(savedBudgets) {
                 UserDefaults.standard.set(encoded, forKey: "budget_config_\(uid)")
             }
 
-            // Fetch events to calculate spending
             service.fetchEventList(uid: uid) { eventIds in
                 guard !eventIds.isEmpty else {
                     completion(BudgetState(categories: savedBudgets, currencySymbol: "$"))
@@ -345,36 +341,99 @@ class DashboardRepository {
                 }
 
                 let group = DispatchGroup()
-                var events: [DashboardEvent] = []
+
+                struct RawPurchase {
+                    let eventId: String
+                    let itemId: String?
+                    let categoryId: String?
+                    let amount: Double
+                    let date: Date
+                }
+
+                var rawPurchases: [RawPurchase] = []
 
                 for eventId in eventIds {
                     group.enter()
                     service.fetchDetailsFromEvent(uid: uid, eventId: eventId) { details in
                         defer { group.leave() }
-
                         guard
                             let details = details,
                             let type = details["type"] as? String,
                             type == "item_bought",
+                            let amount = details["amount"] as? Double,
                             let timestamp = details["createdAt"] as? Timestamp
                         else { return }
 
-                        events.append(DashboardEvent(
-                            id: eventId,
-                            type: type,
-                            createdAt: timestamp.dateValue(),
+                        rawPurchases.append(RawPurchase(
+                            eventId: eventId,
                             itemId: details["itemId"] as? String,
-                            timerId: details["timerId"] as? String,
-                            category: details["categoryId"] as? String,
-                            amount: details["amount"] as? Double,
-                            currencyCode: nil
+                            categoryId: details["categoryId"] as? String,
+                            amount: amount,
+                            date: timestamp.dateValue()
                         ))
                     }
                 }
 
                 group.notify(queue: .main) {
-                    let withSpending = BudgetCalculator.applySpending(to: savedBudgets, from: events)
-                    completion(BudgetState(categories: withSpending, currencySymbol: "$"))
+                    let resolveGroup = DispatchGroup()
+
+                    var idToName: [String: String] = [:]
+                    for categoryId in Set(rawPurchases.compactMap(\.categoryId)) {
+                        resolveGroup.enter()
+                        service.fetchCategoryStringUsingId(uid: uid, categoryId: categoryId) { name in
+                            if let name = name { idToName[categoryId] = name }
+                            resolveGroup.leave()
+                        }
+                    }
+
+                    var itemIdToName: [String: String] = [:]
+                    for itemId in Set(rawPurchases.compactMap(\.itemId)) {
+                        resolveGroup.enter()
+                        service.fetchItem(uid: uid, itemId: itemId) { data in
+                            if let name = data?["name"] as? String {
+                                itemIdToName[itemId] = name
+                            }
+                            resolveGroup.leave()
+                        }
+                    }
+
+                    resolveGroup.notify(queue: .main) {
+                        var overallPurchases: [BudgetPurchase] = []
+                        var purchasesByName: [String: [BudgetPurchase]] = [:]
+
+                        for raw in rawPurchases.sorted(by: { $0.date > $1.date }) {
+                            let itemName = raw.itemId.flatMap { itemIdToName[$0] } ?? "Unknown item"
+
+                            let purchase = BudgetPurchase(
+                                id: raw.eventId,
+                                itemName: itemName,
+                                amount: raw.amount,
+                                date: raw.date
+                            )
+
+                            overallPurchases.append(purchase)
+
+                            if let categoryId = raw.categoryId,
+                               let name = idToName[categoryId] {
+                                purchasesByName[name, default: []].append(purchase)
+                            }
+                        }
+
+                        let withSpending: [BudgetCategory] = savedBudgets.map { budget in
+                            var updated = budget
+                            if budget.id == "Overall" {
+                                updated.spent = overallPurchases.reduce(0) { $0 + $1.amount }
+                                updated.purchases = overallPurchases
+                            } else {
+                                let categoryPurchases = purchasesByName[budget.id] ?? []
+                                updated.spent = categoryPurchases.reduce(0) { $0 + $1.amount }
+                                updated.purchases = categoryPurchases
+                            }
+                            return updated
+                        }
+
+                        completion(BudgetState(categories: withSpending, currencySymbol: "$"))
+                    }
                 }
             }
         }

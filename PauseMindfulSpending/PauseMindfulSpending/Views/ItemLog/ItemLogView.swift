@@ -178,11 +178,37 @@ struct ItemLogView: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(5)
                         }
+                        
+                        Button(action: {
+                            viewModel.setItemAsBought(uid: uid)
+                            dismiss()
+                        }) {
+                            Text("Bought item")
+                                .frame(maxWidth: .infinity)
+                                .padding(15)
+                                .font(AppFonts.subhead)
+                                .background(AppColors.mainGreen)
+                                .foregroundColor(.white)
+                                .cornerRadius(5)
+                        }
+                        
+                        // TEMPORARY BUTTON
+                        Button(action: {
+                            viewModel.setItemAsCompleted(uid: uid)
+                            dismiss()
+                        }) {
+                            Text("Complete item")
+                                .frame(maxWidth: .infinity)
+                                .padding(15)
+                                .font(AppFonts.subhead)
+                                .background(AppColors.mainGreen)
+                                .foregroundColor(.white)
+                                .cornerRadius(5)
+                        }
                     }
                 }
                 .padding()
             }
-            
             .appBackground()
             // Only show back button when not on the pop up
             .toolbar(showDeletePopup ? .hidden : .visible, for: .navigationBar)
@@ -196,11 +222,10 @@ struct ItemLogView: View {
                     vm: viewModel,
                     editItem: {
                         viewModel.updateItem(uid: uid)
-                        print("ItemLogView -> Pressed edit item")
                     }
                 )
             }
-            
+
             // Be careful with this!
             if (showDeletePopup) {
                 // Blur the background
