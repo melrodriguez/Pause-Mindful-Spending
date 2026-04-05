@@ -125,6 +125,15 @@ class ShareViewController: UIViewController {
         }
 
         // Fall back to truncating at 60 chars
+        
+        if title.count > 40 {
+            let truncated = String(title.prefix(40))
+            // Walk back to the last space so we don't cut mid-word
+            if let lastSpace = truncated.lastIndex(of: " ") {
+                return String(truncated[..<lastSpace])
+            }
+            return truncated
+        }
         return title.count > 60 ? String(title.prefix(60)) : title
     }
 
