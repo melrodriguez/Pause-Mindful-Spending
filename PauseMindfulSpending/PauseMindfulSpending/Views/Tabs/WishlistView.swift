@@ -43,6 +43,8 @@ struct WishlistView: View {
                     }
                     .padding(.trailing, 20)
                     
+                    Divider()
+                    
                     if viewModel.items.isEmpty {
                         //EmptyListView()
                         VStack(alignment: .center) {
