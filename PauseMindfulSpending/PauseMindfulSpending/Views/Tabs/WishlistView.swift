@@ -6,8 +6,8 @@ struct WishlistView: View {
     @EnvironmentObject var session: AppSessionViewModel
     
     @State private var showingSortBySheet = false
-    @State private var selectedSortField: String? = nil
-    @State private var selectedSortName: String? = nil
+    @State private var selectedSortField: String = "status"
+    @State private var selectedSortName: String = "wishlist"
 
     init(viewModel: WishlistViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -102,19 +102,16 @@ struct WishlistView: View {
                 SortBySheet(viewModel: viewModel, selectedSortField: $selectedSortField, selectedSortName: $selectedSortName).presentationDetents([.medium, .large])
             }
             .onChange(of: selectedSortName) { _, newValue in
-                if let fieldName = selectedSortField,
-                   let fieldValue = selectedSortName {
-                    if fieldName == "status" {
-                        viewModel.filterByStatus(status: fieldValue)
-                    }
-                    if fieldName == "category" {
-                        viewModel.filterByCategory(categoryId: fieldValue)
-                    }
+                if selectedSortField == "status" {
+                    viewModel.filterByStatus(status: selectedSortName)
+                }
+                if selectedSortField == "category" {
+                    viewModel.filterByCategory(categoryId: selectedSortName)
                 }
             }
             .onDisappear() {
-                selectedSortName = nil
-                selectedSortField = nil
+                selectedSortField = "status"
+                selectedSortName = "wishlist"
             }
         }
     }

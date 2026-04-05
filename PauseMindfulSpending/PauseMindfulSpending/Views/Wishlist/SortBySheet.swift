@@ -5,8 +5,8 @@ struct SortBySheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: WishlistViewModel
     let statusList: [String] = ["Wishlist", "Bought"]
-    @Binding var selectedSortField: String?
-    @Binding var selectedSortName: String?
+    @Binding var selectedSortField: String
+    @Binding var selectedSortName: String
 
     
     var body: some View {
@@ -21,10 +21,8 @@ struct SortBySheet: View {
                             HStack {
                                 Text(status)
                                 Spacer()
-                                if let sortName = selectedSortName {
-                                    if sortName == status.lowercased() {
-                                        Image(systemName: "checkmark")
-                                    }
+                                if selectedSortName == status.lowercased() {
+                                    Image(systemName: "checkmark")
                                 }
                             }
                         }
@@ -41,10 +39,8 @@ struct SortBySheet: View {
                             HStack {
                                 Text(category.name)
                                 Spacer()
-                                if let sortName = selectedSortName {
-                                    if sortName == category.id! {
-                                        Image(systemName: "checkmark")
-                                    }
+                                if selectedSortName == category.id! {
+                                    Image(systemName: "checkmark")
                                 }
                             }
 

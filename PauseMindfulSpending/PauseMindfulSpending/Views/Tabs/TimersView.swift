@@ -4,6 +4,8 @@ struct TimersView: View {
     
     @StateObject private var viewModel: TimerViewModel
     @EnvironmentObject var session: AppSessionViewModel
+    @State private var showingSortBySheet = false
+    @State private var sortOrder = "Ascending"
 
     init(viewModel: TimerViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -35,8 +37,22 @@ struct TimersView: View {
                     .padding(.top , 100)
                 } else {
                     ScrollView {
+                        HStack{
+                            Spacer()
+                            Button() {
+                                showingSortBySheet = true
+                            } label: {
+                                Image("Sort")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 25, height: 25)
+                            }
+                        }
+                        .padding(.trailing, 20)
+                        
+                        Divider()
+
                         switch session.userSettings?.wishlistLayout {
-                            // TODO: Make this less hardcoded
                         case .grid:
                             TimerGrid(viewModel: viewModel, columns: [
                                 GridItem(.fixed(180), spacing: 8),
@@ -67,7 +83,13 @@ struct TimersView: View {
             .appBackground()
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
-                viewModel.getTimerItems()
+                viewModel.getTimerItems(sortOrder: sortOrder)
+            }
+            .sheet(isPresented: $showingSortBySheet) {
+                TimerSortBySheet(viewModel: viewModel, sortOrder: $sortOrder).presentationDetents([.medium, .large])
+            }
+            .onChange(of: sortOrder) {
+                viewModel.getTimerItems(sortOrder: sortOrder)
             }
         }
     }
