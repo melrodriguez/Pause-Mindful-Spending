@@ -45,8 +45,7 @@ struct WishlistView: View {
                     
                     Divider()
                     
-                    if viewModel.items.isEmpty {
-                        //EmptyListView()
+                    if viewModel.emptyList {
                         VStack(alignment: .center) {
                             Image("GreyAppLogo")
                                 .resizable()

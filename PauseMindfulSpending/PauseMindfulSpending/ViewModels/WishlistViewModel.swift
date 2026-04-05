@@ -12,6 +12,7 @@ final class WishlistViewModel: ObservableObject {
     private var listener: ListenerRegistration?
     
     let uid: String
+    var emptyList: Bool = false
     
     init(uid: String, userProfile: UserProfile) {
         self.uid = uid
@@ -46,6 +47,8 @@ final class WishlistViewModel: ObservableObject {
                 self.items = snapshot?.documents.compactMap { document in
                     try? document.data(as: Item.self)
                 } ?? []
+                
+                self.emptyList = self.items.isEmpty
             }
     }
     
