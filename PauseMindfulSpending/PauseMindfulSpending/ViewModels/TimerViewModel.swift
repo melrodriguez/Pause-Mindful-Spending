@@ -50,6 +50,7 @@ final class TimerViewModel: ObservableObject {
             .document(uid)
             .collection("timers")
             .whereField("status", isEqualTo: "active")
+            .order(by: "endDate", descending: false)
             .addSnapshotListener { snapshot, error in
                 if let error = error {
                     print("Error getting items: \(error)")

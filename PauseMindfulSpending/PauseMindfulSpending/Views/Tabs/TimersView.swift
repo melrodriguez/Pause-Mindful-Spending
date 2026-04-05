@@ -14,24 +14,27 @@ struct TimersView: View {
             VStack(alignment: .leading) {
                 AppHeader(title: "Timers")
                 if viewModel.timerItems.isEmpty {
-                    EmptyListView()
+                    VStack(alignment: .center) {
+                        Image("GreyAppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 150)
+                            .shadow(color: .black.opacity(0.5), radius: 8, x: 5, y: 5)
+                        
+                        Text("Nothing yet")
+                            .font(AppFonts.bold(30))
+                            .foregroundColor(AppColors.textSecondary)
+                        
+                        Text("Add before you buy - mindful spending starts with a single pause")
+                            .font(AppFonts.regular(15))
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: 280)
+                            .foregroundColor(AppColors.textTertiary)
+                    }
+                    .opacity(0.7)
+                    .padding(.top , 100)
                 } else {
                     ScrollView {
-                        HStack{
-                            Spacer()
-                            Menu {
-                                Button("Category") {
-                                    print("Sort by Category")
-                                }
-                            } label: {
-                                Image("Sort")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 25, height: 25)
-                            }
-                        }
-                        .padding(.trailing, 20)
-                        
                         switch session.userSettings?.wishlistLayout {
                             // TODO: Make this less hardcoded
                         case .grid:

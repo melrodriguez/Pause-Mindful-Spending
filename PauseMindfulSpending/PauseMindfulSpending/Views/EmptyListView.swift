@@ -20,7 +20,6 @@ struct EmptyListView: View {
                 .frame(maxWidth: 280)
                 .foregroundColor(AppColors.textTertiary)
         }
-        .appBackground()
         .opacity(0.7)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

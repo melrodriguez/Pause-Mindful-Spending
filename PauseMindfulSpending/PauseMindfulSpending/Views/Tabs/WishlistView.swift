@@ -6,6 +6,8 @@ struct WishlistView: View {
     @EnvironmentObject var session: AppSessionViewModel
     
     @State private var showingSortBySheet = false
+    @State private var selectedSortField: String? = nil
+    @State private var selectedSortName: String? = nil
 
     init(viewModel: WishlistViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -15,37 +17,55 @@ struct WishlistView: View {
         NavigationStack { // wrap entire body in nav stack
             VStack(alignment: .leading) {
                 AppHeader(title: "Wishlist")
-                if viewModel.items.isEmpty {
-                    EmptyListView()
-                } else {
-                    ScrollView {
-                        HStack {
-                            Spacer()
-                            ProfileImageView(photoUrl: nil, size: 80)
-                            Spacer()
+                ScrollView {
+                    HStack {
+                        Spacer()
+                        ProfileImageView(photoUrl: nil, size: 80)
+                        Spacer()
+                    }
+                    HStack {
+                        Spacer()
+                        Text(viewModel.displayName)
+                            .font(AppFonts.headline)
+                            .foregroundColor(AppColors.mainGreen)
+                        Spacer()
+                    }
+                    HStack{
+                        Spacer()
+                        Button() {
+                            showingSortBySheet = true
+                        } label: {
+                            Image("Sort")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 25, height: 25)
                         }
-                        HStack {
-                            Spacer()
-                            Text(viewModel.displayName)
-                                .font(AppFonts.headline)
-                                .foregroundColor(AppColors.mainGreen)
-                            Spacer()
+                    }
+                    .padding(.trailing, 20)
+                    
+                    if viewModel.items.isEmpty {
+                        //EmptyListView()
+                        VStack(alignment: .center) {
+                            Image("GreyAppLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 150)
+                                .shadow(color: .black.opacity(0.5), radius: 8, x: 5, y: 5)
+                            
+                            Text("Nothing yet")
+                                .font(AppFonts.bold(30))
+                                .foregroundColor(AppColors.textSecondary)
+                            
+                            Text("Add before you buy - mindful spending starts with a single pause")
+                                .font(AppFonts.regular(15))
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 280)
+                                .foregroundColor(AppColors.textTertiary)
                         }
-                        HStack{
-                            Spacer()
-                            Button() {
-                                showingSortBySheet = true
-                            } label: {
-                                Image("Sort")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 25, height: 25)
-                            }
-                        }
-                        .padding(.trailing, 20)
-                        
+                        .opacity(0.7)
+                        .padding(.top , 100)
+                    } else {
                         switch session.userSettings?.wishlistLayout {
-                            // TODO: Make this less hardcoded
                         case .grid:
                             WishlistGrid(viewModel: viewModel, columns: [
                                 GridItem(.fixed(120), spacing: 8),
@@ -75,10 +95,21 @@ struct WishlistView: View {
             .appBackground()
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
-                viewModel.startItemListener(fieldType: "status", fieldValue: "wishlist")
+                viewModel.startItemListener()
             }
             .sheet(isPresented: $showingSortBySheet) {
-                SortBySheet(viewModel: viewModel).presentationDetents([.medium, .large])
+                SortBySheet(viewModel: viewModel, selectedSortField: $selectedSortField, selectedSortName: $selectedSortName).presentationDetents([.medium, .large])
+            }
+            .onChange(of: selectedSortName) { _, newValue in
+                if let fieldName = selectedSortField,
+                   let fieldValue = selectedSortName {
+                    if fieldName == "status" {
+                        viewModel.filterByStatus(status: fieldValue)
+                    }
+                    if fieldName == "category" {
+                        viewModel.filterByCategory(categoryId: fieldValue)
+                    }
+                }
             }
         }
     }
