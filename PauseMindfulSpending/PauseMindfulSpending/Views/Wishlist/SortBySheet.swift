@@ -14,19 +14,40 @@ struct SortBySheet: View {
             List {
                 Section("Status") {
                     ForEach(statusList, id: \.self) { status in
-                        Button(status) {
+                        Button {
                             selectedSortField = "status"
                             selectedSortName = status.lowercased()
+                        } label: {
+                            HStack {
+                                Text(status)
+                                Spacer()
+                                if let sortName = selectedSortName {
+                                    if sortName == status.lowercased() {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 Section("Category") {
                     // TODO: This will break with duplicate categories, so maybe make no duplicates or figure something else out
                     ForEach(viewModel.categories) { category in
-                        Button(category.name) {
+                        Button {
                             selectedSortField = "category"
                             selectedSortName = category.id!
                             dismiss()
+                        } label: {
+                            HStack {
+                                Text(category.name)
+                                Spacer()
+                                if let sortName = selectedSortName {
+                                    if sortName == category.id! {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }

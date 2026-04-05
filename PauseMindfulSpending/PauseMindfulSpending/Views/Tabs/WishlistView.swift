@@ -113,6 +113,10 @@ struct WishlistView: View {
                     }
                 }
             }
+            .onDisappear() {
+                selectedSortName = nil
+                selectedSortField = nil
+            }
         }
     }
 }
