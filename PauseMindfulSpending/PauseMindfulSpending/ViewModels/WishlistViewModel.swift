@@ -31,11 +31,12 @@ final class WishlistViewModel: ObservableObject {
         userProfile.displayName
     }
     
-    func getItems() {
+    func startItemListener(fieldType: String, fieldValue: String) {
         listener = db.collection("users")
             .document(uid)
             .collection("items")
-            .whereField("status", isEqualTo: "wishlist")
+            .whereField(fieldType, isEqualTo: fieldValue)
+            .order(by: "createdAt", descending: true)
             .addSnapshotListener { snapshot, error in
                 if let error = error {
                     print("Error getting items: \(error)")

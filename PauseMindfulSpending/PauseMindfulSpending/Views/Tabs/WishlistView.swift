@@ -75,7 +75,7 @@ struct WishlistView: View {
             .appBackground()
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
-                viewModel.getItems()
+                viewModel.startItemListener(fieldType: "status", fieldValue: "wishlist")
             }
             .sheet(isPresented: $showingSortBySheet) {
                 SortBySheet(viewModel: viewModel).presentationDetents([.medium, .large])
