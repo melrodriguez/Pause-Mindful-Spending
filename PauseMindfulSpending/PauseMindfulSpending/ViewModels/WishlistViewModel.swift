@@ -67,10 +67,6 @@ final class WishlistViewModel: ObservableObject {
                 try? document.data(as: Item.self)
             } ?? []
         }
-        
-        print("\(status)")
-        print(items)
-        print("Filtered by Status")
     }
     
     func filterByCategory(categoryId: String) {
@@ -93,10 +89,6 @@ final class WishlistViewModel: ObservableObject {
                 try? document.data(as: Item.self)
             } ?? []
         }
-        
-        print(items)
-        print(categoryId)
-        print("Filtered by Category")
     }
     
     func loadCategories() {
