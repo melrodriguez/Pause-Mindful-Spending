@@ -40,6 +40,8 @@ extension FireStoreService {
                     if let categoryId = categoryId {
                         updatedData["categoryId"] = categoryId
                         dataToReturn["categoryId"] = categoryId
+                        
+                        self.incrementItemCount(uid: uid, categoryId: categoryId)
                     }
                     
                     self.addDocumentToSubcollection(
@@ -139,6 +141,10 @@ extension FireStoreService {
                 return
             }
             
+            if let categoryId = itemData["categoryId"] as? String {
+                self.decrementItemCount(uid: uid, categoryId: categoryId)
+            }
+            
             self.deleteTimer(uid: uid, timerId: timerId)
             self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
                 "status": "deleted",
@@ -204,6 +210,7 @@ extension FireStoreService {
                     
             if let categoryId = itemData["categoryId"] as? String {
                 self.updateCategoryStreak(uid: uid, categoryId: categoryId, dateItemBought: Date())
+                    self.decrementItemCount(uid: uid, categoryId: categoryId)
             }
                 
             self.pauseTimer(uid: uid, timerId: timerId)

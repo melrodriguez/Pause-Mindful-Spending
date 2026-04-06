@@ -98,6 +98,7 @@ final class WishlistViewModel: ObservableObject {
         db.collection("users")
             .document(uid)
             .collection("categories")
+            .whereField("itemCount", isGreaterThan: 0)
             .getDocuments { snapshot, error in
                 if let error = error {
                     print("Error getting items: \(error)")

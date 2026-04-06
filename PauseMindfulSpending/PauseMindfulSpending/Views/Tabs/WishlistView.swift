@@ -45,7 +45,7 @@ struct WishlistView: View {
                     
                     Divider()
                     
-                    if viewModel.emptyList {
+                    if viewModel.items.isEmpty {
                         VStack(alignment: .center) {
                             Image("GreyAppLogo")
                                 .resizable()
@@ -96,7 +96,12 @@ struct WishlistView: View {
             .appBackground()
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
-                viewModel.startItemListener()
+                if selectedSortField == "status" {
+                    viewModel.filterByStatus(status: selectedSortName)
+                }
+                if selectedSortField == "category" {
+                    viewModel.filterByCategory(categoryId: selectedSortName)
+                }
             }
             .sheet(isPresented: $showingSortBySheet) {
                 SortBySheet(viewModel: viewModel, selectedSortField: $selectedSortField, selectedSortName: $selectedSortName).presentationDetents([.medium, .large])
@@ -108,10 +113,6 @@ struct WishlistView: View {
                 if selectedSortField == "category" {
                     viewModel.filterByCategory(categoryId: selectedSortName)
                 }
-            }
-            .onDisappear() {
-                selectedSortField = "status"
-                selectedSortName = "wishlist"
             }
         }
     }
