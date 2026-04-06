@@ -223,7 +223,6 @@ struct EditItemLogView: View {
                     showValidationAlert = true
                 } else {
                     editItem()
-                    dismiss()
                 }
             } label: {
                 Text("Save Changes")

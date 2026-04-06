@@ -73,6 +73,13 @@ struct WishlistView: View {
                                         .foregroundColor(AppColors.textTertiary)
                                 }
                             }
+                            if selectedSortField == "category" {
+                                Text("Looks like you don't have any items in this category")
+                                    .font(AppFonts.regular(15))
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: 280)
+                                    .foregroundColor(AppColors.textTertiary)
+                            }
                         }
                         .opacity(0.7)
                         .padding(.top , 100)
