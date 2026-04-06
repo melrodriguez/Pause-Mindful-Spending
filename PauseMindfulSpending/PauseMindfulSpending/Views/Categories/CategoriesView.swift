@@ -3,9 +3,11 @@ struct CategoriesView: View {
     @State var isShowingAddSheet: Bool = false
     let uid: String
     @StateObject private var viewModel: CategoriesViewModel
+    var onCategoriesUpdated: () -> Void // Signal to EditItemLogView that categories were edited
     
-    init(uid: String) {
+    init(uid: String, onCategoriesUpdated: @escaping () -> Void) {
         self.uid = uid
+        self.onCategoriesUpdated = onCategoriesUpdated
         _viewModel = StateObject(wrappedValue: CategoriesViewModel())
     }
     
@@ -20,12 +22,16 @@ struct CategoriesView: View {
                     ForEach(viewModel.categories, id: \.self) { category in
                         CategoryCell(
                             category: category,
+
                             editCategory: { newName in
                                 viewModel.pressedEditButton(uid: self.uid, oldName: category, newName: newName)
+                                onCategoriesUpdated()
                                 print("CategoriesView -> Edited category: \(category) changed to \(newName)")
                             },
+
                             deleteCategory: { 
                                 viewModel.pressedDeleteButton(uid: self.uid, name: category)
+                                onCategoriesUpdated()
                                 print("CategoriesView -> Deleted category: \(category)")
                             }
                         )
@@ -53,10 +59,14 @@ struct CategoriesView: View {
             .sheet(isPresented: $isShowingAddSheet) {
                 AddCategorySheet(
                     onSave: { newName, enableStreak in
+                    
                         // Add new category to user data
                         viewModel.pressedAddButton(uid: uid, name: newName, enableStreak: enableStreak)
+                         onCategoriesUpdated()
+
                         // Reload the cells 
                         viewModel.getCategoryNames(uid: uid) 
+                        
                         print("CategoriesView -> Added new category: \(newName) with enableStreak: \(enableStreak)")
                         isShowingAddSheet = false
                     }

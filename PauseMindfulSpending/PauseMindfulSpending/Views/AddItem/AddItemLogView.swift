@@ -129,7 +129,11 @@ struct AddItemLogView: View {
             
             // Edit categories
             if let uid = session.userProfile?.id {
-                NavigationLink(destination: CategoriesView(uid: uid)) {
+                NavigationLink(destination: CategoriesView(uid: uid, onCategoriesUpdated: {
+                        vm.selectedCategory = ""
+                        vm.loadCategories(uid: uid)
+                        print("Categories updated")
+                })) {
                     Text("Edit Categories")
                         .font(AppFonts.subhead)
                         .foregroundColor(AppColors.mainGreen)

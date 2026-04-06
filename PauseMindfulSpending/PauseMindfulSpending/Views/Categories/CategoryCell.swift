@@ -33,7 +33,7 @@ struct CategoryCell: View {
             
             // Delete button
             Button {
-                isShowingDeleteSheet = true
+                deleteCategory?()
             } label: {
                 Image(systemName: "trash")
                     .foregroundColor(.mainPink)
@@ -52,13 +52,6 @@ struct CategoryCell: View {
             .presentationDetents([.medium])
         }
         
-        // Same but for delete button
-        .sheet(isPresented: $isShowingDeleteSheet) {
-            DeleteCategorySheet(currentName: category) { _ in
-                deleteCategory?()
-            }
-            .presentationDetents([.medium])
-        }
     }
 }
 

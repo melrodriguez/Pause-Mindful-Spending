@@ -68,13 +68,21 @@ class CategoriesViewModel: ObservableObject {
             // Actually change the category name
             firestoreService.deleteCategory(uid: uid, categoryId: categoryId)
 
-            // Update the UI
+            // Update the categories available
             DispatchQueue.main.async {
                 if let index = self.categories.firstIndex(of: name) {
                     self.categories.remove(at: index)
                 }
             }
             
+            // Set item's current category to a blank category
+            firestoreService.fetchItemsInCategory(uid: uid, categoryId: categoryId) { itemIds in
+               for itemId in itemIds {
+                self.firestoreService.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
+                    "categoryId": FieldValue.delete() // Remove the category
+                ])
+               }
+           }
         }
         
     }
