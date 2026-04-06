@@ -19,9 +19,11 @@ class ItemLogViewModel: ObservableObject {
     @Published var categoryName: String?
     @Published var categoryId: String?
     @Published var categories: [String] = []
-    
+    @Published var timerUpdated: Bool = false
+
     @Published var timerId: String?
     @Published var timerEndDate: Date?
+    @Published var timerSeconds: Int = 0
     private var secondsInDay = 86400
     private var secondsInHour = 3600
     private var secondsInMinute = 60
@@ -41,21 +43,26 @@ class ItemLogViewModel: ObservableObject {
     }
     
     var formattedTimer: String {
-        guard let endDate = timerEndDate else { return "" }
-        
-        let remaining = max(0, endDate.timeIntervalSince(Date()))
-        let totalSeconds = Int(remaining)
+        let totalSeconds = timerSeconds
         let days = totalSeconds / secondsInDay
         let hours = (totalSeconds % secondsInDay) / secondsInHour
         let minutes = (totalSeconds % secondsInHour) / secondsInMinute
         
-        return "\(days)d \(hours)hr \(minutes)min"
+        return String(format: "%02dd %02dh %02dm", days, hours, minutes)
     }
     
     func loadCategories(uid: String) {
         repo.fetchCategoryNames(uid: uid) { [weak self] categories in
             self?.categories = categories
         }
+    }
+    
+    func getRemainingSeconds(endDate: Date?) -> Int {
+        guard let endDate = timerEndDate else { return 0 }
+        
+        let remaining = max(0, endDate.timeIntervalSince(Date()))
+        let totalSeconds = Int(remaining)
+        return totalSeconds
     }
     
     func loadItem(uid: String) {
@@ -114,6 +121,7 @@ class ItemLogViewModel: ObservableObject {
                     
                     DispatchQueue.main.async {
                         self.timerEndDate = timestamp.dateValue()
+                        self.timerSeconds = self.getRemainingSeconds(endDate: timestamp.dateValue())
                     }
                 }
             }
@@ -141,8 +149,8 @@ class ItemLogViewModel: ObservableObject {
 
     // Mood and category never gets deselected
     // -> Only required fields are name and cost
-    func updateIsValid(name: String, cost: Double) -> Bool {
-        return (name.isEmpty || cost == 0) ? false : true
+    func updateIsValid(name: String, cost: Double, timer: Int) -> Bool {
+        return (name.isEmpty || cost == 0 || timer == 0) ? false : true
     }
     
     // TODO: needs imageUrl logic
@@ -168,6 +176,12 @@ class ItemLogViewModel: ObservableObject {
                 itemId: itemId,
                 fieldsToUpdate: fieldsToUpdate
             )
+            
+            self.firestoreService.updateTimerItemName(uid: uid, timerId: self.timerId!, itemName: self.name)
+            
+            if self.timerUpdated {
+                self.firestoreService.updateTimer(uid: uid, timerId: self.timerId!, newDurationSeconds: self.timerSeconds)
+            }
         }
     }
     

@@ -11,7 +11,7 @@ struct EditItemLogView: View {
     @Binding var showEditItemLog: Bool
     @ObservedObject var vm: ItemLogViewModel
     @EnvironmentObject var session: AppSessionViewModel
-    
+
     var editItem: () -> Void
     
     // Pass in the parent ItemLogViewModel
@@ -40,7 +40,9 @@ struct EditItemLogView: View {
     @State private var selectedPhoto: PhotosPickerItem? = nil
     @State private var showCamera: Bool = false
     @State private var permissionDenied: Bool = false
-    
+    @State private var showAdjustTimer: Bool = false
+    @State private var didSave: Bool = false
+
     private func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
@@ -220,6 +222,37 @@ struct EditItemLogView: View {
         }
     }
     
+    private var timerField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Pause Timer").font(AppFonts.subhead)
+            Button {
+                showAdjustTimer = true
+            } label: {
+                HStack {
+                    Image(systemName: "timer")
+                        .foregroundColor(AppColors.mainGreen)
+                    Text(vm.formattedTimer)
+                        .foregroundColor(.primary)
+                        .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    Spacer()
+                    if vm.timerUpdated == true {
+                        Text("Edited")
+                            .font(AppFonts.caption)
+                            .foregroundColor(AppColors.mainGreen)
+                    }
+                    Image(systemName: "pencil")
+                        .font(.system(size: 13))
+                        .foregroundColor(.gray)
+                }
+                .padding(10)
+                .background(Color.backgroundFill)
+                .cornerRadius(8)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     private func noteSection() -> some View {
         // What prompted you to want to purchase this item?
         VStack(alignment: .leading, spacing: 6){
@@ -237,10 +270,11 @@ struct EditItemLogView: View {
     private func saveButton() -> some View {
         VStack {
             Button { // Similar logic from the add button
-                let valid = vm.updateIsValid(name: vm.name, cost: vm.cost ?? 0)
+                let valid = vm.updateIsValid(name: vm.name, cost: vm.cost ?? 0, timer: vm.timerSeconds)
                 if !valid {
                     showValidationAlert = true
                 } else {
+                    didSave = true
                     editItem()
                 }
             } label: {
@@ -264,6 +298,7 @@ struct EditItemLogView: View {
             priceSection()
             photoSection()
             moodSection()
+            timerField
             noteSection()
             saveButton()
         }
@@ -280,11 +315,22 @@ struct EditItemLogView: View {
         .alert("Missing Information", isPresented: $showValidationAlert) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text("Please fill in your item name, category, price, and mood before proceeding.")
+            Text("Please make sure your item name, price, and pause timer is filled out")
         }
-        
+        .sheet(isPresented: $showAdjustTimer) {
+            AdjustTimerSheetView(onConfirm: { seconds in
+                vm.timerSeconds = seconds
+                vm.timerUpdated = true
+            })
+            .presentationDetents([.fraction(0.65)])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(24)
+        }
         .navigationTitle("Edit Item")
         .navigationBarTitleDisplayMode(.inline)
+        .onDisappear() {
+            vm.timerUpdated = false
+        }
         .appBackground()
         
         // Insert camera alert/popup handling here
