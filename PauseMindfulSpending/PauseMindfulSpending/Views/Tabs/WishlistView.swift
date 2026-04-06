@@ -57,11 +57,22 @@ struct WishlistView: View {
                                 .font(AppFonts.bold(30))
                                 .foregroundColor(AppColors.textSecondary)
                             
-                            Text("Add before you buy - mindful spending starts with a single pause")
-                                .font(AppFonts.regular(15))
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: 280)
-                                .foregroundColor(AppColors.textTertiary)
+                            if selectedSortField == "status" {
+                                if selectedSortName == "wishlist" {
+                                    Text("Add before you buy - mindful spending starts with a single pause")
+                                        .font(AppFonts.regular(15))
+                                        .multilineTextAlignment(.center)
+                                        .frame(maxWidth: 280)
+                                        .foregroundColor(AppColors.textTertiary)
+                                }
+                                if selectedSortName == "bought" {
+                                    Text("Looks like you haven't bought any items yet")
+                                        .font(AppFonts.regular(15))
+                                        .multilineTextAlignment(.center)
+                                        .frame(maxWidth: 280)
+                                        .foregroundColor(AppColors.textTertiary)
+                                }
+                            }
                         }
                         .opacity(0.7)
                         .padding(.top , 100)
