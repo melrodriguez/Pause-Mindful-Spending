@@ -9,11 +9,13 @@ struct PauseEndSheet: View {
             // print("delete item pressed")
         } label: {
             Image(systemName: "xmark")
-                .font(.system(size: 24, weight: .regular))
-                .frame(width: 64, height: 64)
+                .font(.system(size: 20, weight: .regular))
+                .frame(width: 48, height: 48)
                 .foregroundColor(AppColors.textPrimary)
                 .background(Color.mainPink)
                 .clipShape(Circle())
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .foregroundColor(AppColors.textPrimary)
     }
@@ -24,11 +26,13 @@ struct PauseEndSheet: View {
             // print("delete item pressed")
         } label: {
             Image(systemName: "cart")
-                .font(.system(size: 24, weight: .regular))
-                .frame(width: 64, height: 64)
+                .font(.system(size: 20, weight: .regular))
+                .frame(width: 48, height: 48)
                 .foregroundColor(AppColors.textPrimary)
                 .background(Color.mainGreen)
                 .clipShape(Circle())
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .foregroundColor(AppColors.textPrimary)
     }
@@ -39,11 +43,13 @@ struct PauseEndSheet: View {
             // print("delete item pressed")
         } label: {
             Image(systemName: "clock")
-                .font(.system(size: 24, weight: .regular))
-                .frame(width: 64, height: 64)
+                .font(.system(size: 20, weight: .regular))
+                .frame(width: 48, height: 48)
                 .foregroundColor(AppColors.textPrimary)
                 .background(Color.mainBlue)
                 .clipShape(Circle())
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .foregroundColor(AppColors.textPrimary)
     }
@@ -52,7 +58,6 @@ struct PauseEndSheet: View {
        
         ZStack {
             LinearGradient.timerGradient
-                .ignoresSafeArea()
             
             VStack {
                 Image("AppLogo")
@@ -61,9 +66,7 @@ struct PauseEndSheet: View {
                     .frame(width: 40, height: 40)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding()
-                
-                Spacer()
-                                
+                                                
                 Text("A Pause has ended!")
                     .font(AppFonts.title)
                     .foregroundColor(AppColors.textPrimary)
@@ -86,24 +89,42 @@ struct PauseEndSheet: View {
                 Text("$50") // insert real
                     .font(AppFonts.subhead)
                     .foregroundColor(AppColors.textPrimary)
-                
-                Spacer()
-                
-                HStack {
-                    deleteItemButton()
-                    boughtItemButton()
-                    timerButton()
+                                
+                VStack (alignment: .leading) {
+                    HStack {
+                        deleteItemButton()
+                        Text("I don't want to buy this anymore")
+                            .font(AppFonts.body)
+                            .foregroundColor(AppColors.textPrimary)
+                        
+                    }
+
+                    HStack {
+                        boughtItemButton()
+
+                        Text("I bought this already")
+                            .font(AppFonts.body)
+                            .foregroundColor(AppColors.textPrimary)
+                    }
+
+                    HStack {
+                        timerButton()
+                        Text("I need more time to pause")
+                            .font(AppFonts.body)
+                            .foregroundColor(AppColors.textPrimary)
+                    }
+                    
                 }
                 
                 Spacer()
+                
             }
-            
         }
         .appBackground()
-        .frame(width: 350, height: 550)
-        // .shadow(radius: 20)
         .cornerRadius(20)
+        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         .padding()
+        .frame(maxHeight: 650)
 
     }
 }

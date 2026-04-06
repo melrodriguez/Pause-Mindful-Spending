@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject var session: AppSessionViewModel
+    @StateObject private var timerManager = TimerManager()
     
     @State private var selectedTab: NavBar = .home
     @State private var showAddItem: Bool = false
@@ -18,14 +19,14 @@ struct RootView: View {
                         HomeView()
                             .tag(NavBar.home)
                         
-                        if let profile = session.userProfile {
-                            TimersView(
-                                viewModel: TimerViewModel(
-                                    uid: profile.id
-                                )
-                            )
-                            .tag(NavBar.timers)
-                        }
+//                        if let profile = session.userProfile {
+//                            TimersView(
+//                                viewModel: TimerViewModel(
+//                                    uid: profile.id
+//                                )
+//                            )
+//                            .tag(NavBar.timers)
+//                        }
                         
                         if let profile = session.userProfile,
                            let settings = session.userSettings {
