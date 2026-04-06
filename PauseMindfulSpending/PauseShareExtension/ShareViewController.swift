@@ -21,8 +21,11 @@ class ShareViewController: UIViewController {
         let group = DispatchGroup()
 
         var extractedTitle: String? = nil
+        var extractedPlainText: String? = nil
         var extractedImageData: Data? = nil
         var extractedURL: String? = nil
+
+        print("DEBUG attachment types:", attachments.map { $0.registeredTypeIdentifiers })
 
         for provider in attachments {
 
@@ -36,11 +39,12 @@ class ShareViewController: UIViewController {
                 }
             }
 
+            // Always accept plain text
             if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.plainText.identifier) { item, _ in
-                    if let text = item as? String, extractedTitle == nil {
-                        extractedTitle = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if let text = item as? String {
+                        extractedPlainText = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     }
                     group.leave()
                 }
@@ -59,6 +63,7 @@ class ShareViewController: UIViewController {
                 }
             }
 
+            // Property list from Safari — contains actual page title, takes priority over plain text
             if provider.hasItemConformingToTypeIdentifier("com.apple.property-list") {
                 group.enter()
                 provider.loadItem(forTypeIdentifier: "com.apple.property-list") { item, _ in
@@ -76,28 +81,26 @@ class ShareViewController: UIViewController {
         }
 
         group.notify(queue: .main) {
-            let cleanedTitle = Self.cleanTitle(extractedTitle)
+            // Prefer plist title (Safari), fall back to plain text (Amazon app)
+            let rawTitle = extractedTitle ?? extractedPlainText
+            let cleanedTitle = Self.cleanTitle(rawTitle)
 
-            // Only attempt price fetch if we have a URL and network is reachable
-            // (skips the fetch on simulator which has no network route)
-            if let urlString = extractedURL,
-               let url = URL(string: urlString),
-               Self.isNetworkReachable() {
-                Self.fetchPrice(from: url) { price in
+            if let urlString = extractedURL, let url = URL(string: urlString) {
+                Self.fetchProductDetails(from: url) { htmlTitle, price, imageData in
+                    let finalTitle = htmlTitle ?? cleanedTitle
                     self.saveToSharedDefaults(
-                        title: cleanedTitle,
+                        title: finalTitle,
                         price: price,
-                        imageData: extractedImageData,
+                        imageData: imageData,
                         url: extractedURL
                     )
                     self.openMainApp()
                 }
             } else {
-                // No network or no URL — save title and open immediately
                 self.saveToSharedDefaults(
                     title: cleanedTitle,
                     price: nil,
-                    imageData: extractedImageData,
+                    imageData: nil,
                     url: extractedURL
                 )
                 self.openMainApp()
@@ -106,11 +109,10 @@ class ShareViewController: UIViewController {
     }
 
     // MARK: - Title cleanup
-    
+
     private static func cleanTitle(_ title: String?) -> String? {
         guard let title = title, !title.isEmpty else { return nil }
 
-        // Take the first meaningful chunk
         let separators = [" - ", " | ", " – ", " — ", ": "]
         for sep in separators {
             if let range = title.range(of: sep) {
@@ -124,84 +126,211 @@ class ShareViewController: UIViewController {
             if before.count > 5 { return before }
         }
 
-        // Fall back to truncating at 60 chars
-        
         if title.count > 40 {
             let truncated = String(title.prefix(40))
-            // Walk back to the last space so we don't cut mid-word
             if let lastSpace = truncated.lastIndex(of: " ") {
                 return String(truncated[..<lastSpace])
             }
             return truncated
         }
-        return title.count > 60 ? String(title.prefix(60)) : title
+
+        return title
     }
 
-    // MARK: - Network check
+    // MARK: - Fetch price and image from product page HTML
 
-    private static func isNetworkReachable() -> Bool {
-        var zeroAddress = sockaddr_in()
-        zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
-        zeroAddress.sin_family = sa_family_t(AF_INET)
+    private static func fetchProductDetails(
+        from url: URL,
+        completion: @escaping (String?, String?, Data?) -> Void  // title, price, imageData
+    ) {
+        var request = URLRequest(url: url, timeoutInterval: 8)
+        request.setValue(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            forHTTPHeaderField: "User-Agent"
+        )
+        request.setValue("text/html", forHTTPHeaderField: "Accept")
+        request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
 
-        guard let reachability = withUnsafePointer(to: &zeroAddress, {
-            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-                SCNetworkReachabilityCreateWithAddress(nil, $0)
-            }
-        }) else { return false }
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        session.dataTask(with: request) { data, response, error in
+            print("DEBUG fetchProductDetails - error:", error?.localizedDescription ?? "none")
+            print("DEBUG fetchProductDetails - bytes:", data?.count ?? 0)
+            print("DEBUG fetchProductDetails - status:", (response as? HTTPURLResponse)?.statusCode ?? 0)
 
-        var flags: SCNetworkReachabilityFlags = []
-        SCNetworkReachabilityGetFlags(reachability, &flags)
-        return flags.contains(.reachable) && !flags.contains(.connectionRequired)
-    }
-
-    // MARK: - Price fetching
-
-    private static func fetchPrice(from url: URL, completion: @escaping (String?) -> Void) {
-        let host = url.host ?? ""
-        let shoppingDomains = ["amazon.com", "amazon.co.uk", "amazon.ca", "ebay.com",
-                               "walmart.com", "target.com", "bestbuy.com", "etsy.com"]
-        guard shoppingDomains.contains(where: { host.contains($0) }) else {
-            completion(nil)
-            return
-        }
-
-        var request = URLRequest(url: url, timeoutInterval: 5)
-        request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
-                         forHTTPHeaderField: "User-Agent")
-
-        URLSession.shared.dataTask(with: request) { data, _, _ in
             guard let data = data,
                   let html = String(data: data, encoding: .utf8) else {
-                completion(nil)
+                completion(nil, nil, nil)
                 return
             }
 
             let price = extractPrice(from: html)
-            DispatchQueue.main.async {
-                completion(price)
+            print("DEBUG extracted price:", price ?? "none")
+
+            // Extract title from HTML — more reliable than the share payload
+            let htmlTitle = extractTitle(from: html)
+            print("DEBUG extracted title from HTML:", htmlTitle ?? "none")
+
+            let imageUrl = extractMainImageURL(from: html, originalURL: url)
+            print("DEBUG extracted imageUrl:", imageUrl ?? "none")
+
+            guard let imageUrlString = imageUrl,
+                  let imgUrl = URL(string: imageUrlString) else {
+                completion(htmlTitle, price, nil)
+                return
             }
+
+            URLSession.shared.dataTask(with: imgUrl) { imgData, _, _ in
+                print("DEBUG image download bytes:", imgData?.count ?? 0)
+                completion(htmlTitle, price, imgData)
+            }.resume()
+
         }.resume()
+    }
+
+    private static func extractTitle(from html: String) -> String? {
+        // Amazon puts the product title in id="productTitle"
+        let patterns = [
+            #"id="productTitle"[^>]*>\s*([^<]{5,}?)\s*<"#,
+            #"<title>\s*Amazon\.com\s*:\s*([^<|]+)"#,
+            #"<title>\s*([^<|:]{10,}?)\s*[\|:]"#
+        ]
+
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
+            let range = NSRange(html.startIndex..., in: html)
+            guard let match = regex.firstMatch(in: html, range: range),
+                  match.numberOfRanges >= 2,
+                  let titleRange = Range(match.range(at: 1), in: html) else { continue }
+            let raw = String(html[titleRange])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let cleaned = cleanTitle(raw)
+            print("DEBUG: title pattern matched raw:", raw)
+            if let cleaned = cleaned, cleaned.count > 5 { return cleaned }
+        }
+
+        return nil
+    }
+
+    // MARK: - Image extraction
+
+    private static func extractMainImageURL(from html: String, originalURL: URL? = nil) -> String? {
+
+        // Method 1: ASIN from URL + image ID from HTML
+        if let originalURL = originalURL {
+            let urlString = originalURL.absoluteString
+            let asinPattern = #"/dp/([A-Z0-9]{10})"#
+            if let regex = try? NSRegularExpression(pattern: asinPattern),
+               let match = regex.firstMatch(
+                in: urlString,
+                range: NSRange(urlString.startIndex..., in: urlString)
+               ),
+               match.numberOfRanges >= 2,
+               let asinRange = Range(match.range(at: 1), in: urlString) {
+
+                let asin = String(urlString[asinRange])
+                print("DEBUG: found ASIN =", asin)
+
+                let imagePattern = #"\"([A-Za-z0-9\-_+]{10,})\._AC"#
+                if let imgRegex = try? NSRegularExpression(pattern: imagePattern),
+                   let imgMatch = imgRegex.firstMatch(
+                    in: html,
+                    range: NSRange(html.startIndex..., in: html)
+                   ),
+                   imgMatch.numberOfRanges >= 2,
+                   let imgRange = Range(imgMatch.range(at: 1), in: html) {
+                    let imageId = String(html[imgRange])
+                    let constructed = "https://m.media-amazon.com/images/I/\(imageId)._AC_SL1000_.jpg"
+                    print("DEBUG: constructed image URL =", constructed)
+                    return constructed
+                }
+            }
+        }
+
+        // Method 2: JSON image data embedded in page
+        let jsonPatterns = [
+            #""colorImages":\{"initial":\[.*?"hiRes":"(https://[^"]+)"#,
+            #"'colorImages': \{'initial': \[.*?'hiRes': '(https://[^']+)'"#,
+            #"ImageBlockATF.*?"hiRes":"(https://m\.media-amazon[^"]+\.jpg)"#,
+            #"\"main\"\s*:\s*\{[^}]*"(https://m\.media-amazon[^"]+\.jpg)"#,
+        ]
+
+        for pattern in jsonPatterns {
+            guard let regex = try? NSRegularExpression(
+                pattern: pattern,
+                options: [.dotMatchesLineSeparators]
+            ) else { continue }
+            let range = NSRange(html.startIndex..., in: html)
+            guard let match = regex.firstMatch(in: html, range: range),
+                  match.numberOfRanges >= 2,
+                  let urlRange = Range(match.range(at: 1), in: html) else { continue }
+            let url = String(html[urlRange])
+            print("DEBUG: found image via json pattern =", url)
+            if url.hasPrefix("https://") { return url }
+        }
+
+        // Debug — show any ._AC image IDs present
+        let acPattern = #"\"([A-Za-z0-9\-_+]{10,})\._AC"#
+        if let acRegex = try? NSRegularExpression(pattern: acPattern) {
+            let range = NSRange(html.startIndex..., in: html)
+            var ids: [String] = []
+            acRegex.enumerateMatches(in: html, range: range) { match, _, _ in
+                guard let match = match, match.numberOfRanges >= 2,
+                      let r = Range(match.range(at: 1), in: html) else { return }
+                let id = String(html[r])
+                if !ids.contains(id) { ids.append(id) }
+            }
+            print("DEBUG all image IDs found in HTML:", ids.prefix(5))
+        }
+
+        return nil
     }
 
     // MARK: - Price extraction
 
     private static func extractPrice(from text: String) -> String? {
-        let pattern = #"[\$£€¥]\s*\d{1,5}(?:[.,]\d{1,2})?"#
-        guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(
-                in: text,
-                range: NSRange(text.startIndex..., in: text)
-              ),
-              let range = Range(match.range, in: text)
-        else { return nil }
+        // Amazon sale price is in a-price-whole + a-price-fraction elements
+        let salePricePattern = #"a-price-whole[^>]*>\s*(\d+)\s*<.*?a-price-fraction[^>]*>\s*(\d+)"#
+        if let regex = try? NSRegularExpression(
+            pattern: salePricePattern,
+            options: [.dotMatchesLineSeparators]
+        ),
+           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+           match.numberOfRanges == 3,
+           let wholeRange = Range(match.range(at: 1), in: text),
+           let fracRange = Range(match.range(at: 2), in: text) {
+            let price = "\(String(text[wholeRange])).\(String(text[fracRange]))"
+            print("DEBUG: sale price pattern matched:", price)
+            return price
+        }
 
-        return String(text[range])
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: "£", with: "")
-            .replacingOccurrences(of: "€", with: "")
-            .replacingOccurrences(of: "¥", with: "")
-            .replacingOccurrences(of: " ", with: "")
+        // Fallback: collect all prices, return lowest among most frequent
+        let pattern = #"[\$£€¥]\s*(\d{1,5}(?:[.,]\d{1,2})?)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(text.startIndex..., in: text)
+
+        var prices: [Double] = []
+        regex.enumerateMatches(in: text, range: range) { match, _, _ in
+            guard let match = match,
+                  match.numberOfRanges >= 2,
+                  let r = Range(match.range(at: 1), in: text),
+                  let val = Double(String(text[r]).replacingOccurrences(of: ",", with: "."))
+            else { return }
+            if val >= 1.0 { prices.append(val) }
+        }
+
+        guard !prices.isEmpty else { return nil }
+
+        var frequency: [Double: Int] = [:]
+        for p in prices { frequency[p, default: 0] += 1 }
+        let maxFreq = frequency.values.max() ?? 0
+        let candidates = frequency.filter { $0.value == maxFreq }.map { $0.key }
+        let winner = candidates.min()
+
+        guard let result = winner else { return nil }
+        return result.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(result))
+            : String(format: "%.2f", result)
     }
 
     // MARK: - Shared storage
@@ -218,6 +347,10 @@ class ShareViewController: UIViewController {
         defaults?.set(imageData, forKey: "shared_item_image")
         defaults?.set(url, forKey: "shared_item_url")
         defaults?.set(true, forKey: "has_pending_shared_item")
+        print("DEBUG extension saving - title:", title ?? "nil")
+        print("DEBUG extension saving - price:", price ?? "nil")
+        print("DEBUG extension saving - imageData:", imageData?.count ?? 0, "bytes")
+        print("DEBUG extension suite:", defaults != nil ? "OK" : "FAILED - App Group not working")
         defaults?.synchronize()
     }
 
