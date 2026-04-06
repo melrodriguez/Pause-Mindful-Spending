@@ -73,6 +73,17 @@ class AddItemLogViewModel: ObservableObject {
                 }
                 self.createdItemId = result["itemId"] as? String
                 self.createdTimerId = result["timerId"] as? String
+            
+            if let image = self.imageCaptured, let itemId = self.createdItemId {
+                self.firestoreService.uploadPhoto(uid: uid, itemName: itemId, image: image) { url in
+                    self.isLoading = false
+                    if url == nil {
+                        self.errorMessage = "Item saved but photo failed to upload. Please try again"
+                    }
+                }
+            } else {
+                self.isLoading = false
+            }
         }
     }
 }
