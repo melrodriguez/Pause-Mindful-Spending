@@ -25,8 +25,6 @@ class ShareViewController: UIViewController {
         var extractedImageData: Data? = nil
         var extractedURL: String? = nil
 
-        print("DEBUG attachment types:", attachments.map { $0.registeredTypeIdentifiers })
-
         for provider in attachments {
 
             if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
@@ -154,9 +152,6 @@ class ShareViewController: UIViewController {
         let config = URLSessionConfiguration.default
         let session = URLSession(configuration: config)
         session.dataTask(with: request) { data, response, error in
-            print("DEBUG fetchProductDetails - error:", error?.localizedDescription ?? "none")
-            print("DEBUG fetchProductDetails - bytes:", data?.count ?? 0)
-            print("DEBUG fetchProductDetails - status:", (response as? HTTPURLResponse)?.statusCode ?? 0)
 
             guard let data = data,
                   let html = String(data: data, encoding: .utf8) else {
@@ -165,15 +160,10 @@ class ShareViewController: UIViewController {
             }
 
             let price = extractPrice(from: html)
-            print("DEBUG extracted price:", price ?? "none")
-
-            // Extract title from HTML — more reliable than the share payload
+            
             let htmlTitle = extractTitle(from: html)
-            print("DEBUG extracted title from HTML:", htmlTitle ?? "none")
 
             let imageUrl = extractMainImageURL(from: html, originalURL: url)
-            print("DEBUG extracted imageUrl:", imageUrl ?? "none")
-
             guard let imageUrlString = imageUrl,
                   let imgUrl = URL(string: imageUrlString) else {
                 completion(htmlTitle, price, nil)
@@ -181,7 +171,6 @@ class ShareViewController: UIViewController {
             }
 
             URLSession.shared.dataTask(with: imgUrl) { imgData, _, _ in
-                print("DEBUG image download bytes:", imgData?.count ?? 0)
                 completion(htmlTitle, price, imgData)
             }.resume()
 
@@ -205,7 +194,6 @@ class ShareViewController: UIViewController {
             let raw = String(html[titleRange])
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             let cleaned = cleanTitle(raw)
-            print("DEBUG: title pattern matched raw:", raw)
             if let cleaned = cleaned, cleaned.count > 5 { return cleaned }
         }
 
@@ -229,7 +217,6 @@ class ShareViewController: UIViewController {
                let asinRange = Range(match.range(at: 1), in: urlString) {
 
                 let asin = String(urlString[asinRange])
-                print("DEBUG: found ASIN =", asin)
 
                 let imagePattern = #"\"([A-Za-z0-9\-_+]{10,})\._AC"#
                 if let imgRegex = try? NSRegularExpression(pattern: imagePattern),
@@ -241,7 +228,6 @@ class ShareViewController: UIViewController {
                    let imgRange = Range(imgMatch.range(at: 1), in: html) {
                     let imageId = String(html[imgRange])
                     let constructed = "https://m.media-amazon.com/images/I/\(imageId)._AC_SL1000_.jpg"
-                    print("DEBUG: constructed image URL =", constructed)
                     return constructed
                 }
             }
@@ -265,7 +251,6 @@ class ShareViewController: UIViewController {
                   match.numberOfRanges >= 2,
                   let urlRange = Range(match.range(at: 1), in: html) else { continue }
             let url = String(html[urlRange])
-            print("DEBUG: found image via json pattern =", url)
             if url.hasPrefix("https://") { return url }
         }
 
@@ -280,7 +265,6 @@ class ShareViewController: UIViewController {
                 let id = String(html[r])
                 if !ids.contains(id) { ids.append(id) }
             }
-            print("DEBUG all image IDs found in HTML:", ids.prefix(5))
         }
 
         return nil
@@ -300,7 +284,6 @@ class ShareViewController: UIViewController {
            let wholeRange = Range(match.range(at: 1), in: text),
            let fracRange = Range(match.range(at: 2), in: text) {
             let price = "\(String(text[wholeRange])).\(String(text[fracRange]))"
-            print("DEBUG: sale price pattern matched:", price)
             return price
         }
 
@@ -347,10 +330,6 @@ class ShareViewController: UIViewController {
         defaults?.set(imageData, forKey: "shared_item_image")
         defaults?.set(url, forKey: "shared_item_url")
         defaults?.set(true, forKey: "has_pending_shared_item")
-        print("DEBUG extension saving - title:", title ?? "nil")
-        print("DEBUG extension saving - price:", price ?? "nil")
-        print("DEBUG extension saving - imageData:", imageData?.count ?? 0, "bytes")
-        print("DEBUG extension suite:", defaults != nil ? "OK" : "FAILED - App Group not working")
         defaults?.synchronize()
     }
 
