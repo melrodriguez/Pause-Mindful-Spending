@@ -26,13 +26,11 @@ struct CategoriesView: View {
                             editCategory: { newName in
                                 viewModel.pressedEditButton(uid: self.uid, oldName: category, newName: newName)
                                 onCategoriesUpdated()
-                                print("CategoriesView -> Edited category: \(category) changed to \(newName)")
                             },
 
                             deleteCategory: { 
                                 viewModel.pressedDeleteButton(uid: self.uid, name: category)
                                 onCategoriesUpdated()
-                                print("CategoriesView -> Deleted category: \(category)")
                             }
                         )
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -66,8 +64,6 @@ struct CategoriesView: View {
 
                         // Reload the cells 
                         viewModel.getCategoryNames(uid: uid) 
-                        
-                        print("CategoriesView -> Added new category: \(newName) with enableStreak: \(enableStreak)")
                         isShowingAddSheet = false
                     }
                 )

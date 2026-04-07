@@ -126,7 +126,6 @@ struct EditItemLogView: View {
                 NavigationLink(destination: CategoriesView(uid: uid, onCategoriesUpdated: {
                         vm.categoryName = ""
                         vm.loadCategories(uid: uid)
-                        print("Categories updated")
                 })) {
                     Text("Edit Categories")
                         .font(AppFonts.subhead)
