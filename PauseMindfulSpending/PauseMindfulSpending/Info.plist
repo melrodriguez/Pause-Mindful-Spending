@@ -9,5 +9,16 @@
 		<string>Inter_18pt-Regular.ttf</string>
 		<string>Inter_18pt-SemiBold.ttf</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>pause://</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>pause</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

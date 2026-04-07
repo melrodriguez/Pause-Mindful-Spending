@@ -81,6 +81,11 @@ struct RootView: View {
                         }
                     })
                 }
+                .onOpenURL { url in
+                    if url.scheme == "pause" && url.host == "add-item" {
+                        showAddItem = true
+                    }
+                }
             }
         }
     }

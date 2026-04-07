@@ -132,15 +132,10 @@ struct MoneySavedCalculator {
         let amount = event.amount ?? 0
 
         switch event.type {
-        case "item_created":
-            return amount
-
         case "item_completed":
             return amount
-
-        case "item_deleted", "item_bought":
-            return -amount
-
+        case "item_created", "item_bought", "item_deleted":
+            return 0
         default:
             return 0
         }
