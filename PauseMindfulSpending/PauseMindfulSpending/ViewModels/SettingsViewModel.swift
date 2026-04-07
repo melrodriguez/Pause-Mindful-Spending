@@ -4,6 +4,7 @@ import FirebaseFirestore
 final class SettingsViewModel: ObservableObject {
     @Published var userProfile: UserProfile
     @Published var userSettings: UserSettings
+    @Published var uploadingPhoto: Bool = false
     
     private let firestoreService = FireStoreService()
     let uid: String
@@ -43,6 +44,17 @@ final class SettingsViewModel: ObservableObject {
         let layout: WishlistLayout = singleCard ? .single : .grid
         userSettings.wishlistLayout = layout
         sync(["wishlistLayout": layout.rawValue])
+    }
+    
+    func updateProfilePicture(image: UIImage) {
+        uploadingPhoto = true
+        firestoreService.uploadProfilePicture(uid: uid, image: image) { [weak self] url in
+            DispatchQueue.main.async {
+                self?.uploadingPhoto = false
+                guard let url = url else { return }
+                self?.userProfile.photoUrl = url
+            }
+        }
     }
     
     private func sync(_ fields: [String: Any]) {

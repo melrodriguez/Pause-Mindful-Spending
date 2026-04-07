@@ -24,7 +24,10 @@ struct SettingsView: View {
                     ProfileSectionView(
                         username: viewModel.displayName,
                         email: viewModel.email,
-                        photoUrl: viewModel.photoUrl
+                        photoUrl: viewModel.photoUrl,
+                        onImageSelected: { image in
+                            viewModel.updateProfilePicture(image: image)
+                        }
                     )
                     .padding(.top, 20)
                     
