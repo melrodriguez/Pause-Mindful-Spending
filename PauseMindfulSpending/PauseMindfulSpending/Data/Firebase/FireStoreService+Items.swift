@@ -138,7 +138,14 @@ extension FireStoreService {
                     fieldsToUpdate: updatedData
                 )
             }
-            
+        } else {
+            self.updateDocumentFromSubcollection(
+                parentCollection: "users",
+                parentId: uid,
+                subCollection: "items",
+                subId: itemId,
+                fieldsToUpdate: updatedData
+            )
         }
     }
     
@@ -224,13 +231,11 @@ extension FireStoreService {
                 self.decrementItemCount(uid: uid, categoryId: categoryId)
             }
                 
-            self.pauseTimer(uid: uid, timerId: timerId)
             self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
                 "status": "bought",
-                "timerId": FieldValue.delete(),
                 "lastUpdatedAT": FieldValue.serverTimestamp()
             ])
-            
+            self.pauseTimer(uid: uid, timerId: timerId)
             
             self.createEvent(uid: uid, type: "item_bought", itemId: itemId) { eventId in
                 return

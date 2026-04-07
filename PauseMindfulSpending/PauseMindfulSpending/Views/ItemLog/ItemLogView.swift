@@ -156,6 +156,35 @@ struct ItemLogView: View {
                     // Buttons
                     HStack(spacing: 16) {
 
+                        if item.status == "bought" {
+                            Button(action: {
+                                viewModel.setBoughtItemToWishlist(uid: uid)
+                            }) {
+                                Text("Revert item to Wishlist")
+                                    .frame(maxWidth: .infinity)
+                                    .padding(15)
+                                    .font(AppFonts.subhead)
+                                    .background(AppColors.mainGreen)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(5)
+                            }
+
+                        }
+                        
+                        if item.status == "wishlist" {
+                            Button(action: {
+                                viewModel.setItemAsBought(uid: uid)
+                            }) {
+                                Text("Bought Item")
+                                    .frame(maxWidth: .infinity)
+                                    .padding(15)
+                                    .font(AppFonts.subhead)
+                                    .background(AppColors.mainGreen)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(5)
+                            }
+                        }
+                        
                         Button(action: {
                             showDeletePopup = true
                         }) {
