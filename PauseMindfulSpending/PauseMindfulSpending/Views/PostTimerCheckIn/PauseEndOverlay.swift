@@ -6,6 +6,9 @@ struct PauseEndOverlay: View {
     let onCompletedPause: () -> Void
     let onBoughtItem: () -> Void
     let onAdjustTimer: () -> Void
+
+    // For dragging the overlay around (gestures)
+    @State private var dragOffset: CGSize = .zero
     
     // Completed pause
     private func completedItemButton() -> some View {
@@ -98,25 +101,46 @@ struct PauseEndOverlay: View {
                 VStack (alignment: .leading) {
                     HStack {
                         completedItemButton()
-                        Text("I don't want to buy this anymore")
-                            .font(AppFonts.body)
-                            .foregroundColor(AppColors.textPrimary)
+                        
+                        VStack (alignment: .leading, spacing: 6) {
+                            Text("I don't want to buy this anymore")
+                                .font(AppFonts.body)
+                                .foregroundColor(AppColors.textPrimary)
+                            
+                            Text("Swipe right")
+                                .font(AppFonts.body)
+                                .foregroundColor(AppColors.textSecondary)
+                        }
+                       
                     }
 
                     HStack {
                         boughtItemButton()
-                        Text("I bought this already")
-                            .font(AppFonts.body)
-                            .foregroundColor(AppColors.textPrimary)
+                        
+                        VStack (alignment: .leading, spacing: 6) {
+                            Text("I bought this already")
+                                .font(AppFonts.body)
+                                .foregroundColor(AppColors.textPrimary)
+                            
+                            Text("Swipe left")
+                                .font(AppFonts.body)
+                                .foregroundColor(AppColors.textSecondary)
+                        }
                     }
 
                     HStack {
                         timerButton()
-                        Text("I need more time to pause")
-                            .font(AppFonts.body)
-                            .foregroundColor(AppColors.textPrimary)
+                        
+                        VStack (alignment: .leading, spacing: 6) {
+                            Text("I need more time to pause")
+                                .font(AppFonts.body)
+                                .foregroundColor(AppColors.textPrimary)
+                            
+                            Text("Swipe down")
+                                .font(AppFonts.body)
+                                .foregroundColor(AppColors.textSecondary)
+                        }
                     }
-                    
                 }
                 
                 Spacer()
@@ -128,8 +152,66 @@ struct PauseEndOverlay: View {
         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         .padding()
         .frame(maxHeight: 650)
+        .offset(dragOffset)
         .transition(.move(edge: .bottom).combined(with: .opacity))
 
+        .gesture(
+            DragGesture()
+                // Move to where the user drags it
+                .onChanged { value in
+                    dragOffset = value.translation
+                }
+                .onEnded { value in
+                    // Where we are on the screen
+                    let horizontal = value.translation.width
+                    let vertical = value.translation.height
+                    let threshold: CGFloat = 50
+
+                    // HORIZONTAL
+                    if abs(horizontal) > abs(vertical) {
+                        // Swipe right if you're done
+                        if horizontal > threshold {
+                            withAnimation(.easeOut(duration: 0.18)) {
+                                dragOffset = CGSize(width: 500, height: 0) // swipe offscreen
+                            }
+
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                onCompletedPause()
+                                dragOffset = .zero
+                            }
+                            
+                        // Swipe left if you bought it
+                        } else if horizontal < -threshold {
+                            withAnimation(.easeOut(duration: 0.18)) {
+                                dragOffset = CGSize(width: -500, height: 0)
+                            }
+
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                onBoughtItem()
+                                dragOffset = .zero
+                            }
+                        } else {
+                            dragOffset = .zero
+                        }
+                        
+                    // VERTICAL
+                    } else {
+                        withAnimation(.easeOut(duration: 0.18)) {
+                            dragOffset = CGSize(width: 0, height: 500)
+                        }
+                        
+                        // Swipe down if you want more tiime
+                        if vertical > threshold {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                onAdjustTimer()
+                                dragOffset = .zero
+                            }
+                        } else {
+                            dragOffset = .zero
+                        }
+                    }
+                }
+        )
     }
 }
 

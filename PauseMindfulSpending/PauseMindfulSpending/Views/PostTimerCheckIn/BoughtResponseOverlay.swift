@@ -17,7 +17,7 @@ struct BoughtResponseOverlay: View {
                     .padding(.top, 20)
                 
                 Text("Remember: \n\nI am in control of my choices. \n\nMy money reflects my values, and I decide what matters. \n\nThe habits I build today support the life I want tomorrow.")
-                    .font(AppFonts.caption)
+                    .font(AppFonts.body)
                     .multilineTextAlignment(.center)
                     .padding(.top, 20)
                 

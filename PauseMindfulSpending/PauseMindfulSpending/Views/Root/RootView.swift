@@ -108,6 +108,8 @@ struct RootView: View {
                                         guard let uid = session.userProfile?.id else { return }
                                         timerManager.finishCurrentTimer(uid: uid, path: "completed")
                                         showCompletedResponse = false
+                                        showBoughtResponse = false
+                                        showAdjustTimerSheet = false
                                         pausedTimerItem = nil
                                     }
                                 )
@@ -115,16 +117,30 @@ struct RootView: View {
                                 BoughtResponseOverlay(onDone: {
                                         guard let uid = session.userProfile?.id else { return }
                                         timerManager.finishCurrentTimer(uid: uid, path: "bought")
+                                        showCompletedResponse = false
                                         showBoughtResponse = false
+                                        showAdjustTimerSheet = false
                                         pausedTimerItem = nil
                                     }
                                 )
                             } else if pausedTimerItem != nil {
                                 PauseEndOverlay(
                                     timerManager: timerManager,
-                                    onCompletedPause: { showCompletedResponse = true },
-                                    onBoughtItem: { showBoughtResponse = true },
-                                    onAdjustTimer: { showAdjustTimerSheet = true }
+                                    onCompletedPause: {
+                                        showCompletedResponse = true
+                                        showBoughtResponse = false
+                                        showAdjustTimerSheet = false
+                                    },
+                                    onBoughtItem: {
+                                        showBoughtResponse = true
+                                        showCompletedResponse = false
+                                        showAdjustTimerSheet = false
+                                    },
+                                    onAdjustTimer: {
+                                        showAdjustTimerSheet = true
+                                        showCompletedResponse = false
+                                        showBoughtResponse = false
+                                    }
                                 )
                             } else {
                                 LoadingView()
@@ -132,26 +148,26 @@ struct RootView: View {
                         }
                         
                         .transition(.opacity)
-                        
-                        // AdjustTimerSheet pop up is a little bit different than the other options
-                        .sheet(isPresented: $showAdjustTimerSheet) {
-                            AdjustTimerSheetView(
-                                onConfirm: { updatedSeconds in
-                                    guard let uid = session.userProfile?.id else { return }
-
-                                    timerManager.finishCurrentTimer(
-                                        uid: uid,
-                                        path: "adjusted",
-                                        newDurationSeconds: updatedSeconds
-                                    )
-
-                                    showAdjustTimerSheet = false
-                                }
-                            )
-                        }
-                        .presentationDetents([.medium])
                     }
                 }
+
+                // AdjustTimerSheet pop up is a little bit different than the other options
+                .sheet(isPresented: $showAdjustTimerSheet) {
+                    AdjustTimerSheetView(
+                        onConfirm: { updatedSeconds in
+                            guard let uid = session.userProfile?.id else { return }
+
+                            timerManager.finishCurrentTimer(
+                                uid: uid,
+                                path: "adjusted",
+                                newDurationSeconds: updatedSeconds
+                            )
+
+                            showAdjustTimerSheet = false
+                        }
+                    )
+                }
+                .presentationDetents([.fraction(0.65)])
             }
             
             // Only spawn PauseEndOverlays on root view
