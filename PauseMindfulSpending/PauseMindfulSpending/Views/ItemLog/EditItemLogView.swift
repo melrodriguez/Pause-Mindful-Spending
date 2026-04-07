@@ -120,6 +120,19 @@ struct EditItemLogView: View {
             .overlay(RoundedRectangle(cornerRadius: 8)
                 .stroke(Color.gray.opacity(0.4), lineWidth: 1))
                 .cornerRadius(8)
+            
+            // Edit categories nav link
+            if let uid = session.userProfile?.id {
+                NavigationLink(destination: CategoriesView(uid: uid, onCategoriesUpdated: {
+                        vm.categoryName = ""
+                        vm.loadCategories(uid: uid)
+                })) {
+                    Text("Edit Categories")
+                        .font(AppFonts.subhead)
+                        .foregroundColor(AppColors.mainGreen)
+                }
+                .padding(.top, 12)
+            }
         }
     }
     
