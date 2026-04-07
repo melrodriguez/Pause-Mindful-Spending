@@ -83,12 +83,19 @@ class CategoriesViewModel: ObservableObject {
             guard let categoryId = categoryId else { return }
 
             // Actually change the category name
-            firestoreService.changeCategoryName(uid: uid, categoryId: categoryId, name: newName, categories: categories)
+            firestoreService.changeCategoryName(uid: uid, categoryId: categoryId, newName: newName,
+                                                oldName: oldName, categories: categories)
 
             // Update the UI
             DispatchQueue.main.async {
                 if let idx = self.categories.firstIndex(of: oldName) {
-                    self.categories[idx] = self.generateUniqueCatgoryName(base: newName)
+                    var name = newName
+                    
+                    if newName != oldName {
+                        name = self.generateUniqueCatgoryName(base: newName)
+                    }
+                    
+                    self.categories[idx] = name
                 }
             }
             

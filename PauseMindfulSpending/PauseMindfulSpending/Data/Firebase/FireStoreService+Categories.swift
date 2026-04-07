@@ -182,11 +182,16 @@ extension FireStoreService {
             }
     }
     
-    func changeCategoryName(uid: String, categoryId: String, name: String, categories: [String]) {
+    func changeCategoryName(uid: String, categoryId: String, newName: String, oldName: String, categories: [String]) {
         // Updates the name of a category document
+        var name = newName
+        
+        if name != oldName {
+            name = self.generateUniqueCatgoryName(base: name, categories: categories)
+        }
         
         let data: [String: Any] = [
-            "name": self.generateUniqueCatgoryName(base: name, categories: categories),
+            "name": name,
             "updatedAt": FieldValue.serverTimestamp()
         ]
         
