@@ -272,7 +272,7 @@ struct AddItemLogView: View {
                         }
                         .padding(12)
                         .frame(maxWidth: .infinity)
-                        .background(Color(.systemGray6).opacity(0.8))
+                        .background(Color.backgroundFill)
                         .cornerRadius(12)
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))
                     }
