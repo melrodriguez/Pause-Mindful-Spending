@@ -95,10 +95,11 @@ struct ItemLogView: View {
                             Button {
                                 showEditItemLog = true
                             } label: {
-                                Image("Pencil")
+                                Image(systemName: "pencil")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 22, height: 22)
+                                    .foregroundStyle(AppColors.textPrimary)
                             }
                             
                             Spacer()
