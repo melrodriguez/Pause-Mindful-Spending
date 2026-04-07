@@ -1,20 +1,27 @@
 import Foundation
 import FirebaseFirestore
 
-// TODO: Might merge with TimerViewMode? Rn some overlapping code
-final class TimerManager: ObservableObject {
+class TimerManager: ObservableObject {
     private var timerQueue: [TimerItem] = []
+    private var activeTimers: [TimerItem] = []
     private var queuedTimerIDs = Set<String>()
-    private var observedTimers: [TimerItem] = []
+    
 
     private var listener: ListenerRegistration?
     private var timer: Timer?
-    @Published var currentTimerItem: TimerItem?
-    
+
     private let firestoreService = FireStoreService()
     private var db = Firestore.firestore()
     
+    @Published var currentTimerItem: TimerItem?
+    @Published var currentItemName: String?
+    @Published var currentItemCost: Double?
+    @Published var currentItemCurrencyCode: String?
+    @Published var currentItemImageURL: String?
+    
+    // Similar setup to TimerViewModel
     func startMonitoring(uid: String) {
+        // Refresh the lists (start clean)
         stopMonitoring()
 
         listener = db.collection("users")
@@ -29,7 +36,7 @@ final class TimerManager: ObservableObject {
                     return
                 }
 
-                self.observedTimers = snapshot?.documents.compactMap { document in
+                self.activeTimers = snapshot?.documents.compactMap { document in
                     try? document.data(as: TimerItem.self)
                 } ?? []
 
@@ -43,6 +50,7 @@ final class TimerManager: ObservableObject {
         }
     }
 
+    // Clear the listener, current timer item, and queues
     func stopMonitoring() {
         listener?.remove()
         listener = nil
@@ -50,9 +58,10 @@ final class TimerManager: ObservableObject {
         timer?.invalidate()
         timer = nil
 
-        observedTimers = []
+        activeTimers = []
         timerQueue = []
         queuedTimerIDs.removeAll()
+        
         currentTimerItem = nil
     }
 
@@ -64,7 +73,7 @@ final class TimerManager: ObservableObject {
 
         timerQueue.append(item)
         queuedTimerIDs.insert(id)
-        getNexTimer()
+        loadNextTimer()
     }
 
     func finishCurrentTimer(uid: String, path: String, newDurationSeconds: Int? = nil) {
@@ -75,6 +84,7 @@ final class TimerManager: ObservableObject {
             guard let self else { return }
             guard let itemId = itemId else { return }
 
+            // 3 cases (buttons): completed, bought, or adjusted time on item
             if path == "bought" {
                 self.firestoreService.setItemAsBought(uid: uid, itemId: itemId)
             } else if path == "completed" {
@@ -87,27 +97,61 @@ final class TimerManager: ObservableObject {
                     newDurationSeconds: newDurationSeconds
                 )
             }
-
+            
+            // Take out processed timer from the queue
             self.timerQueue.removeAll { $0.id == timerId }
             self.queuedTimerIDs.remove(timerId)
             self.currentTimerItem = nil
-
-            self.getNexTimer()
+            
+            // Move onto the next timer, if any
+            self.loadNextTimer()
         }
     }
-
+    
+    // Go through all of the active timers
     func checkForExpiredTimers() {
         let currentDate = Date()
 
-        for item in observedTimers {
+        for item in activeTimers {
             guard item.endDate.dateValue() <= currentDate else { continue }
             handleTimerEnd(for: item)
         }
     }
 
-    func getNexTimer() {
+    func loadNextTimer() {
         guard currentTimerItem == nil else { return }
         guard let next = timerQueue.first else { return }
         currentTimerItem = next
     }
+    
+    var formattedPrice: String {
+        currentItemCost?.formatted(.currency(code: currentItemCurrencyCode ?? "USD")) ?? ""
+    }
+    
+    // For use specifically in the PauseEndOverlay
+    func loadItem(uid: String) {
+        guard let timerId = currentTimerItem?.id else { return }
+
+        firestoreService.fetchItemByTimerId(uid: uid, timerId: timerId) { [weak self] itemId in
+            guard let self = self else { return }
+            guard let itemId = itemId else { return }
+
+            self.firestoreService.fetchItem(uid: uid, itemId: itemId) { data in
+                guard let data = data else { return }
+
+                let name = data["name"] as? String ?? "My Item"
+                let cost = data["cost"] as? Double ?? 0
+                let currencyCode = data["currencyCode"] as? String ?? "USD"
+                let imageUrl = data["imageUrl"] as? String
+
+                DispatchQueue.main.async {
+                    self.currentItemName = name
+                    self.currentItemCost = cost
+                    self.currentItemCurrencyCode = currencyCode
+                    self.currentItemImageURL = imageUrl
+                }
+            }
+        }
+    }
+    
 }

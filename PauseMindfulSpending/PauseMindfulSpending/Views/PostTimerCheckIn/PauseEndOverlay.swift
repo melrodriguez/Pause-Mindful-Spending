@@ -1,8 +1,8 @@
 import SwiftUI
 
 // A Pause has ended !
-struct PauseEndSheet: View {
-    let item: TimerItem
+struct PauseEndOverlay: View {
+    let timerManager: TimerManager
     let onCompletedPause: () -> Void
     let onBoughtItem: () -> Void
     let onAdjustTimer: () -> Void
@@ -75,6 +75,8 @@ struct PauseEndSheet: View {
                     .foregroundColor(AppColors.textPrimary)
                     .padding()
                 
+                // TODO - replace with actual image
+                
                 ZStack {
                     
                     Rectangle()
@@ -85,11 +87,11 @@ struct PauseEndSheet: View {
                         .foregroundColor(.white)
                 }
                 
-                Text("Miffy Sweater") // insert real
+                Text("\(timerManager.currentItemName ?? "Unknown Item")")
                     .font(AppFonts.headline)
                     .foregroundColor(AppColors.textPrimary)
                 
-                Text("$50") // insert real
+                Text("\(timerManager.formattedPrice)") // insert real
                     .font(AppFonts.subhead)
                     .foregroundColor(AppColors.textPrimary)
                                 
@@ -99,12 +101,10 @@ struct PauseEndSheet: View {
                         Text("I don't want to buy this anymore")
                             .font(AppFonts.body)
                             .foregroundColor(AppColors.textPrimary)
-                        
                     }
 
                     HStack {
                         boughtItemButton()
-
                         Text("I bought this already")
                             .font(AppFonts.body)
                             .foregroundColor(AppColors.textPrimary)
@@ -134,5 +134,5 @@ struct PauseEndSheet: View {
 }
 
 #Preview {
-    // PauseEndSheet()
+    // PauseEndOverlay()
 }

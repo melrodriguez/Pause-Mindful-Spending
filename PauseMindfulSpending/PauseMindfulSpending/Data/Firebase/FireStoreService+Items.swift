@@ -248,7 +248,6 @@ extension FireStoreService {
                 "lastUpdatedAT": FieldValue.serverTimestamp()
             ])
             
-            
             self.createEvent(uid: uid, type: "item_bought", itemId: itemId) { eventId in
                 return
             }

@@ -26,6 +26,7 @@ struct CompletedResponseOverlay: View {
                             .offset(y: -50)
                             .rotationEffect(.degrees(Double(i) * 50))
                     }
+                    
                     Circle().fill(Color.mainGreen.opacity(0.4)).frame(width: 90, height: 90)
                     
                     Circle().fill(Color.mainGreen).frame(width: 70, height: 70)

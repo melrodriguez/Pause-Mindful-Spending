@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject var session: AppSessionViewModel    
     @StateObject private var timerManager = TimerManager()
+    @State private var pausedTimerItem: TimerItem?
     
     @State private var selectedTab: NavBar = .home
     @State private var showAddItem: Bool = false
@@ -10,7 +11,7 @@ struct RootView: View {
     
     @State private var showCompletedResponse: Bool = false
     @State private var showBoughtResponse: Bool = false
-    @State private var showTimerExtendedResponse: Bool = false
+    @State private var showAdjustTimerSheet: Bool = false
     
     var body: some View {
         if session.isLoading {
@@ -95,7 +96,7 @@ struct RootView: View {
                 
                 // This sheet will pop up on top of everything when a timer finishes!
                 .overlay {
-                    if let item = timerManager.currentTimerItem {
+                    if timerManager.currentTimerItem != nil {
                         ZStack {
                             Color
                                 .black
@@ -103,77 +104,81 @@ struct RootView: View {
                                 .ignoresSafeArea()
 
                             if showCompletedResponse {
-                                CompletedResponseOverlay(
-                                    onDone: {
+                                CompletedResponseOverlay(onDone: {
                                         guard let uid = session.userProfile?.id else { return }
                                         timerManager.finishCurrentTimer(uid: uid, path: "completed")
                                         showCompletedResponse = false
+                                        pausedTimerItem = nil
                                     }
                                 )
                             } else if showBoughtResponse {
-                                BoughtResponseOverlay(
-                                    onDone: {
+                                BoughtResponseOverlay(onDone: {
                                         guard let uid = session.userProfile?.id else { return }
                                         timerManager.finishCurrentTimer(uid: uid, path: "bought")
                                         showBoughtResponse = false
+                                        pausedTimerItem = nil
                                     }
                                 )
-                            } else if showTimerExtendedResponse {
-                                AdjustTimerResponseOverlay(
-                                    onDone: {
-                                        guard let uid = session.userProfile?.id else { return }
-                                        timerManager.finishCurrentTimer(uid: uid, path: "adjusted")
-                                        showTimerExtendedResponse = false
-                                    }
+                            } else if pausedTimerItem != nil {
+                                PauseEndOverlay(
+                                    timerManager: timerManager,
+                                    onCompletedPause: { showCompletedResponse = true },
+                                    onBoughtItem: { showBoughtResponse = true },
+                                    onAdjustTimer: { showAdjustTimerSheet = true }
                                 )
                             } else {
-                                PauseEndSheet(
-                                    item: item,
-                                    onCompletedPause: {
-                                        showCompletedResponse = true
-                                    },
-                                    onBoughtItem: {
-                                        showBoughtResponse = true
-                                    },
-                                    onAdjustTimer: {
-                                        showTimerExtendedResponse = true
-                                    }
-                                )
+                                LoadingView()
                             }
                         }
+                        
                         .transition(.opacity)
+                        
+                        // AdjustTimerSheet pop up is a little bit different than the other options
+                        .sheet(isPresented: $showAdjustTimerSheet) {
+                            AdjustTimerSheetView(
+                                onConfirm: { updatedSeconds in
+                                    guard let uid = session.userProfile?.id else { return }
+
+                                    timerManager.finishCurrentTimer(
+                                        uid: uid,
+                                        path: "adjusted",
+                                        newDurationSeconds: updatedSeconds
+                                    )
+
+                                    showAdjustTimerSheet = false
+                                }
+                            )
+                        }
+                        .presentationDetents([.medium])
                     }
                 }
             }
-
-            // When the user comes back to the app, start monitoring timers again
-            // Stop when they leave 
-            // TODO: make more rubust by adding elapsed time on sign in and checking if timers expired
-
+            
+            // Only spawn PauseEndOverlays on root view
+        
             .onAppear {
-                if let uid = session.userProfile?.id {
+                if session.isAuthenticated, let uid = session.userProfile?.id {
                     timerManager.startMonitoring(uid: uid)
                 }
             }
 
-            // TODO: fix - stop counting down when user navigates beyond root view
-
-            .onChange(of: session.userProfile?.id) { _, newUID in
-                if let uid = newUID, session.isAuthenticated {
+            .onChange(of: session.isAuthenticated) { _, isAuthenticated in
+                if isAuthenticated, let uid = session.userProfile?.id {
                     timerManager.startMonitoring(uid: uid)
                 } else {
                     timerManager.stopMonitoring()
                 }
             }
-
-            .onChange(of: session.isAuthenticated) { _, isAuthenticated in
-                if !isAuthenticated {
-                    timerManager.stopMonitoring()
-                } else if let uid = session.userProfile?.id {
-                    timerManager.startMonitoring(uid: uid)
+            
+            // Item was just paused
+            .onChange(of: timerManager.currentTimerItem, initial: false) { _, newItem in
+                pausedTimerItem = newItem
+                if let uid = session.userProfile?.id {
+                    timerManager.loadItem(uid: uid)
                 }
 >>>>>>> d62e7c4 (remaining: adjust timer)
             }
+            
         }
     }
 }
