@@ -2,6 +2,40 @@ import FirebaseFirestore
 
 extension FireStoreService {
     
+    func generateUniqueCatgoryName(base: String, categories: [String]) -> String {
+        let trimmed = base.trimmingCharacters(in: .whitespaces)
+        let lowercased = trimmed.lowercased()
+        
+        var usedNumbers = Set<Int>()
+        
+        for name in categories {
+            let lower = name.lowercased()
+            guard lower.hasPrefix(lowercased) else { continue }
+            
+            let suffix = lower.dropFirst(lowercased.count)
+            
+            if suffix.isEmpty {
+                usedNumbers.insert(0)
+            } else if let num = Int(suffix) {
+                usedNumbers.insert(num)
+            }
+        }
+        
+        if !usedNumbers.contains(0) {
+            return trimmed
+        }
+        
+        var i = 1
+        
+        while true {
+            if !usedNumbers.contains(i) {
+                return "\(trimmed)\(i)"
+            }
+            
+            i += 1
+        }
+    }
+    
     func fetchCategoryList(uid: String, completion: @escaping ([String]) -> Void) {
         // Fetches the categoryId list from user document. Returns result using
         // handler
@@ -21,11 +55,11 @@ extension FireStoreService {
         }
     }
     
-    func addCategory(uid: String, name: String, enableStreak: Bool) {
+    func addCategory(uid: String, name: String, enableStreak: Bool, categories: [String]) {
         // Adds a category document then adds the categoryId to back to the user dcoument
         
         let data: [String: Any] = [
-            "name": name,
+            "name": generateUniqueCatgoryName(base: name, categories: categories),
             "highestStreak": 0,
             "itemCount": 0,
             "enableStreak": enableStreak,
@@ -148,11 +182,11 @@ extension FireStoreService {
             }
     }
     
-    func changeCategoryName(uid: String, categoryId: String, name: String) {
+    func changeCategoryName(uid: String, categoryId: String, name: String, categories: [String]) {
         // Updates the name of a category document
         
         let data: [String: Any] = [
-            "name": name,
+            "name": self.generateUniqueCatgoryName(base: name, categories: categories),
             "updatedAt": FieldValue.serverTimestamp()
         ]
         

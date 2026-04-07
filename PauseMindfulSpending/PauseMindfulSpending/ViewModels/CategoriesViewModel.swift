@@ -39,21 +39,56 @@ class CategoriesViewModel: ObservableObject {
     }
     
     func pressedAddButton(uid: String, name: String, enableStreak: Bool) {
-        firestoreService.addCategory(uid: uid, name: name, enableStreak: enableStreak)
+        firestoreService.addCategory(uid: uid, name: name, enableStreak: enableStreak, categories: categories)
     }
     
+    //TODO: Make a listener in Dashboard repo, so we don't have to duplicate this function
+    func generateUniqueCatgoryName(base: String) -> String {
+        let trimmed = base.trimmingCharacters(in: .whitespaces)
+        let lowercased = trimmed.lowercased()
+        
+        var usedNumbers = Set<Int>()
+        
+        for name in categories {
+            let lower = name.lowercased()
+            guard lower.hasPrefix(lowercased) else { continue }
+            
+            let suffix = lower.dropFirst(lowercased.count)
+            
+            if suffix.isEmpty {
+                usedNumbers.insert(0)
+            } else if let num = Int(suffix) {
+                usedNumbers.insert(num)
+            }
+        }
+        
+        if !usedNumbers.contains(0) {
+            return trimmed
+        }
+        
+        var i = 1
+        
+        while true {
+            if !usedNumbers.contains(i) {
+                return "\(trimmed)\(i)"
+            }
+            
+            i += 1
+        }
+    }
+
     func pressedEditButton(uid: String, oldName: String, newName: String) {
         firestoreService.fetchCategoryIdUsingName(uid: uid, name: oldName) { [weak self] categoryId in
             guard let self = self else { return }
             guard let categoryId = categoryId else { return }
 
             // Actually change the category name
-            firestoreService.changeCategoryName(uid: uid, categoryId: categoryId, name: newName)
+            firestoreService.changeCategoryName(uid: uid, categoryId: categoryId, name: newName, categories: categories)
 
             // Update the UI
             DispatchQueue.main.async {
                 if let idx = self.categories.firstIndex(of: oldName) {
-                    self.categories[idx] = newName
+                    self.categories[idx] = self.generateUniqueCatgoryName(base: newName)
                 }
             }
             
