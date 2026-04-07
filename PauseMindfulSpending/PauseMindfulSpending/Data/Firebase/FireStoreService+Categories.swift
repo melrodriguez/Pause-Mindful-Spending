@@ -27,6 +27,7 @@ extension FireStoreService {
         let data: [String: Any] = [
             "name": name,
             "highestStreak": 0,
+            "itemCount": 0,
             "enableStreak": enableStreak,
             "createdAt": FieldValue.serverTimestamp(),
             "updatedAt": FieldValue.serverTimestamp()
@@ -164,6 +165,36 @@ extension FireStoreService {
         )
     }
     
+    func incrementItemCount(uid: String, categoryId: String) {
+        // Updates the name of a category document
+        
+        let data: [String: Any] = [
+            "itemCount": FieldValue.increment(Int64(1))
+        ]
+        
+        self.updateDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "categories",
+            subId: categoryId,
+            fieldsToUpdate: data
+        )
+    }
+    
+    func decrementItemCount(uid: String, categoryId: String) {
+        let data: [String: Any] = [
+            "itemCount": FieldValue.increment(Int64(-1))
+        ]
+        
+        self.updateDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "categories",
+            subId: categoryId,
+            fieldsToUpdate: data
+        )
+    }
+
     func updateCategoryStreak(uid: String, categoryId: String, dateItemBought: Date) {
         // Used when an item is bought and there is a categoryId in the item document. It
         // check if there is a new highest streak based on the lastItemBought in the

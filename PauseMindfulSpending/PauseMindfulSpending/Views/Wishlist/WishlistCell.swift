@@ -19,16 +19,3 @@ struct WishlistCell: View {
         .aspectRatio(1, contentMode: .fit)
     }
 }
-
-#Preview {
-    WishlistCell(
-        item: Item(
-            id: "sweater",
-            name: "sweater",
-            timerId: "sweater",
-            categoryId: nil,
-            imageUrl: nil
-        ),
-        textSize: 15
-    )
-}

@@ -45,11 +45,21 @@ final class TimerViewModel: ObservableObject {
         return max(0, endDate.timeIntervalSinceNow)
     }
     
-    func getTimerItems() {
+    func getTimerItems(sortOrder: String) {
+        listener?.remove()
+        var descending = false
+        
+        if sortOrder == "Ascending" {
+            descending = false
+        } else {
+            descending = true
+        }
+        
         listener = db.collection("users")
             .document(uid)
             .collection("timers")
             .whereField("status", isEqualTo: "active")
+            .order(by: "endDate", descending: descending)
             .addSnapshotListener { snapshot, error in
                 if let error = error {
                     print("Error getting items: \(error)")

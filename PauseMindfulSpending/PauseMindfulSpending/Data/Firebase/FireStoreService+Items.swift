@@ -40,6 +40,8 @@ extension FireStoreService {
                     if let categoryId = categoryId {
                         updatedData["categoryId"] = categoryId
                         dataToReturn["categoryId"] = categoryId
+                        
+                        self.incrementItemCount(uid: uid, categoryId: categoryId)
                     }
                     
                     self.addDocumentToSubcollection(
@@ -116,17 +118,28 @@ extension FireStoreService {
         var updatedData = fieldsToUpdate
         updatedData["lastUpdatedAt"] = FieldValue.serverTimestamp()
         
-        if let _ = fieldsToUpdate["categoryId"] as? String {
-            self.createEvent(uid: uid, type: "update_item_category", itemId: itemId) { eventId in }
+        if let newCategoryId = fieldsToUpdate["categoryId"] as? String {
+            self.fetchItem(uid: uid, itemId: itemId) {itemData in
+                if let oldCategoryId = itemData?["categoryId"] as? String {
+                    if oldCategoryId != newCategoryId {
+                        self.decrementItemCount(uid: uid, categoryId: oldCategoryId)
+                        self.incrementItemCount(uid: uid, categoryId: newCategoryId)
+                        self.createEvent(uid: uid, type: "update_item_category", itemId: itemId) { eventId in }
+                    }
+                } else {
+                    self.incrementItemCount(uid: uid, categoryId: newCategoryId)
+                }
+                
+                self.updateDocumentFromSubcollection(
+                    parentCollection: "users",
+                    parentId: uid,
+                    subCollection: "items",
+                    subId: itemId,
+                    fieldsToUpdate: updatedData
+                )
+            }
+            
         }
-        
-        updateDocumentFromSubcollection(
-            parentCollection: "users",
-            parentId: uid,
-            subCollection: "items",
-            subId: itemId,
-            fieldsToUpdate: updatedData
-        )
     }
     
     func deleteItem(uid: String, itemId: String) {
@@ -137,6 +150,10 @@ extension FireStoreService {
                 let _ = itemData["cost"] as? Double
             else {
                 return
+            }
+            
+            if let categoryId = itemData["categoryId"] as? String {
+                self.decrementItemCount(uid: uid, categoryId: categoryId)
             }
             
             self.deleteTimer(uid: uid, timerId: timerId)
@@ -204,6 +221,7 @@ extension FireStoreService {
                     
             if let categoryId = itemData["categoryId"] as? String {
                 self.updateCategoryStreak(uid: uid, categoryId: categoryId, dateItemBought: Date())
+                self.decrementItemCount(uid: uid, categoryId: categoryId)
             }
                 
             self.pauseTimer(uid: uid, timerId: timerId)
