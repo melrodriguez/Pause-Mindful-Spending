@@ -78,6 +78,12 @@ struct EditItemLogView: View {
         }
     }
     
+    private var divider: some View {
+        Divider()
+            .frame(height: 0.3)
+            .background(Color.black)
+    }
+    
     private func categorySection() -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Category").font(AppFonts.subhead)
@@ -98,7 +104,7 @@ struct EditItemLogView: View {
                 }
                 
                 if isCategoryExpanded {
-                    Divider()
+                    
                     ForEach(vm.categories, id: \.self) { category in
                         Button {
                             vm.categoryName = category
@@ -113,7 +119,7 @@ struct EditItemLogView: View {
                             .padding(10)
                             .background(Color.accentGreen)
                         }
-                        Divider().background(Color.black)
+                        divider
                     }
                 }
             }
@@ -236,7 +242,6 @@ struct EditItemLogView: View {
                     showValidationAlert = true
                 } else {
                     editItem()
-                    // print("pressed the save button")
                 }
             } label: {
                 Text("Save Changes")

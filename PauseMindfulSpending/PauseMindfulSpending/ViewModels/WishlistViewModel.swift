@@ -2,13 +2,17 @@ import SwiftUI
 import FirebaseFirestore
 
 final class WishlistViewModel: ObservableObject {
+    private let repo = DashboardRepository()
+    
     @Published var userProfile: UserProfile
     @Published var items: [Item] = []
-    
+    @Published var categories: [Category] = []
+
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
     
     let uid: String
+    var emptyList: Bool = false
     
     init(uid: String, userProfile: UserProfile) {
         self.uid = uid
@@ -28,11 +32,12 @@ final class WishlistViewModel: ObservableObject {
         userProfile.displayName
     }
     
-    func getItems() {
+    func startItemListener() {
         listener = db.collection("users")
             .document(uid)
             .collection("items")
             .whereField("status", isEqualTo: "wishlist")
+            .order(by: "createdAt", descending: true)
             .addSnapshotListener { snapshot, error in
                 if let error = error {
                     print("Error getting items: \(error)")
@@ -42,7 +47,67 @@ final class WishlistViewModel: ObservableObject {
                 self.items = snapshot?.documents.compactMap { document in
                     try? document.data(as: Item.self)
                 } ?? []
+                
+                self.emptyList = self.items.isEmpty
             }
     }
     
+    func filterByStatus(status: String) {
+        listener?.remove()
+        
+        let query = db.collection("users")
+            .document(uid)
+            .collection("items")
+            .whereField("status", isEqualTo: status)
+        
+        listener = query.addSnapshotListener { snapshot, error in
+            if let error = error {
+                print("Error getting items: \(error)")
+                return
+            }
+            
+            self.items = snapshot?.documents.compactMap { document in
+                try? document.data(as: Item.self)
+            } ?? []
+        }
+    }
+    
+    func filterByCategory(categoryId: String) {
+        listener?.remove()
+        
+        var query = db.collection("users")
+            .document(uid)
+            .collection("items")
+            .whereField("status", isEqualTo: "wishlist")
+        
+        query = query.whereField("categoryId", isEqualTo: categoryId)
+        
+        listener = query.addSnapshotListener { snapshot, error in
+            if let error = error {
+                print("Error getting items: \(error)")
+                return
+            }
+            
+            self.items = snapshot?.documents.compactMap { document in
+                try? document.data(as: Item.self)
+            } ?? []
+        }
+    }
+    
+    func loadCategories() {
+        db.collection("users")
+            .document(uid)
+            .collection("categories")
+            .whereField("itemCount", isGreaterThan: 0)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error getting items: \(error)")
+                    return
+                }
+                
+                self.categories = snapshot?.documents.compactMap { document in
+                    try? document.data(as: Category.self)
+                } ?? []
+            }
+    }
 }

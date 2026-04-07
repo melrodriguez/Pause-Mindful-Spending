@@ -4,6 +4,10 @@ struct WishlistView: View {
     
     @StateObject private var viewModel: WishlistViewModel
     @EnvironmentObject var session: AppSessionViewModel
+    
+    @State private var showingSortBySheet = false
+    @State private var selectedSortField: String = "status"
+    @State private var selectedSortName: String = "wishlist"
 
     init(viewModel: WishlistViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -13,39 +17,74 @@ struct WishlistView: View {
         NavigationStack { // wrap entire body in nav stack
             VStack(alignment: .leading) {
                 AppHeader(title: "Wishlist")
-                if viewModel.items.isEmpty {
-                    EmptyListView()
-                } else {
-                    ScrollView {
-                        HStack {
-                            Spacer()
-                            ProfileImageView(photoUrl: nil, size: 80)
-                            Spacer()
+                ScrollView {
+                    HStack {
+                        Spacer()
+                        ProfileImageView(photoUrl: nil, size: 80)
+                        Spacer()
+                    }
+                    HStack {
+                        Spacer()
+                        Text(viewModel.displayName)
+                            .font(AppFonts.headline)
+                            .foregroundColor(AppColors.mainGreen)
+                        Spacer()
+                    }
+                    HStack{
+                        Spacer()
+                        Button() {
+                            showingSortBySheet = true
+                        } label: {
+                            Image("Sort")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 25, height: 25)
                         }
-                        HStack {
-                            Spacer()
-                            Text(viewModel.displayName)
-                                .font(AppFonts.headline)
-                                .foregroundColor(AppColors.mainGreen)
-                            Spacer()
-                        }
-                        HStack{
-                            Spacer()
-                            Menu {
-                                Button("Category") {
-                                    print("Sort by Category")
+                    }
+                    .padding(.trailing, 20)
+                    
+                    Divider()
+                    
+                    if viewModel.items.isEmpty {
+                        VStack(alignment: .center) {
+                            Image("GreyAppLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 150)
+                                .shadow(color: .black.opacity(0.5), radius: 8, x: 5, y: 5)
+                            
+                            Text("Nothing yet")
+                                .font(AppFonts.bold(30))
+                                .foregroundColor(AppColors.textSecondary)
+                            
+                            if selectedSortField == "status" {
+                                if selectedSortName == "wishlist" {
+                                    Text("Add before you buy - mindful spending starts with a single pause")
+                                        .font(AppFonts.regular(15))
+                                        .multilineTextAlignment(.center)
+                                        .frame(maxWidth: 280)
+                                        .foregroundColor(AppColors.textTertiary)
                                 }
-                            } label: {
-                                Image("Sort")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 25, height: 25)
+                                if selectedSortName == "bought" {
+                                    Text("Looks like you haven't bought any items yet")
+                                        .font(AppFonts.regular(15))
+                                        .multilineTextAlignment(.center)
+                                        .frame(maxWidth: 280)
+                                        .foregroundColor(AppColors.textTertiary)
+                                }
+                            }
+                            if selectedSortField == "category" {
+                                Text("Looks like you don't have any items in this category")
+                                    .font(AppFonts.regular(15))
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: 280)
+                                    .foregroundColor(AppColors.textTertiary)
                             }
                         }
-                        .padding(.trailing, 20)
-                        
+                        .opacity(0.7)
+                        .padding(.top , 100)
+                    } else {
                         switch session.userSettings?.wishlistLayout {
-                            // TODO: Make this less hardcoded
                         case .grid:
                             WishlistGrid(viewModel: viewModel, columns: [
                                 GridItem(.fixed(120), spacing: 8),
@@ -75,7 +114,23 @@ struct WishlistView: View {
             .appBackground()
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
-                viewModel.getItems()
+                if selectedSortField == "status" {
+                    viewModel.filterByStatus(status: selectedSortName)
+                }
+                if selectedSortField == "category" {
+                    viewModel.filterByCategory(categoryId: selectedSortName)
+                }
+            }
+            .sheet(isPresented: $showingSortBySheet) {
+                SortBySheet(viewModel: viewModel, selectedSortField: $selectedSortField, selectedSortName: $selectedSortName).presentationDetents([.medium, .large])
+            }
+            .onChange(of: selectedSortName) { _, newValue in
+                if selectedSortField == "status" {
+                    viewModel.filterByStatus(status: selectedSortName)
+                }
+                if selectedSortField == "category" {
+                    viewModel.filterByCategory(categoryId: selectedSortName)
+                }
             }
         }
     }
