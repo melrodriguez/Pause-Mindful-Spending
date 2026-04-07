@@ -99,7 +99,7 @@ extension FireStoreService {
                     completion(nil)
                     return
                 }
-                Firestore.firestore().collection("users").document(uid).setData(["profilePictureURL": downloadURL.absoluteString], merge: true)
+                Firestore.firestore().collection("users").document(uid).setData(["photoUrl": downloadURL.absoluteString], merge: true)
                 
                 completion(downloadURL.absoluteString)
             }
@@ -118,7 +118,7 @@ extension FireStoreService {
                 completion(false)
                 return
             }
-            Firestore.firestore().collection("users").document(uid).updateData(["profilePictureURL": FieldValue.delete()])
+            Firestore.firestore().collection("users").document(uid).updateData(["photoUrl": FieldValue.delete()])
             completion(true)
         }
     }
