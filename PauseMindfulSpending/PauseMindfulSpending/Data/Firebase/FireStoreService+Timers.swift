@@ -105,10 +105,20 @@ extension FireStoreService {
         }
     }
     
+    func updateTimerItemName(uid: String, timerId: String, itemName: String) {
+        self.updateDocumentFromSubcollection(
+            parentCollection: "users",
+            parentId: uid,
+            subCollection: "timers",
+            subId: timerId,
+            fieldsToUpdate: ([
+                "itemName": itemName
+            ])
+        )
+    }
+    
     func updateTimer(uid: String, timerId: String, newDurationSeconds: Int) {
         // Updates the timer document with a new timer
-        // TODO: Rethink timer logic? Currently, just setitng a new timer using same id
-        
         let now = Date()
         
         self.updateDocumentFromSubcollection(
