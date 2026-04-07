@@ -8,16 +8,14 @@ final class TimerViewModel: ObservableObject {
     private var timer: Timer?
     private var listener: ListenerRegistration?
     private var db = Firestore.firestore()
-    private var timerManager: TimerManager
 
     let uid: String
     private var secondsInDay = 86400
     private var secondsInHour = 3600
     private var secondsInMinute = 60
 
-    init(uid: String, timerManager: TimerManager) {
+    init(uid: String) {
         self.uid = uid
-        self.timerManager = timerManager
     }
     
     func startTimer() {

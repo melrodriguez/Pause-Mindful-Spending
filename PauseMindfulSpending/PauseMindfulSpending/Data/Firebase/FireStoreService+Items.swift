@@ -110,6 +110,23 @@ extension FireStoreService {
             completion(itemData)
         }
     }
+
+    func fetchItemByTimerId( uid: String, timerId: String, completion: @escaping (String?) -> Void) {
+        // Fetches the first item whose timerId matches the timerId and returns the itemId in completion handler
+        
+        db.collection("users")
+            .document(uid)
+            .collection("items")
+            .whereField("timerId", isEqualTo: timerId)
+            .getDocuments { snapshot, error in
+                guard let document = snapshot?.documents.first else {
+                    completion(nil)
+                    return
+                }
+                
+                completion(document.documentID)
+            }
+    }
     
     func updateItem(uid: String, itemId: String, fieldsToUpdate: [String: Any]) {
         // Updates contents of an item document. Will update the lastUpdatedAt

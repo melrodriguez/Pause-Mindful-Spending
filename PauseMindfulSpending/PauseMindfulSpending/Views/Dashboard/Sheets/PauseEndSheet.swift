@@ -2,11 +2,15 @@ import SwiftUI
 
 // A Pause has ended !
 struct PauseEndSheet: View {
+    let item: TimerItem
+    let onCompletedPause: () -> Void
+    let onBoughtItem: () -> Void
+    let onAdjustTimer: () -> Void
     
-    // Spawn delete item confirmation popup
-    private func deleteItemButton() -> some View {
+    // Completed pause
+    private func completedItemButton() -> some View {
         Button {
-            // print("delete item pressed")
+            onCompletedPause()
         } label: {
             Image(systemName: "xmark")
                 .font(.system(size: 20, weight: .regular))
@@ -20,10 +24,9 @@ struct PauseEndSheet: View {
         .foregroundColor(AppColors.textPrimary)
     }
     
-    // Navigate to wishlist page
     private func boughtItemButton() -> some View {
         Button {
-            // print("delete item pressed")
+            onBoughtItem()
         } label: {
             Image(systemName: "cart")
                 .font(.system(size: 20, weight: .regular))
@@ -37,10 +40,10 @@ struct PauseEndSheet: View {
         .foregroundColor(AppColors.textPrimary)
     }
     
-    // Navigate to item page
+    // Bring up AdjustTimer sheet
     private func timerButton() -> some View {
         Button {
-            // print("delete item pressed")
+            onAdjustTimer()
         } label: {
             Image(systemName: "clock")
                 .font(.system(size: 20, weight: .regular))
@@ -92,7 +95,7 @@ struct PauseEndSheet: View {
                                 
                 VStack (alignment: .leading) {
                     HStack {
-                        deleteItemButton()
+                        completedItemButton()
                         Text("I don't want to buy this anymore")
                             .font(AppFonts.body)
                             .foregroundColor(AppColors.textPrimary)
@@ -125,10 +128,11 @@ struct PauseEndSheet: View {
         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         .padding()
         .frame(maxHeight: 650)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
 
     }
 }
 
 #Preview {
-    PauseEndSheet()
+    // PauseEndSheet()
 }
