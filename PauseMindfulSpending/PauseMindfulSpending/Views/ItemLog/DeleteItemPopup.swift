@@ -1,61 +1,89 @@
 import SwiftUI
 
 struct DeleteItemPopup: View {
-
     @Binding var showDeletePopup: Bool
-    
-    // When you call this method, return to TimerView
     var deleteItem: () -> Void
-    
+
     var body: some View {
-        Spacer()
-        
-        VStack(alignment: .center, spacing: 20) {
+        NavigationStack {
+            VStack(spacing: 16) {
 
-            Text("Would you like to remove this item?")
-                .font(AppFonts.subhead.weight(.semibold))
+                HStack(spacing: 12) {
+                    Image(systemName: "trash")
+                        .foregroundColor(AppColors.pink)
+                        .font(.system(size: 20))
 
-            Text("Feel free to add the item again anytime!")
-                .font(AppFonts.subhead)
-                .foregroundColor(AppColors.textSecondary)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Remove this item?")
+                            .font(AppFonts.subhead)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppColors.textPrimary)
 
-            VStack(spacing: 12) {
+                        Text("Feel free to add it again anytime.")
+                            .font(AppFonts.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                    }
 
-                Button {
-                    deleteItem()
-                } label: {
-                    Text("Remove Item")
-                        .font(AppFonts.caption)
-                        .frame(maxWidth: .infinity)
-                        .padding(14)
-                        .background(AppColors.textSecondary.opacity(0.15))
-                        .foregroundColor(AppColors.textPrimary)
-                        .cornerRadius(8)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(AppColors.pink.opacity(0.1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(AppColors.pink.opacity(0.25), lineWidth: 1)
+                        )
+                )
 
-                Button {
-                    showDeletePopup = false
-                } label: {
-                    Text("Keep It")
-                        .font(AppFonts.caption)
-                        .frame(maxWidth: .infinity)
-                        .padding(14)
-                        .background(AppColors.textSecondary.opacity(0.15))
-                        .foregroundColor(AppColors.textPrimary)
-                        .cornerRadius(8)
+                // Buttons
+                VStack(spacing: 12) {
+                    Button {
+                        deleteItem()
+                    } label: {
+                        Text("Remove Item")
+                            .font(AppFonts.subhead)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(15)
+                            .background(AppColors.pink)
+                            .cornerRadius(16)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        showDeletePopup = false
+                    } label: {
+                        Text("Keep It")
+                            .font(AppFonts.subhead)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppColors.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(15)
+                            .background(AppColors.textSecondary.opacity(0.1))
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(AppColors.textSecondary.opacity(0.2), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
                 }
-                
             }
-            
+            .padding(24)
+            .navigationTitle("Remove Item")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { showDeletePopup = false }
+                        .foregroundColor(AppColors.textSecondary)
+                }
+            }
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .background(AppColors.bg1)
-        .cornerRadius(20)
-        
     }
 }
 
 #Preview {
-    //DeleteItemPopup()
+    DeleteItemPopup(showDeletePopup: .constant(true), deleteItem: {})
 }

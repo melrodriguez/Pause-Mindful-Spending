@@ -1,25 +1,22 @@
 import SwiftUI
 
 struct ItemLogView: View {
-    // If the item is ever deleted, we need to pop off the nav stack
-    // and go back to where we came from (either Timers View or Wishlist View)
     @Environment(\.dismiss) private var dismiss
     @State private var showDeletePopup = false
     @State private var showEditItemLog = false
-    
+
     let item: Item
     let uid: String
 
     @StateObject private var viewModel: ItemLogViewModel
-    
+
     init(item: Item, uid: String) {
         self.item = item
         self.uid = uid
         _viewModel = StateObject(wrappedValue: ItemLogViewModel(item: item))
     }
-    
-    // Temporary - same as AddItemLog
-    var moods : [(imageName: String, label: String)] = [
+
+    var moods: [(imageName: String, label: String)] = [
         ("ExcitedFace", "Excited"),
         ("HappyFace", "Happy"),
         ("CalmFace", "Calm"),
@@ -28,9 +25,7 @@ struct ItemLogView: View {
         ("AnxiousFace", "Anxious"),
         ("StressedFace", "Stressed")
     ]
-    
-    // I turned moodButton from AddItemLog into a view and spaced out the attributes
-    // This can be made into a reusable component in the future
+
     struct MoodFaceView: View {
         let mood: (imageName: String, label: String)
         let selectedMood: String
@@ -42,220 +37,248 @@ struct ItemLogView: View {
                     .scaledToFit()
                     .frame(width: 38, height: 38)
                     .background(
-                        Circle()
-                            .fill(selectedMood == mood.imageName ?
-                                  AppColors.mainGreen : AppColors.textSecondary)
+                        Circle().fill(
+                            selectedMood == mood.imageName
+                                ? AppColors.mainGreen
+                                : AppColors.textSecondary.opacity(0.2)
+                        )
                     )
-
                 Text(mood.label)
                     .font(.system(size: 10))
-                    .foregroundColor(.primary)
+                    .foregroundColor(AppColors.textSecondary)
             }
         }
     }
-    
-    // Same here; just views instead of buttons
+
     private func moodDisplayView() -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("How I felt when I logged this item")
+            Text("How I felt")
                 .font(AppFonts.subhead)
+                .foregroundColor(AppColors.textSecondary)
 
             HStack(spacing: 8) {
                 ForEach(moods, id: \.imageName) { mood in
-                    MoodFaceView(
-                        mood: mood,
-                        selectedMood: viewModel.mood
-                    )
+                    MoodFaceView(mood: mood, selectedMood: viewModel.mood)
                 }
             }
             .padding(12)
             .frame(maxWidth: .infinity)
-            .background(AppColors.itemBox)
-            .cornerRadius(12)
+            .background(Color(.systemBackground))
+            .cornerRadius(14)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AppColors.textSecondary.opacity(0.15), lineWidth: 1)
             )
         }
     }
-    
-    var body: some View {
-        ZStack {
-            ScrollView {
-                
-                VStack(spacing: 20) {
-                    
-                    if let urlString = viewModel.imageUrl, let url = URL(string: urlString) {
-                        AsyncImage(url: url) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            Rectangle()
-                                .fill(Color(.systemGray5))
-                                .overlay(ProgressView())
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 260)
-                        .clipped()
-                    }
-        
-                    // Title, date, category
-                    VStack(alignment: .leading, spacing: 4) {
 
-                        HStack {
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {
+
+                // Hero image
+                if let urlString = viewModel.imageUrl, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color(.systemGray5))
+                            .overlay(ProgressView())
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 280)
+                    .clipped()
+                }
+
+                // Content card
+                VStack(alignment: .leading, spacing: 20) {
+
+                    // Title row
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(viewModel.name)
                                 .font(AppFonts.title)
-                            if item.status == "wishlist" {
-                                Button {
-                                    showEditItemLog = true
-                                } label: {
-                                    Image(systemName: "pencil")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 22, height: 22)
-                                        .foregroundStyle(AppColors.textPrimary)
-                                }
-                            }
-                            
-                            Spacer()
-                        }
-
-                        Text(viewModel.formattedDate)
-                            .font(AppFonts.subhead)
-                        
-                        if (viewModel.categoryName != nil){
-                            Text(viewModel.categoryName!)
-                                .font(AppFonts.caption)
                                 .foregroundColor(AppColors.textPrimary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(AppColors.accentGreen)
-                                .cornerRadius(6)
+
+                            Text(viewModel.formattedDate)
+                                .font(AppFonts.caption)
+                                .foregroundColor(AppColors.textSecondary)
+
+                            if let category = viewModel.categoryName {
+                                Text(category)
+                                    .font(AppFonts.caption)
+                                    .foregroundColor(AppColors.textPrimary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(AppColors.accentGreen)
+                                    .cornerRadius(6)
+                            }
                         }
-                
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // Price
-                    Text(viewModel.formattedPrice)
-                        .font(AppFonts.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    // Mood selector
-                    // Similar to that in AddItemLogView
+                        Spacer()
+
+                        if item.status == "wishlist" {
+                            Button {
+                                showEditItemLog = true
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(AppColors.textSecondary)
+                                    .frame(width: 36, height: 36)
+                                    .background(AppColors.textSecondary.opacity(0.1))
+                                    .clipShape(Circle())
+                            }
+                        }
+                    }
+
+                    Divider()
+
+                    // Price + timer in a row
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Price")
+                                .font(AppFonts.caption)
+                                .foregroundColor(AppColors.textSecondary)
+                            Text(viewModel.formattedPrice)
+                                .font(AppFonts.headline)
+                                .foregroundColor(AppColors.textPrimary)
+                        }
+
+                        Spacer()
+
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("Pause timer")
+                                .font(AppFonts.caption)
+                                .foregroundColor(AppColors.textSecondary)
+                            HStack(spacing: 4) {
+                                Image(systemName: "clock")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(AppColors.mainGreen)
+                                Text(viewModel.formattedTimer)
+                                    .font(AppFonts.subhead)
+                                    .foregroundColor(AppColors.textPrimary)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                    .padding(16)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(14)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(AppColors.textSecondary.opacity(0.15), lineWidth: 1)
+                    )
+
+                    // Mood
                     moodDisplayView()
-                    
+
                     // Notes
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("What prompted me to want to purchase this item was...")
-                            .font(AppFonts.caption)
-                            .foregroundColor(.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        Text(viewModel.notes)
-                            .font(AppFonts.caption)
-                            .foregroundStyle(AppColors.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
-                            .frame(minHeight: 150, alignment: .topLeading)
-                            .padding(16)
-                            .background(AppColors.itemBox)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
-                            .cornerRadius(5)
+                    if !viewModel.notes.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("What prompted me")
+                                .font(AppFonts.subhead)
+                                .foregroundColor(AppColors.textSecondary)
+
+                            Text(viewModel.notes)
+                                .font(AppFonts.body)
+                                .foregroundColor(AppColors.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .topLeading)
+                                .padding(14)
+                                .background(Color(.systemBackground))
+                                .cornerRadius(14)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(AppColors.textSecondary.opacity(0.15), lineWidth: 1)
+                                )
+                        }
                     }
 
-                    // Timer
-                    Text(viewModel.formattedTimer)
-                        .font(AppFonts.headline)
-
-                    // Buttons
-                    HStack(spacing: 16) {
-
+                    // Action buttons
+                    VStack(spacing: 10) {
                         if item.status == "bought" {
-                            Button(action: {
+                            Button {
                                 viewModel.setBoughtItemToWishlist(uid: uid)
                                 dismiss()
-                            }) {
-                                Text("Set to Wishlist")
+                            } label: {
+                                Text("Move to Wishlist")
+                                    .font(AppFonts.subhead)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .padding(15)
-                                    .font(AppFonts.body)
                                     .background(AppColors.mainGreen)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(5)
+                                    .cornerRadius(14)
                             }
-
+                            .buttonStyle(.plain)
                         }
-                        
+
                         if item.status == "wishlist" {
-                            Button(action: {
+                            Button {
                                 viewModel.setItemAsBought(uid: uid)
                                 dismiss()
-                            }) {
-                                Text("Bought Item")
+                            } label: {
+                                Text("Mark as Bought")
+                                    .font(AppFonts.subhead)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .padding(15)
-                                    .font(AppFonts.body)
                                     .background(AppColors.mainGreen)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(5)
+                                    .cornerRadius(14)
                             }
+                            .buttonStyle(.plain)
                         }
-                        
-                        Button(action: {
+
+                        Button {
                             showDeletePopup = true
-                        }) {
-                            Label("Delete", systemImage: "trash")
+                        } label: {
+                            Label("Remove Item", systemImage: "trash")
+                                .font(AppFonts.subhead)
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppColors.pink)
                                 .frame(maxWidth: .infinity)
                                 .padding(15)
-                                .font(AppFonts.body)
-                                .background(AppColors.pink)
-                                .foregroundColor(.white)
-                                .cornerRadius(5)
+                                .background(AppColors.pink.opacity(0.1))
+                                .cornerRadius(14)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(AppColors.pink.opacity(0.25), lineWidth: 1)
+                                )
                         }
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding()
-            }
-            .appBackground()
-            // Only show back button when not on the pop up
-            .toolbar(showDeletePopup ? .hidden : .visible, for: .navigationBar)
-            .onAppear {
-                viewModel.loadItem(uid: self.uid)
-            }
-            .navigationDestination(isPresented: $showEditItemLog) {
-                EditItemLogView(
-                    item: item,
-                    showEditItemLog: $showEditItemLog,
-                    vm: viewModel,
-                    editItem: {
-                        viewModel.updateItem(uid: uid)
-                    }
-                )
-            }
-
-            // Be careful with this!
-            if (showDeletePopup) {
-                // Blur the background
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .ignoresSafeArea()
-                
-                VStack {
-                    Spacer()
-                    DeleteItemPopup(showDeletePopup: $showDeletePopup,
-                        deleteItem: {
-                            viewModel.deleteItem(uid: uid)
-                            dismiss()
-                        }
-                    )
-                }
-                
+                .padding(20)
             }
         }
+        .appBackground()
+        .onAppear {
+            viewModel.loadItem(uid: uid)
+        }
+        .navigationDestination(isPresented: $showEditItemLog) {
+            EditItemLogView(
+                item: item,
+                showEditItemLog: $showEditItemLog,
+                vm: viewModel,
+                editItem: {
+                    viewModel.updateItem(uid: uid)
+                }
+            )
+        }
+        .sheet(isPresented: $showDeletePopup) {
+            DeleteItemPopup(
+                showDeletePopup: $showDeletePopup,
+                deleteItem: {
+                    viewModel.deleteItem(uid: uid)
+                    dismiss()
+                }
+            )
+            .presentationDetents([.height(280)])
+        }
+
     }
 }
+
 
 #Preview {
     NavigationStack {
