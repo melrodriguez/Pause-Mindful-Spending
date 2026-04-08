@@ -166,7 +166,7 @@ class ItemLogViewModel: ObservableObject {
             fieldsToUpdate: fieldsToUpdate
         )
         
-        self.firestoreService.resumeTimer(uid: uid, timerId: self.timerId!)
+        self.firestoreService.resumeTimer(uid: uid, timerId: self.timerId!, itemName: item.name)
     }
     
     // TODO: needs imageUrl logic

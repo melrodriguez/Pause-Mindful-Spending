@@ -77,7 +77,7 @@ extension FireStoreService {
         }
     }
     
-    func resumeTimer(uid: String, timerId: String) {
+    func resumeTimer(uid: String, timerId: String, itemName: String) {
         // Resumes a paused timer and updates endDate
         
         self.fetchTimer(uid: uid, timerId: timerId) { timerData in
@@ -94,6 +94,7 @@ extension FireStoreService {
             let now = Date()
                     
             let pauseDuration = now.timeIntervalSince(pausedAt)
+            self.notificationService.scheduleNotification(itemName: itemName, timerId: timerId, timeInterval: Double(pauseDuration))
             let newEndDate = endDate.addingTimeInterval(pauseDuration)
             self.updateDocumentFromSubcollection(
                 parentCollection: "users",
