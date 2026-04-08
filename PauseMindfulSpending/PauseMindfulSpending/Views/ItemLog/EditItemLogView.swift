@@ -301,36 +301,7 @@ struct EditItemLogView: View {
             
         }
     }
-    
-    private var photoHeader: some View {
-        ZStack(alignment: .topTrailing) {
-            Group {
-                if let image = displayedPhoto {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                } else {
-                    Rectangle()
-                        .fill(Color(.systemGray5))
-                        .overlay(Image(systemName: "photo")
-                            .font(.system(size: 40))
-                            .foregroundColor(.gray))
-                }
-             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 260)
-            .clipped()
-            
-            PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                Image(systemName: "pencil")
-                    .padding(8)
-                    .background(Circle().fill(Color.white.opacity(0.85)))
-                    .foregroundColor(.primary)
-                    .padding(12)
-            }
-        }
-    }
-    
+        
     var body: some View {
         //photoHeader
         VStack(alignment: .leading, spacing: 24) {
