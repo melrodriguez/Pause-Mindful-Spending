@@ -16,6 +16,7 @@ struct TimersView: View {
             VStack(alignment: .leading) {
                 AppHeader(title: "Timers")
                 if viewModel.timerItems.isEmpty {
+                    Spacer()
                     VStack(alignment: .center) {
                         Image("GreyAppLogo")
                             .resizable()
@@ -33,8 +34,8 @@ struct TimersView: View {
                             .frame(maxWidth: 280)
                             .foregroundColor(AppColors.textTertiary)
                     }
-                    .opacity(0.7)
-                    .padding(.top , 100)
+                    .frame(maxWidth: .infinity)
+                    Spacer()
                 } else {
                     ScrollView {
                         HStack{

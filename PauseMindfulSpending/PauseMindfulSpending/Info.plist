@@ -2,13 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Inter_18pt-Bold.ttf</string>
-		<string>Inter_18pt-Medium.ttf</string>
-		<string>Inter_18pt-Regular.ttf</string>
-		<string>Inter_18pt-SemiBold.ttf</string>
-	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -19,6 +12,13 @@
 				<string>pause</string>
 			</array>
 		</dict>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Inter_18pt-Bold.ttf</string>
+		<string>Inter_18pt-Medium.ttf</string>
+		<string>Inter_18pt-Regular.ttf</string>
+		<string>Inter_18pt-SemiBold.ttf</string>
 	</array>
 </dict>
 </plist>

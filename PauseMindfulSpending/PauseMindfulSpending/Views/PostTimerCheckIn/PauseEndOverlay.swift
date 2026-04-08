@@ -55,10 +55,24 @@ struct PauseEndOverlay: View {
                         .fill(AppColors.textSecondary.opacity(0.12))
                         .frame(width: 64, height: 64)
 
-                    Image(systemName: "photo")
-                        .font(.system(size: 22))
-                        .foregroundColor(AppColors.textSecondary.opacity(0.4))
+                    if let imageUrl = timerManager.currentItemImageURL,
+                       let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            Image(systemName: "photo")
+                                .font(.system(size: 22))
+                                .foregroundColor(AppColors.textSecondary.opacity(0.4))
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    } else {
+                        Image(systemName: "photo")
+                            .font(.system(size: 22))
+                            .foregroundColor(AppColors.textSecondary.opacity(0.4))
+                    }
                 }
+                .frame(width: 64, height: 64)
+                .clipped()
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(timerManager.currentItemName ?? "Unknown Item")

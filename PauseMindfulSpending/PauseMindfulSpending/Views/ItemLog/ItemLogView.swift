@@ -84,6 +84,19 @@ struct ItemLogView: View {
             ScrollView {
                 
                 VStack(spacing: 20) {
+                    
+                    if let urlString = viewModel.imageUrl, let url = URL(string: urlString) {
+                        AsyncImage(url: url) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color(.systemGray5))
+                                .overlay(ProgressView())
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 260)
+                        .clipped()
+                    }
         
                     // Title, date, category
                     VStack(alignment: .leading, spacing: 4) {

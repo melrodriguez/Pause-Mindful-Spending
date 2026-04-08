@@ -6,10 +6,11 @@ extension FireStoreService {
     func uploadPhoto(
         uid: String,
         itemName: String,
+        timerId: String?,
         image: UIImage,
         completion: @escaping (String?) -> Void
     ) {
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+        guard let imageData = image.jpegData(compressionQuality: 0.4) else {
             completion(nil)
             return
         }
@@ -41,6 +42,20 @@ extension FireStoreService {
                         "updatedAt" : FieldValue.serverTimestamp()
                     ]
                 )
+                
+                if let timerId = timerId {
+                    self.updateDocumentFromSubcollection(
+                        parentCollection: "users",
+                        parentId: uid,
+                        subCollection: "timers",
+                        subId: timerId,
+                        fieldsToUpdate: [
+                            "imageUrl": downloadURL.absoluteString,
+                            "updatedAt": FieldValue.serverTimestamp()
+                        ]
+                    )
+                }
+                
                 completion(downloadURL.absoluteString)
             }
         }

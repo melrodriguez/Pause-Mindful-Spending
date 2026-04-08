@@ -169,6 +169,16 @@ class ItemLogViewModel: ObservableObject {
         self.firestoreService.resumeTimer(uid: uid, timerId: self.timerId!, itemName: item.name)
     }
     
+    func uploadPhoto(uid: String, image: UIImage) {
+        guard let itemId = item.id else { return }
+        
+        firestoreService.uploadPhoto(uid: uid, itemName: itemId, timerId: timerId, image: image) { url in
+            DispatchQueue.main.async {
+                self.imageUrl = url
+            }
+        }
+    }
+    
     // TODO: needs imageUrl logic
     func updateItem(uid: String) {
         guard let itemId = item.id  else { return }
@@ -185,6 +195,10 @@ class ItemLogViewModel: ObservableObject {
             
             if let categoryId = categoryId {
                 fieldsToUpdate["categoryId"] = categoryId
+            }
+            
+            if let imageUrl = self.imageUrl {
+                fieldsToUpdate["imageUrl"] = imageUrl
             }
 
             self.firestoreService.updateItem(

@@ -20,7 +20,7 @@ struct WishlistView: View {
                 ScrollView {
                     HStack {
                         Spacer()
-                        ProfileImageView(photoUrl: nil, size: 80)
+                        ProfileImageView(photoUrl: session.userProfile?.photoUrl, size: 80)
                         Spacer()
                     }
                     HStack {
@@ -111,6 +111,14 @@ struct WishlistView: View {
                     }
                 }
             }
+            .refreshable {
+                    if selectedSortField == "status" {
+                        viewModel.filterByStatus(status: selectedSortName)
+                    }
+                    if selectedSortField == "category" {
+                        viewModel.filterByCategory(categoryId: selectedSortName)
+                    }
+                }
             .appBackground()
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
