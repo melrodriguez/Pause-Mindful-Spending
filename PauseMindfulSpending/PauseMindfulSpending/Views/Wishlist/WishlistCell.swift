@@ -6,16 +6,24 @@ struct WishlistCell: View {
     
     var body: some View {
         ZStack {
-            if let _ = item.imageUrl {
-                // Do nothing for now
-            }
-            else {
+            if let imageUrl = item.imageUrl {
+                AsyncImage(url: URL(string: imageUrl)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Rectangle()
+                        .fill(AppColors.ListCell)
+                }
+            } else {
                 Rectangle()
                     .fill(AppColors.ListCell)
                 Text(item.name)
                     .font(AppFonts.bold(textSize))
             }
         }
-        .aspectRatio(1, contentMode: .fit)
+        .frame(width: textSize == 15 ? 120 : 350, height: textSize == 15 ? 120 : 350)
+        .clipped()
+        .cornerRadius(8)
     }
 }

@@ -20,7 +20,7 @@ struct WishlistView: View {
                 ScrollView {
                     HStack {
                         Spacer()
-                        ProfileImageView(photoUrl: nil, size: 80)
+                        ProfileImageView(photoUrl: session.userProfile?.photoUrl, size: 80)
                         Spacer()
                     }
                     HStack {

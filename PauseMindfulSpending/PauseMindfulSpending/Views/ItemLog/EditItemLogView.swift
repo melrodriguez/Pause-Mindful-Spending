@@ -42,6 +42,8 @@ struct EditItemLogView: View {
     @State private var permissionDenied: Bool = false
     @State private var showAdjustTimer: Bool = false
     @State private var didSave: Bool = false
+    @State private var displayedPhoto: UIImage? = nil
+    
 
     private func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -202,6 +204,16 @@ struct EditItemLogView: View {
                         .cornerRadius(8)
                 }
             }
+            
+            if let image = displayedPhoto {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                    .clipped()
+                    .cornerRadius(8)
+            }
         }
     }
     
@@ -290,7 +302,37 @@ struct EditItemLogView: View {
         }
     }
     
+    private var photoHeader: some View {
+        ZStack(alignment: .topTrailing) {
+            Group {
+                if let image = displayedPhoto {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Rectangle()
+                        .fill(Color(.systemGray5))
+                        .overlay(Image(systemName: "photo")
+                            .font(.system(size: 40))
+                            .foregroundColor(.gray))
+                }
+             }
+            .frame(maxWidth: .infinity)
+            .frame(height: 260)
+            .clipped()
+            
+            PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                Image(systemName: "pencil")
+                    .padding(8)
+                    .background(Circle().fill(Color.white.opacity(0.85)))
+                    .foregroundColor(.primary)
+                    .padding(12)
+            }
+        }
+    }
+    
     var body: some View {
+        //photoHeader
         VStack(alignment: .leading, spacing: 24) {
             // Breaking it up
             itemNameSection()
@@ -309,6 +351,18 @@ struct EditItemLogView: View {
             guard let uid = session.userProfile?.id else { return }
             vm.loadCategories(uid: uid)
             vm.loadItem(uid: uid)
+        }
+        
+        .onChange(of: selectedPhoto) {
+            guard let newItem = selectedPhoto else { return }
+            Task {
+                if let data = try? await newItem.loadTransferable(type: Data.self),
+                   let uiImage = UIImage(data: data),
+                   let uid = session.userProfile?.id {
+                    displayedPhoto = uiImage
+                    vm.uploadPhoto(uid: uid, image: uiImage)
+                }
+            }
         }
         
         // Original alert, just moved up
