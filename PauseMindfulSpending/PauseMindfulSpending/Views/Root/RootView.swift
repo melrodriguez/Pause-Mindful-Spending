@@ -86,14 +86,11 @@ struct RootView: View {
                         }
                     })
                 }
-<<<<<<< HEAD
                 .onOpenURL { url in
                     if url.scheme == "pause" && url.host == "add-item" {
                         showAddItem = true
                     }
                 }
-=======
-                
                 // This sheet will pop up on top of everything when a timer finishes!
                 .overlay {
                     if timerManager.currentTimerItem != nil {
@@ -106,21 +103,21 @@ struct RootView: View {
                             if showCompletedResponse {
                                 CompletedResponseOverlay(onDone: {
                                         guard let uid = session.userProfile?.id else { return }
-                                        timerManager.finishCurrentTimer(uid: uid, path: "completed")
                                         showCompletedResponse = false
                                         showBoughtResponse = false
                                         showAdjustTimerSheet = false
                                         pausedTimerItem = nil
+                                        timerManager.finishCurrentTimer(uid: uid, path: "completed")
                                     }
                                 )
                             } else if showBoughtResponse {
                                 BoughtResponseOverlay(onDone: {
                                         guard let uid = session.userProfile?.id else { return }
-                                        timerManager.finishCurrentTimer(uid: uid, path: "bought")
                                         showCompletedResponse = false
                                         showBoughtResponse = false
                                         showAdjustTimerSheet = false
                                         pausedTimerItem = nil
+                                        timerManager.finishCurrentTimer(uid: uid, path: "bought")
                                     }
                                 )
                             } else if pausedTimerItem != nil {
@@ -192,7 +189,6 @@ struct RootView: View {
                 if let uid = session.userProfile?.id {
                     timerManager.loadItem(uid: uid)
                 }
->>>>>>> d62e7c4 (remaining: adjust timer)
             }
             
         }
