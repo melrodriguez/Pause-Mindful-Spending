@@ -3,7 +3,8 @@ import FirebaseFirestore
 class FireStoreService {
     
     let db = Firestore.firestore()
-    
+    let notificationService = NotificationService()
+
     func createUser(displayName: String, email: String, uid: String) {
         // Adds a user document to the users collection
         

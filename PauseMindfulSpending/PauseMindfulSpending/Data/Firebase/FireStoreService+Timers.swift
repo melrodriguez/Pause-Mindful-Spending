@@ -1,6 +1,7 @@
 import FirebaseFirestore
 
 extension FireStoreService {
+    
     func createTimer(
         uid: String,
         itemName: String,
@@ -18,7 +19,7 @@ extension FireStoreService {
         data["createdAt"] = FieldValue.serverTimestamp()
         data["endDate"] = now.addingTimeInterval(TimeInterval(durationSeconds))
         data["updatedAt"] = FieldValue.serverTimestamp()
-
+            
         self.addDocumentToSubcollection(
             parentCollection: "users",
             parentId: uid,
@@ -29,6 +30,8 @@ extension FireStoreService {
                     return
                 }
                 
+                self.notificationService.scheduleNotification(itemName: itemName, timerId: timerId, timeInterval: Double(durationSeconds))
+
                 completion(timerId)
             }
     }
@@ -41,6 +44,8 @@ extension FireStoreService {
         data["pausedAt"] = FieldValue.serverTimestamp()
         data["status"] =  "paused"
         data["updatedAt"] = FieldValue.serverTimestamp()
+        
+        self.notificationService.cancelNotification(timerId: timerId)
         
         self.updateDocumentFromSubcollection(
             parentCollection: "users",
@@ -72,7 +77,7 @@ extension FireStoreService {
         }
     }
     
-    func resumeTimer(uid: String, timerId: String) {
+    func resumeTimer(uid: String, timerId: String, itemName: String) {
         // Resumes a paused timer and updates endDate
         
         self.fetchTimer(uid: uid, timerId: timerId) { timerData in
@@ -89,6 +94,7 @@ extension FireStoreService {
             let now = Date()
                     
             let pauseDuration = now.timeIntervalSince(pausedAt)
+            self.notificationService.scheduleNotification(itemName: itemName, timerId: timerId, timeInterval: Double(pauseDuration))
             let newEndDate = endDate.addingTimeInterval(pauseDuration)
             self.updateDocumentFromSubcollection(
                 parentCollection: "users",
@@ -117,10 +123,13 @@ extension FireStoreService {
         )
     }
     
-    func updateTimer(uid: String, timerId: String, newDurationSeconds: Int) {
+    func updateTimer(uid: String, timerId: String, itemName: String, newDurationSeconds: Int) {
         // Updates the timer document with a new timer
         let now = Date()
         
+        self.notificationService.cancelNotification(timerId: timerId)
+        self.notificationService.scheduleNotification(itemName: itemName, timerId: timerId, timeInterval: Double(newDurationSeconds))
+
         self.updateDocumentFromSubcollection(
             parentCollection: "users",
             parentId: uid,
@@ -137,6 +146,8 @@ extension FireStoreService {
     
     func deleteTimer(uid: String, timerId: String) {
         // Deletes the specified timer document
+        
+        self.notificationService.cancelNotification(timerId: timerId)
         
         self.deleteDocumentFromSubcollection(
             parentCollection: "users",

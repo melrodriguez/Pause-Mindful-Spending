@@ -12,7 +12,7 @@ class TimerManager: ObservableObject {
 
     private let firestoreService = FireStoreService()
     private var db = Firestore.firestore()
-    
+
     @Published var currentTimerItem: TimerItem?
     @Published var currentItemName: String?
     @Published var currentItemCost: Double?
@@ -94,6 +94,7 @@ class TimerManager: ObservableObject {
                 self.firestoreService.updateTimer(
                     uid: uid,
                     timerId: timerId,
+                    itemName: timerItem.itemName,
                     newDurationSeconds: newDurationSeconds
                 )
             }
