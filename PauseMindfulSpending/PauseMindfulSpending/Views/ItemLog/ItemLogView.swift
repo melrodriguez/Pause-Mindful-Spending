@@ -43,6 +43,13 @@ struct ItemLogView: View {
                                 : AppColors.textSecondary.opacity(0.2)
                         )
                     )
+                    .overlay(
+                        Circle()
+                            .stroke(AppColors.mainGreen, lineWidth: 2.5)
+                            .opacity(selectedMood == mood.imageName ? 1 : 0)
+                    )
+                    .scaleEffect(selectedMood == mood.imageName ? 1.15: 1.0)
+
                 Text(mood.label)
                     .font(.system(size: 10))
                     .foregroundColor(AppColors.textSecondary)
