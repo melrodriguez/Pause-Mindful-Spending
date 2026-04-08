@@ -1,4 +1,6 @@
 import SwiftUI
+import AVFoundation
+import Photos
 
 struct SettingsView: View {
     
@@ -10,8 +12,9 @@ struct SettingsView: View {
     }
     
     // TODO - temp, need to implement camera perms
-    @State private var cameraAccessOn = true
-    @State private var libraryAccessOn = true
+    @State private var cameraAccessOn = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
+    @State private var libraryAccessOn = PHPhotoLibrary.authorizationStatus(for: .readWrite) != .denied
+    
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
 
     @State private var showingDeleteConfirmation = false
@@ -73,7 +76,14 @@ struct SettingsView: View {
                         SettingsToggleRow(
                             title: "Allow camera access",
                             systemImage: "camera",
-                            isOn: $cameraAccessOn
+                            isOn: Binding(
+                                get: {cameraAccessOn}
+                                , set: { _ in
+                                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
+                            )
                         )
                         
                         Divider()
@@ -81,8 +91,16 @@ struct SettingsView: View {
                         SettingsToggleRow(
                             title: "Allow library access",
                             systemImage: "film",
-                            isOn: $libraryAccessOn
+                            isOn: Binding(
+                                get: {libraryAccessOn},
+                                set: { _ in
+                                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
+                            )
                         )
+                        
                         
                         Divider()
                         
@@ -99,7 +117,7 @@ struct SettingsView: View {
                             }
                         }
                     }
-
+                    
                     // MARK: - Account actions
                     SettingsSectionView(title: "Account") {
                         // Logout row
@@ -111,13 +129,13 @@ struct SettingsView: View {
                                     .font(AppFonts.body)
                                     .foregroundColor(AppColors.textSecondary)
                                     .frame(width: 20)
-
+                                
                                 Text("Log out")
                                     .font(AppFonts.body)
                                     .foregroundColor(AppColors.textSecondary)
-
+                                
                                 Spacer()
-
+                                
                                 Image(systemName: "chevron.right")
                                     .font(AppFonts.caption)
                                     .foregroundColor(AppColors.textSecondary.opacity(0.4))
@@ -125,9 +143,9 @@ struct SettingsView: View {
                             .padding(.vertical, 8)
                         }
                         .buttonStyle(.plain)
-
+                        
                         Divider()
-
+                        
                         // Delete account row
                         Button {
                             showingDeleteConfirmation = true
@@ -137,13 +155,13 @@ struct SettingsView: View {
                                     .font(AppFonts.body)
                                     .foregroundColor(AppColors.pink)
                                     .frame(width: 20)
-
+                                
                                 Text("Delete account")
                                     .font(AppFonts.body)
                                     .foregroundColor(AppColors.pink)
-
+                                
                                 Spacer()
-
+                                
                                 Image(systemName: "chevron.right")
                                     .font(AppFonts.caption)
                                     .foregroundColor(AppColors.pink.opacity(0.4))
@@ -159,7 +177,11 @@ struct SettingsView: View {
                 
                 Color.clear.frame(height: 60)
             }
+            .onReceive(NotificationCenter.default.publisher(for:UIApplication.didBecomeActiveNotification)) { _ in
+                cameraAccessOn = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
+                libraryAccessOn = PHPhotoLibrary.authorizationStatus(for: .readWrite) != .denied }
         }
+
         .appBackground()
         .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $showingDeleteConfirmation) {
