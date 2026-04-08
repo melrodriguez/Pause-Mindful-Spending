@@ -20,6 +20,8 @@ enum AppColors {
     // Cell Color
     static let ListCell = Color("ListCell")
     
+    static let itemBox = Color("ItemBox")
+    
     static let calendarCell = Color("CalendarCell")
 
     static var backgroundGradient: LinearGradient {

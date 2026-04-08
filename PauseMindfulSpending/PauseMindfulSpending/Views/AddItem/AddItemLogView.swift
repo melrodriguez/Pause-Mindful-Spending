@@ -140,7 +140,7 @@ struct AddItemLogView: View {
                             }
                         } label: {
                             HStack {
-                                Text(category).foregroundColor(.black)
+                                Text(category).foregroundColor(Color.primary)
                                 Spacer()
                             }
                             .padding(10)
