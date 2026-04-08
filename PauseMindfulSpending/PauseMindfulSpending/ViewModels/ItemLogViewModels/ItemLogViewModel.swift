@@ -153,6 +153,22 @@ class ItemLogViewModel: ObservableObject {
         return (name.isEmpty || cost == 0 || timer == 0) ? false : true
     }
     
+    func setBoughtItemToWishlist(uid: String) {
+        guard let itemId = item.id else { return }
+        
+        let fieldsToUpdate: [String: Any] = [
+            "status": "wishlist"
+        ]
+        
+        self.firestoreService.updateItem(
+            uid: uid,
+            itemId: itemId,
+            fieldsToUpdate: fieldsToUpdate
+        )
+        
+        self.firestoreService.resumeTimer(uid: uid, timerId: self.timerId!)
+    }
+    
     // TODO: needs imageUrl logic
     func updateItem(uid: String) {
         guard let itemId = item.id  else { return }
