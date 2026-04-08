@@ -9,7 +9,7 @@ struct TimerCell: View {
     var body: some View {
         ZStack {
             if let imageUrl = item.imageUrl {
-                AsyncImage(url: URL(string: imageUrl)) { image in
+                AsyncImage(url: URL(string: imageUrl + "?t=\(Int(Date().timeIntervalSince1970))")) { image in
                     image
                         .resizable()
                         .scaledToFill()

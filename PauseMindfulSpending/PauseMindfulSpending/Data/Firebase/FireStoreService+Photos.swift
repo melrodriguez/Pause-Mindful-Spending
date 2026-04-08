@@ -10,7 +10,7 @@ extension FireStoreService {
         image: UIImage,
         completion: @escaping (String?) -> Void
     ) {
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+        guard let imageData = image.jpegData(compressionQuality: 0.4) else {
             completion(nil)
             return
         }
