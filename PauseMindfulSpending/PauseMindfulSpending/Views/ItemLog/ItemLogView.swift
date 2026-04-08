@@ -70,7 +70,7 @@ struct ItemLogView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity)
-            .background(AppColors.ListCell)
+            .background(AppColors.itemBox)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -91,15 +91,16 @@ struct ItemLogView: View {
                         HStack {
                             Text(viewModel.name)
                                 .font(AppFonts.title)
-                            
-                            Button {
-                                showEditItemLog = true
-                            } label: {
-                                Image(systemName: "pencil")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 22, height: 22)
-                                    .foregroundStyle(AppColors.textPrimary)
+                            if item.status == "wishlist" {
+                                Button {
+                                    showEditItemLog = true
+                                } label: {
+                                    Image(systemName: "pencil")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 22, height: 22)
+                                        .foregroundStyle(AppColors.textPrimary)
+                                }
                             }
                             
                             Spacer()
@@ -113,7 +114,7 @@ struct ItemLogView: View {
                             .foregroundColor(AppColors.textPrimary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(AppColors.ListCell)
+                            .background(AppColors.accentGreen)
                             .cornerRadius(6)
                 
                     }
@@ -141,7 +142,7 @@ struct ItemLogView: View {
                             .frame(maxWidth: .infinity, alignment: .topLeading)
                             .frame(minHeight: 150, alignment: .topLeading)
                             .padding(16)
-                            .background(AppColors.ListCell)
+                            .background(AppColors.itemBox)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
@@ -156,28 +157,45 @@ struct ItemLogView: View {
                     // Buttons
                     HStack(spacing: 16) {
 
+                        if item.status == "bought" {
+                            Button(action: {
+                                viewModel.setBoughtItemToWishlist(uid: uid)
+                                dismiss()
+                            }) {
+                                Text("Set to Wishlist")
+                                    .frame(maxWidth: .infinity)
+                                    .padding(15)
+                                    .font(AppFonts.body)
+                                    .background(AppColors.mainGreen)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(5)
+                            }
+
+                        }
+                        
+                        if item.status == "wishlist" {
+                            Button(action: {
+                                viewModel.setItemAsBought(uid: uid)
+                                dismiss()
+                            }) {
+                                Text("Bought Item")
+                                    .frame(maxWidth: .infinity)
+                                    .padding(15)
+                                    .font(AppFonts.body)
+                                    .background(AppColors.mainGreen)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(5)
+                            }
+                        }
+                        
                         Button(action: {
                             showDeletePopup = true
                         }) {
-                            Text("Delete Item")
+                            Label("Delete", systemImage: "trash")
                                 .frame(maxWidth: .infinity)
                                 .padding(15)
-                                .font(AppFonts.subhead)
-                                .background(AppColors.mainGreen)
-                                .foregroundColor(.white)
-                                .cornerRadius(5)
-                        }
-                        
-                        // TEMPORARY BUTTON
-                        Button(action: {
-                            viewModel.setItemAsCompleted(uid: uid)
-                            dismiss()
-                        }) {
-                            Text("Complete item")
-                                .frame(maxWidth: .infinity)
-                                .padding(15)
-                                .font(AppFonts.subhead)
-                                .background(AppColors.mainGreen)
+                                .font(AppFonts.body)
+                                .background(AppColors.pink)
                                 .foregroundColor(.white)
                                 .cornerRadius(5)
                         }
