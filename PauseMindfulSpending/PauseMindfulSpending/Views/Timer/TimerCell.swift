@@ -43,7 +43,8 @@ struct TimerCell: View {
 
             VStack(spacing: 4) {
                 Text(item.name)
-                    .font(AppFonts.semibold(min(textSize, 14)))
+                    .font(AppFonts.semibold(min(textSize, 16)))
+                    .shadow(color: .black.opacity(0.8), radius: 4, x: 0, y: 2)
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
@@ -55,7 +56,8 @@ struct TimerCell: View {
                             .foregroundColor(.white.opacity(0.85))
 
                         Text(viewModel.formattedRemaining(for: timerItem))
-                            .font(AppFonts.medium(min(textSize - 2, 12)))
+                            .font(AppFonts.medium(min(textSize - 2, 14)))
+                            .shadow(color: .black.opacity(0.8), radius: 4, x: 0, y: 2)
                             .foregroundColor(.white.opacity(0.95))
                             .monospacedDigit()
                     }
@@ -66,11 +68,11 @@ struct TimerCell: View {
             .frame(maxWidth: .infinity)
             .background(
                 LinearGradient(
-                    colors: [.clear, .black.opacity(0.65)],
+                    colors: [.clear, .black.opacity(0.88)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .frame(height: 80)
+                .frame(height: 100)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
