@@ -343,7 +343,7 @@ struct AddItemLogView: View {
                             .stroke(AppColors.mainGreen, lineWidth: 1.5)
                     )
                     .shadow(
-                        color: isFormValid ? AppColors.mainGreen.opacity(0.4) : .clear,
+                        color: isFormValid ? AppColors.mainGreen.opacity(0.4) : AppColors.accentGreen.opacity(0.4),
                         radius: 10, x: 0, y: 4
                     )
             }

@@ -2,10 +2,6 @@ import SwiftUI
 import PhotosUI
 import AVFoundation
 
-// Reuse AddItemLog for EditItemLog!
-// It's pretty much the same, except I split up everything into sections for the compiler
-// TODO: This and AddItemLog should probably be remade into modular components
-
 struct EditItemLogView: View {
     let item: Item
     @Binding var showEditItemLog: Bool
@@ -13,17 +9,15 @@ struct EditItemLogView: View {
     @EnvironmentObject var session: AppSessionViewModel
 
     var editItem: () -> Void
-    
-    // Pass in the parent ItemLogViewModel
-    // ItemLogView -> EditItemLog
+
     init(item: Item, showEditItemLog: Binding<Bool>, vm: ItemLogViewModel, editItem: @escaping () -> Void) {
         self.item = item
         self._showEditItemLog = showEditItemLog
         self.vm = vm
         self.editItem = editItem
     }
-    
-    var moods : [(imageName: String, label: String)] = [
+
+    var moods: [(imageName: String, label: String)] = [
         ("ExcitedFace", "Excited"),
         ("HappyFace", "Happy"),
         ("CalmFace", "Calm"),
@@ -32,10 +26,10 @@ struct EditItemLogView: View {
         ("AnxiousFace", "Anxious"),
         ("StressedFace", "Stressed")
     ]
-    
+
     @State private var showValidationAlert: Bool = false
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var isCategoryExpanded: Bool = false
     @State private var selectedPhoto: PhotosPickerItem? = nil
     @State private var showCamera: Bool = false
@@ -43,7 +37,10 @@ struct EditItemLogView: View {
     @State private var showAdjustTimer: Bool = false
     @State private var didSave: Bool = false
     @State private var displayedPhoto: UIImage? = nil
-    
+
+    private var isFormValid: Bool {
+        vm.updateIsValid(name: vm.name, cost: vm.cost ?? 0, timer: vm.timerSeconds)
+    }
 
     private func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -52,11 +49,8 @@ struct EditItemLogView: View {
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 DispatchQueue.main.async {
-                    if granted {
-                        showCamera = true
-                    } else {
-                        permissionDenied = true
-                    }
+                    showCamera = granted
+                    permissionDenied = !granted
                 }
             }
         case .denied, .restricted:
@@ -65,7 +59,7 @@ struct EditItemLogView: View {
             break
         }
     }
-    
+
     private func moodButton(mood: (imageName: String, label: String)) -> some View {
         Button {
             vm.mood = mood.imageName
@@ -81,13 +75,13 @@ struct EditItemLogView: View {
             }
         }
     }
-    
+
     private var divider: some View {
         Divider()
             .frame(height: 0.3)
             .background(Color.black)
     }
-    
+
     private func categorySection() -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Category").font(AppFonts.subhead)
@@ -101,14 +95,14 @@ struct EditItemLogView: View {
                         Text(vm.categoryName ?? "")
                             .foregroundColor(.gray)
                         Spacer()
-                        Image(systemName: isCategoryExpanded ? "chevron.up" : "chevron.down").foregroundColor(.gray) // fix
+                        Image(systemName: isCategoryExpanded ? "chevron.up" : "chevron.down")
+                            .foregroundColor(.gray)
                     }
                     .padding(10)
                     .background(Color.backgroundFill)
                 }
-                
+
                 if isCategoryExpanded {
-                    
                     ForEach(vm.categories, id: \.self) { category in
                         Button {
                             vm.categoryName = category
@@ -127,15 +121,13 @@ struct EditItemLogView: View {
                     }
                 }
             }
-            .overlay(RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.gray.opacity(0.4), lineWidth: 1))
-                .cornerRadius(8)
-            
-            // Edit categories nav link
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4), lineWidth: 1))
+            .cornerRadius(8)
+
             if let uid = session.userProfile?.id {
                 NavigationLink(destination: CategoriesView(uid: uid, onCategoriesUpdated: {
-                        vm.categoryName = ""
-                        vm.loadCategories(uid: uid)
+                    vm.categoryName = ""
+                    vm.loadCategories(uid: uid)
                 })) {
                     Text("Edit Categories")
                         .font(AppFonts.subhead)
@@ -145,45 +137,35 @@ struct EditItemLogView: View {
             }
         }
     }
-    
+
     private func itemNameSection() -> some View {
-        // Item name input box
-        VStack(alignment: .leading, spacing: 6){
+        VStack(alignment: .leading, spacing: 6) {
             Text("Item Name").font(AppFonts.subhead)
-            
             TextField("E.g. Iced Latte", text: $vm.name)
                 .padding(10)
                 .background(Color.backgroundFill)
-                .cornerRadius(8).overlay(RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.gray.opacity(0.4), lineWidth: 1))
+                .cornerRadius(8)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4), lineWidth: 1))
                 .foregroundColor(.logText)
-
         }
     }
-    
+
     private func priceSection() -> some View {
-        // Price input box
-        VStack(alignment: .leading, spacing: 6){
+        VStack(alignment: .leading, spacing: 6) {
             Text("Enter Price").font(AppFonts.subhead)
-            
             TextField("$0.00", value: $vm.cost, format: .currency(code: vm.currencyCode))
                 .padding(10)
-                .background(Color.backgroundFill).cornerRadius(8)
-                .overlay(RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
-                    .foregroundColor(.logText))
-
+                .background(Color.backgroundFill)
+                .cornerRadius(8)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4), lineWidth: 1))
+                .foregroundColor(.logText)
         }
     }
-    
-    // Does nothing for now
-    // Also took out some alerts/popups from AddItemLog
+
     private func photoSection() -> some View {
-        // Photo gallery and camera section
         VStack(alignment: .leading, spacing: 10) {
             Text("Photo").font(AppFonts.subhead)
             HStack(spacing: 12) {
-                
                 Button {
                     checkCameraPermission()
                 } label: {
@@ -194,7 +176,7 @@ struct EditItemLogView: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-                
+
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     Label("From Gallery", systemImage: "folder")
                         .frame(maxWidth: .infinity)
@@ -204,7 +186,7 @@ struct EditItemLogView: View {
                         .cornerRadius(8)
                 }
             }
-            
+
             if let image = displayedPhoto {
                 Image(uiImage: image)
                     .resizable()
@@ -216,11 +198,10 @@ struct EditItemLogView: View {
             }
         }
     }
-    
+
     private func moodSection() -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("How are you feeling right now?").font(AppFonts.subhead)
-            
             HStack(spacing: 8) {
                 ForEach(moods, id: \.imageName) { mood in
                     moodButton(mood: mood)
@@ -233,7 +214,7 @@ struct EditItemLogView: View {
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))
         }
     }
-    
+
     private var timerField: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Pause Timer").font(AppFonts.subhead)
@@ -266,64 +247,73 @@ struct EditItemLogView: View {
     }
 
     private func noteSection() -> some View {
-        // What prompted you to want to purchase this item?
-        VStack(alignment: .leading, spacing: 6){
-            Text("What prompted you to want to purchase this item?")
-                .font(AppFonts.subhead)
+        VStack(alignment: .leading, spacing: 6) {
+            Text("What prompted you to want to purchase this item?").font(AppFonts.subhead)
             TextField("Add Note...", text: $vm.notes)
-                .padding(10).background(Color.backgroundFill)
+                .padding(10)
+                .background(Color.backgroundFill)
                 .cornerRadius(8)
-                .overlay(RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.4), lineWidth: 1))
-                    .foregroundColor(.logText)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4), lineWidth: 1))
+                .foregroundColor(.logText)
         }
     }
-    
-    private func saveButton() -> some View {
-        VStack {
-            Button { // Similar logic from the add button
-                let valid = vm.updateIsValid(name: vm.name, cost: vm.cost ?? 0, timer: vm.timerSeconds)
-                if !valid {
-                    showValidationAlert = true
-                } else {
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+
+            // Scrollable form
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    itemNameSection()
+                    categorySection()
+                    priceSection()
+                    photoSection()
+                    moodSection()
+                    timerField
+                    noteSection()
+
+                    Color.clear.frame(height: 90)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+            }
+
+            Button {
+                if isFormValid {
                     didSave = true
                     editItem()
+                    dismiss()
+                } else {
+                    showValidationAlert = true
                 }
             } label: {
                 Text("Save Changes")
-                    .frame(maxWidth: .infinity)
-                    .padding(15)
                     .font(AppFonts.subhead)
-                    .background(AppColors.mainGreen)
-                    .foregroundColor(.white)
-                    .cornerRadius(5)
+                    .fontWeight(.semibold)
+                    .foregroundColor(isFormValid ? .white : AppColors.mainGreen)
+                    .frame(maxWidth: .infinity)
+                    .padding(16)
+                    .background(isFormValid ? AppColors.mainGreen : AppColors.accentGreen)
+                    .cornerRadius(16)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(AppColors.mainGreen, lineWidth: 1.5)
+                    )
+                    .shadow(
+                        color: isFormValid ? AppColors.mainGreen.opacity(0.4) : AppColors.accentGreen.opacity(0.4),
+                        radius: 10, x: 0, y: 4
+                    )
             }
-            
+            .buttonStyle(.plain)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 18)
         }
-    }
-        
-    var body: some View {
-        //photoHeader
-        VStack(alignment: .leading, spacing: 24) {
-            // Breaking it up
-            itemNameSection()
-            categorySection()
-            priceSection()
-            photoSection()
-            moodSection()
-            timerField
-            noteSection()
-            saveButton()
-        }
-        
-        .padding(.horizontal, 20)
-        
         .onAppear {
             guard let uid = session.userProfile?.id else { return }
             vm.loadCategories(uid: uid)
             vm.loadItem(uid: uid)
         }
-        
         .onChange(of: selectedPhoto) {
             guard let newItem = selectedPhoto else { return }
             Task {
@@ -335,8 +325,6 @@ struct EditItemLogView: View {
                 }
             }
         }
-        
-        // Original alert, just moved up
         .alert("Missing Information", isPresented: $showValidationAlert) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -353,12 +341,14 @@ struct EditItemLogView: View {
         }
         .navigationTitle("Edit Item")
         .navigationBarTitleDisplayMode(.inline)
-        .onDisappear() {
+        .onDisappear {
             vm.timerUpdated = false
         }
         .appBackground()
-        
-        // Insert camera alert/popup handling here
+        .contentShape(Rectangle())
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 }
 

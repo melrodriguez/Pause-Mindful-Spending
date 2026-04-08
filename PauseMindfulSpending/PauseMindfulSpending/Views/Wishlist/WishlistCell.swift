@@ -17,7 +17,11 @@ struct WishlistCell: View {
                 }
             } else {
                 Rectangle()
-                    .fill(AppColors.ListCell)
+                    .fill(LinearGradient(
+                        colors: [AppColors.mainGreen.opacity(0.6), AppColors.blue.opacity(0.4)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
                 Text(item.name)
                     .font(AppFonts.bold(textSize))
             }
