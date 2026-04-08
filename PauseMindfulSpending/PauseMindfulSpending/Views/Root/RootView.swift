@@ -163,8 +163,10 @@ struct RootView: View {
                             showAdjustTimerSheet = false
                         }
                     )
+                    .presentationDetents([.fraction(0.65)])
+                    .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(24)
                 }
-                .presentationDetents([.fraction(0.65)])
             }
             
             // Only spawn PauseEndOverlays on root view
