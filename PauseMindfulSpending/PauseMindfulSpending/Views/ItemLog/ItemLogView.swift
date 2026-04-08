@@ -4,6 +4,7 @@ struct ItemLogView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showDeletePopup = false
     @State private var showEditItemLog = false
+    @State private var hasLoaded = false
 
     let item: Item
     let uid: String
@@ -260,6 +261,8 @@ struct ItemLogView: View {
         }
         .appBackground()
         .onAppear {
+            guard !hasLoaded else {return}
+            hasLoaded = true
             viewModel.loadItem(uid: uid)
         }
         .navigationDestination(isPresented: $showEditItemLog) {
