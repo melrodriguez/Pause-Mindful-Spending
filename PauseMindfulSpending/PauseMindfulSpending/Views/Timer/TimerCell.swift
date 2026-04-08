@@ -12,17 +12,24 @@ struct TimerCell: View {
 
     var body: some View {
         ZStack {
-            if let imageUrl = item.imageUrl, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
+            Group {
+                if let imageUrl = item.imageUrl, let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        Rectangle().fill(AppColors.ListCell)
+                    }
+                } else {
                     Rectangle().fill(AppColors.ListCell)
                 }
-            } else {
-                Rectangle().fill(AppColors.ListCell)
             }
+            .frame(
+                width: textSize == 20 ? 180 : 350,
+                height: textSize == 20 ? 180 : 350
+            )
+            .clipped()
 
             VStack(spacing: 4) {
                 Text(item.name)
@@ -53,6 +60,7 @@ struct TimerCell: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
+                .frame(height: 80)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
@@ -60,7 +68,7 @@ struct TimerCell: View {
             width: textSize == 20 ? 180 : 350,
             height: textSize == 20 ? 180 : 350
         )
-        .clipped()
+//        .clipped()
         .cornerRadius(12)
     }
 }

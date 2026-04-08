@@ -122,13 +122,15 @@ struct ItemLogView: View {
                         Text(viewModel.formattedDate)
                             .font(AppFonts.subhead)
                         
-                        Text(viewModel.categoryName ?? "")
-                            .font(AppFonts.caption)
-                            .foregroundColor(AppColors.textPrimary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(AppColors.accentGreen)
-                            .cornerRadius(6)
+                        if (viewModel.categoryName != nil){
+                            Text(viewModel.categoryName!)
+                                .font(AppFonts.caption)
+                                .foregroundColor(AppColors.textPrimary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(AppColors.accentGreen)
+                                .cornerRadius(6)
+                        }
                 
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
