@@ -33,7 +33,6 @@ struct CompletedResponseOverlay: View {
                     
                     Image("AppLogo").resizable().frame(width: 40, height: 40)
                 }.frame(height: 120).confettiCannon(trigger: $confettiCounter, colors: [.mainGreen, .pink, .yellow, .blue, .orange], confettiSize: 8, rainHeight: 400, openingAngle: Angle(degrees: 60), closingAngle: Angle(degrees: 120), radius: 200 )
-                
                 Button {
                     onDone()
                 } label: {

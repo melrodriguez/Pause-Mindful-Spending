@@ -1,220 +1,223 @@
 import SwiftUI
 
-// A Pause has ended !
 struct PauseEndOverlay: View {
     let timerManager: TimerManager
     let onCompletedPause: () -> Void
     let onBoughtItem: () -> Void
     let onAdjustTimer: () -> Void
 
-    // For dragging the overlay around (gestures)
     @State private var dragOffset: CGSize = .zero
-    
-    // Completed pause
-    private func completedItemButton() -> some View {
-        Button {
-            onCompletedPause()
-        } label: {
-            Image(systemName: "xmark")
-                .font(.system(size: 20, weight: .regular))
-                .frame(width: 48, height: 48)
-                .foregroundColor(AppColors.textPrimary)
-                .background(Color.mainPink)
-                .clipShape(Circle())
-                .cornerRadius(12)
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-        }
-        .foregroundColor(AppColors.textPrimary)
-    }
-    
-    private func boughtItemButton() -> some View {
-        Button {
-            onBoughtItem()
-        } label: {
-            Image(systemName: "cart")
-                .font(.system(size: 20, weight: .regular))
-                .frame(width: 48, height: 48)
-                .foregroundColor(AppColors.textPrimary)
-                .background(Color.mainGreen)
-                .clipShape(Circle())
-                .cornerRadius(12)
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-        }
-        .foregroundColor(AppColors.textPrimary)
-    }
-    
-    // Bring up AdjustTimer sheet
-    private func timerButton() -> some View {
-        Button {
-            onAdjustTimer()
-        } label: {
-            Image(systemName: "clock")
-                .font(.system(size: 20, weight: .regular))
-                .frame(width: 48, height: 48)
-                .foregroundColor(AppColors.textPrimary)
-                .background(Color.mainBlue)
-                .clipShape(Circle())
-                .cornerRadius(12)
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-        }
-        .foregroundColor(AppColors.textPrimary)
-    }
 
     var body: some View {
-       
         ZStack {
-            LinearGradient.timerGradient
-            
-            VStack {
-                Image("AppLogo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 40, height: 40)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding()
-                                                
-                Text("A Pause has ended!")
-                    .font(AppFonts.title)
-                    .foregroundColor(AppColors.textPrimary)
-                    .padding()
-                
-                // TODO - replace with actual image
-                
-                ZStack {
-                    
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+
+                // MARK: - Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Your pause has ended")
+                            .font(AppFonts.headline)
+                            .foregroundColor(AppColors.textPrimary)
+
+                        Text("What would you like to do?")
+                            .font(AppFonts.subhead)
+                            .foregroundColor(AppColors.textSecondary)
+                    }
+
+                    Spacer()
+
+                    Image("AppLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 36, height: 36)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+                .padding(.bottom, 20)
+
+                // MARK: - Item info
+                HStack(spacing: 14) {
+                    // Image placeholder — compact and left-aligned
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(AppColors.textSecondary.opacity(0.12))
+                            .frame(width: 64, height: 64)
+
+                        Image(systemName: "photo")
+                            .font(.system(size: 22))
+                            .foregroundColor(AppColors.textSecondary.opacity(0.4))
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(timerManager.currentItemName ?? "Unknown Item")
+                            .font(AppFonts.subhead)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppColors.textPrimary)
+                            .lineLimit(2)
+
+                        Text(timerManager.formattedPrice)
+                            .font(AppFonts.subhead)
+                            .foregroundColor(AppColors.textSecondary)
+                    }
+
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
+
+                // MARK: - Divider
+                Rectangle()
+                    .fill(AppColors.textSecondary.opacity(0.12))
+                    .frame(height: 1)
+                    .padding(.horizontal, 24)
+
+                // MARK: - Action rows
+                VStack(spacing: 0) {
+                    actionRow(
+                        icon: "checkmark",
+                        iconColor: AppColors.mainGreen,
+                        title: "I don't want it anymore",
+                        subtitle: "Swipe right",
+                        action: onCompletedPause
+                    )
+
                     Rectangle()
-                        .frame(width: 200, height: 200)
-                        .foregroundColor(AppColors.textSecondary.opacity(0.30))
-                    
-                    Text("Picture coming soon!")
-                        .foregroundColor(.white)
-                }
-                
-                Text("\(timerManager.currentItemName ?? "Unknown Item")")
-                    .font(AppFonts.headline)
-                    .foregroundColor(AppColors.textPrimary)
-                
-                Text("\(timerManager.formattedPrice)") // insert real
-                    .font(AppFonts.subhead)
-                    .foregroundColor(AppColors.textPrimary)
-                                
-                VStack (alignment: .leading) {
-                    HStack {
-                        completedItemButton()
-                        
-                        VStack (alignment: .leading, spacing: 6) {
-                            Text("I don't want to buy this anymore")
-                                .font(AppFonts.body)
-                                .foregroundColor(AppColors.textPrimary)
-                            
-                            Text("Swipe right")
-                                .font(AppFonts.body)
-                                .foregroundColor(AppColors.textSecondary)
-                        }
-                       
-                    }
+                        .fill(AppColors.textSecondary.opacity(0.08))
+                        .frame(height: 1)
+                        .padding(.horizontal, 24)
 
-                    HStack {
-                        boughtItemButton()
-                        
-                        VStack (alignment: .leading, spacing: 6) {
-                            Text("I bought this already")
-                                .font(AppFonts.body)
-                                .foregroundColor(AppColors.textPrimary)
-                            
-                            Text("Swipe left")
-                                .font(AppFonts.body)
-                                .foregroundColor(AppColors.textSecondary)
-                        }
-                    }
+                    actionRow(
+                        icon: "bag",
+                        iconColor: AppColors.pink,
+                        title: "I already bought it",
+                        subtitle: "Swipe left",
+                        action: onBoughtItem
+                    )
 
-                    HStack {
-                        timerButton()
-                        
-                        VStack (alignment: .leading, spacing: 6) {
-                            Text("I need more time to pause")
-                                .font(AppFonts.body)
-                                .foregroundColor(AppColors.textPrimary)
-                            
-                            Text("Swipe down")
-                                .font(AppFonts.body)
-                                .foregroundColor(AppColors.textSecondary)
-                        }
-                    }
+                    Rectangle()
+                        .fill(AppColors.textSecondary.opacity(0.08))
+                        .frame(height: 1)
+                        .padding(.horizontal, 24)
+
+                    actionRow(
+                        icon: "clock",
+                        iconColor: AppColors.blue,
+                        title: "I need more time to pause",
+                        subtitle: "Swipe down",
+                        action: onAdjustTimer
+                    )
                 }
-                
-                Spacer()
-                
+                .padding(.top, 4)
+                .padding(.bottom, 12)
             }
+            .background(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.15), radius: 24, x: 0, y: 8)
+            )
+            .padding(.horizontal, 20)
         }
-        .appBackground()
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-        .padding()
-        .frame(maxHeight: 650)
         .offset(dragOffset)
         .transition(.move(edge: .bottom).combined(with: .opacity))
-
         .gesture(
             DragGesture()
-                // Move to where the user drags it
                 .onChanged { value in
                     dragOffset = value.translation
                 }
                 .onEnded { value in
-                    // Where we are on the screen
                     let horizontal = value.translation.width
                     let vertical = value.translation.height
                     let threshold: CGFloat = 50
 
-                    // HORIZONTAL
                     if abs(horizontal) > abs(vertical) {
-                        // Swipe right if you're done
                         if horizontal > threshold {
                             withAnimation(.easeOut(duration: 0.18)) {
-                                dragOffset = CGSize(width: 500, height: 0) // swipe offscreen
+                                dragOffset = CGSize(width: 500, height: 0)
                             }
-
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 onCompletedPause()
                                 dragOffset = .zero
                             }
-                            
-                        // Swipe left if you bought it
                         } else if horizontal < -threshold {
                             withAnimation(.easeOut(duration: 0.18)) {
                                 dragOffset = CGSize(width: -500, height: 0)
                             }
-
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 onBoughtItem()
                                 dragOffset = .zero
                             }
                         } else {
-                            dragOffset = .zero
+                            withAnimation(.spring()) { dragOffset = .zero }
                         }
-                        
-                    // VERTICAL
                     } else {
-                        withAnimation(.easeOut(duration: 0.18)) {
-                            dragOffset = CGSize(width: 0, height: 500)
-                        }
-                        
-                        // Swipe down if you want more tiime
                         if vertical > threshold {
+                            withAnimation(.easeOut(duration: 0.18)) {
+                                dragOffset = CGSize(width: 0, height: 500)
+                            }
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 onAdjustTimer()
                                 dragOffset = .zero
                             }
                         } else {
-                            dragOffset = .zero
+                            withAnimation(.spring()) { dragOffset = .zero }
                         }
                     }
                 }
         )
     }
+
+    // MARK: - Action row builder
+
+    private func actionRow(
+        icon: String,
+        iconColor: Color,
+        title: String,
+        subtitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            action()
+        } label: {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(iconColor.opacity(0.15))
+                        .frame(width: 44, height: 44)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(iconColor)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(AppFonts.subhead)
+                        .fontWeight(.medium)
+                        .foregroundColor(AppColors.textPrimary)
+
+                    Text(subtitle)
+                        .font(AppFonts.caption)
+                        .foregroundColor(AppColors.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(AppColors.textSecondary.opacity(0.4))
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 14)
+        }
+        .buttonStyle(.plain)
+    }
 }
 
 #Preview {
-    // PauseEndOverlay()
+    ZStack {
+        Color(red: 0.97, green: 0.95, blue: 0.90).ignoresSafeArea()
+    }
 }
