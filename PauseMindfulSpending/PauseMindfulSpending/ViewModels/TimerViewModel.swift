@@ -3,6 +3,7 @@ import FirebaseFirestore
 
 final class TimerViewModel: ObservableObject {
     @Published var timerItems: [TimerItem] = []
+    @Published var items: [Item] = []
     @Published var currentDate = Date()
     
     private var timer: Timer?
@@ -69,6 +70,60 @@ final class TimerViewModel: ObservableObject {
                 self.timerItems = snapshot?.documents.compactMap { document in
                     try? document.data(as: TimerItem.self)
                 } ?? []
+                
+                self.fetchItems(sortOrder: sortOrder)
+            }
+    }
+    
+    private func fetchItems(sortOrder: String) {
+        let descending = sortOrder == "Descending"
+ 
+        db.collection("users")
+            .document(uid)
+            .collection("items")
+            .whereField("status", isEqualTo: "wishlist")
+            .getDocuments { [weak self] snapshot, error in
+                guard let self = self else { return }
+                if let error = error {
+                    print("Error fetching items for timers: \(error)")
+                    return
+                }
+ 
+                let activeTimerIds = Set(self.timerItems.compactMap { $0.id })
+ 
+                // Only include items whose timerId is in our active timers
+                var fetched: [Item] = snapshot?.documents.compactMap { doc in
+                    guard let item = try? doc.data(as: Item.self),
+                          let timerId = item.timerId,
+                          activeTimerIds.contains(timerId) == false
+                    else { return nil }
+                    // Match item to its timer by timerId
+                    return try? doc.data(as: Item.self)
+                } ?? []
+ 
+                // Sort to match timer order
+                // timerItems are ordered by endDate — sort items the same way
+                let timerOrder = self.timerItems.compactMap { $0.id }
+                fetched = snapshot?.documents.compactMap { doc -> Item? in
+                    guard let item = try? doc.data(as: Item.self),
+                          let timerId = item.timerId,
+                          self.timerItems.contains(where: { $0.id == timerId })
+                    else { return nil }
+                    return item
+                } ?? []
+ 
+                // Sort items by their timer's endDate to match timerItems order
+                fetched.sort { a, b in
+                    let aTimer = self.timerItems.first { $0.id == a.timerId }
+                    let bTimer = self.timerItems.first { $0.id == b.timerId }
+                    let aDate = aTimer?.endDate.dateValue() ?? Date.distantFuture
+                    let bDate = bTimer?.endDate.dateValue() ?? Date.distantFuture
+                    return descending ? aDate > bDate : aDate < bDate
+                }
+ 
+                DispatchQueue.main.async {
+                    self.items = fetched
+                }
             }
     }
 
@@ -81,5 +136,10 @@ final class TimerViewModel: ObservableObject {
         let seconds = totalSeconds % secondsInMinute
         
         return String(format: "%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
+    }
+    
+    func timerItem(for item: Item) -> TimerItem? {
+        guard let timerId = item.timerId else { return nil }
+        return timerItems.first { $0.id == timerId }
     }
 }

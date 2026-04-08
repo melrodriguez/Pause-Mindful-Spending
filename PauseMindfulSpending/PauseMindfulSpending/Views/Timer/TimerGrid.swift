@@ -8,8 +8,20 @@ struct TimerGrid: View {
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(viewModel.timerItems) { item in
-                TimerCell(viewModel: viewModel, item: item, textSize: textSize)
+            ForEach(viewModel.items) { item in
+                NavigationLink {
+                    ItemLogView(
+                        item: item,
+                        uid: viewModel.uid
+                    )
+                } label: {
+                    TimerCell(
+                        viewModel: viewModel,
+                        item: item,
+                        textSize: textSize
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
     }
