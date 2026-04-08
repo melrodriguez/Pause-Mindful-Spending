@@ -12,8 +12,11 @@ struct SettingsView: View {
     // TODO - temp, need to implement camera perms
     @State private var cameraAccessOn = true
     @State private var libraryAccessOn = true
-    
+    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
+
     @State private var showingDeleteConfirmation = false
+    
+    private let notificationService = NotificationService()
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
@@ -80,6 +83,21 @@ struct SettingsView: View {
                             systemImage: "film",
                             isOn: $libraryAccessOn
                         )
+                        
+                        Divider()
+                        
+                        SettingsToggleRow(
+                            title: "Allow Notifications",
+                            systemImage: "bell",
+                            isOn: $notificationsEnabled
+                        )
+                        .onChange(of: notificationsEnabled) { _, newValue in
+                            if newValue {
+                                notificationService.requestPermissionIfNeeded()
+                            } else {
+                                notificationService.cancelAllPending()
+                            }
+                        }
                     }
 
                     // MARK: - Account actions

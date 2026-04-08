@@ -180,7 +180,7 @@ class ItemLogViewModel: ObservableObject {
             self.firestoreService.updateTimerItemName(uid: uid, timerId: self.timerId!, itemName: self.name)
             
             if self.timerUpdated {
-                self.firestoreService.updateTimer(uid: uid, timerId: self.timerId!, newDurationSeconds: self.timerSeconds)
+                self.firestoreService.updateTimer(uid: uid, timerId: self.timerId!, itemName: self.name, newDurationSeconds: self.timerSeconds)
             }
         }
     }
