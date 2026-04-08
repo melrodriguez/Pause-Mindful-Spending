@@ -159,6 +159,7 @@ struct ItemLogView: View {
                         if item.status == "bought" {
                             Button(action: {
                                 viewModel.setBoughtItemToWishlist(uid: uid)
+                                dismiss()
                             }) {
                                 Text("Revert item to Wishlist")
                                     .frame(maxWidth: .infinity)
@@ -174,6 +175,7 @@ struct ItemLogView: View {
                         if item.status == "wishlist" {
                             Button(action: {
                                 viewModel.setItemAsBought(uid: uid)
+                                dismiss()
                             }) {
                                 Text("Bought Item")
                                     .frame(maxWidth: .infinity)

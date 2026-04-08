@@ -164,11 +164,13 @@ extension FireStoreService {
             }
             
             self.deleteTimer(uid: uid, timerId: timerId)
-            self.updateItem(uid: uid, itemId: itemId, fieldsToUpdate: [
-                "status": "deleted",
-                "timerId": FieldValue.delete(),
-                "lastUpdatedAt": FieldValue.serverTimestamp()
-            ])
+            
+            self.deleteDocumentFromSubcollection(
+                parentCollection: "users",
+                parentId: uid,
+                subCollection: "items",
+                subId: itemId
+            )
             
             self.createEvent(uid: uid, type: "item_deleted", itemId: itemId) { eventId in
                 return
