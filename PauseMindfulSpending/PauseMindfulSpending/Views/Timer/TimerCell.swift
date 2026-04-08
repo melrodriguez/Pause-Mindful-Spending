@@ -19,10 +19,20 @@ struct TimerCell: View {
                             .resizable()
                             .scaledToFill()
                     } placeholder: {
-                        Rectangle().fill(AppColors.ListCell)
+                        Rectangle()
+                            .fill(LinearGradient(
+                                colors: [AppColors.mainGreen.opacity(0.6), AppColors.blue.opacity(0.4)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
                     }
                 } else {
-                    Rectangle().fill(AppColors.ListCell)
+                    Rectangle()
+                        .fill(LinearGradient(
+                            colors: [AppColors.mainGreen.opacity(0.6), AppColors.blue.opacity(0.4)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
                 }
             }
             .frame(
