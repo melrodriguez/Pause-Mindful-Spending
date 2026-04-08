@@ -254,10 +254,7 @@ extension FireStoreService {
                 "status": "bought",
                 "lastUpdatedAT": FieldValue.serverTimestamp()
             ])
-<<<<<<< HEAD
             self.pauseTimer(uid: uid, timerId: timerId)
-=======
->>>>>>> main
             
             self.createEvent(uid: uid, type: "item_bought", itemId: itemId) { eventId in
                 return
