@@ -135,23 +135,22 @@ struct EditCategorySheet: View {
             errorMessage = "Name must be at least 2 characters."
             return
         }
-        
+
+        isLoading = true
+        errorMessage = nil
+
         Task {
-            // Category nae shouldn't exist in the list already
             guard await isCategoryNameUnique(name: trimmed) else {
                 isLoading = false
-                errorMessage = "Name must be unique."
+                errorMessage = "A category with that name already exists."
                 return
             }
-        }
-        
-        errorMessage = nil
-        isLoading = true
-        onSave(trimmed)
-        
-        // Parent handles dismissal on success
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            isLoading = false
+
+            onSave(trimmed)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                isLoading = false
+            }
         }
     }
     
