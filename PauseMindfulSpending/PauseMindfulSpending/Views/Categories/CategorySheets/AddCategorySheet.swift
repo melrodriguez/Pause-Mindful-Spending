@@ -5,7 +5,7 @@ import SwiftUI
 struct AddCategorySheet: View {
     @State private var enableStreak = false
     
-    var onSave: (String, Bool) -> Void
+    var onSave: (String, Bool) -> String?
     @Environment(\.dismiss) var dismiss
     
     @State private var name = ""
@@ -36,7 +36,7 @@ struct AddCategorySheet: View {
                                 .fill(Color.gray.opacity(0.12))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .stroke(errorMessage != nil ? AppColors.mainGreen : Color.gray.opacity(0.25), lineWidth: 1)
+                                        .stroke(errorMessage != nil ? AppColors.pink : Color.gray.opacity(0.25), lineWidth: 1)
                                 )
                         )
                 }
@@ -52,7 +52,7 @@ struct AddCategorySheet: View {
                 if let errorMessage {
                     Text(errorMessage)
                         .font(AppFonts.caption)
-                        .foregroundColor(AppColors.mainGreen)
+                        .foregroundColor(AppColors.pink)
                 }
                 
                 // Save button
@@ -109,7 +109,14 @@ struct AddCategorySheet: View {
         
         errorMessage = nil
         isLoading = true
-        onSave(trimmed, enableStreak)
+        let error = onSave(trimmed, enableStreak)
+        isLoading = false
+        
+        if let error = error {
+            errorMessage = error
+        } else {
+            dismiss()
+        }
         
         // Parent handles dismissal on success
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {

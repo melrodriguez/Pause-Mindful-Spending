@@ -1,18 +1,33 @@
 // modulated delete account sheet, but for editing categories
 
+
+import FirebaseFirestore
+    
 import SwiftUI
 struct EditCategorySheet: View {
+    private let firestoreService = FireStoreService()
+    
+    let uid: String
     let currentName: String
     let onSave: (String) -> Void
     
     @State private var name = ""
+    @State private var isNameUnique: Bool = true
     @State private var isLoading = false
     @State private var errorMessage: String?
     @Environment(\.dismiss) private var dismiss
     
     private var canSubmit: Bool {
-        name.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 && !isLoading
+        name.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 && (!isLoading && isNameUnique)
     }
+    
+    func isCategoryNameUnique(name: String) async -> Bool {
+          await withCheckedContinuation { continuation in
+              firestoreService.fetchCategoryIdUsingName(uid: self.uid, name: self.name) { uid in
+                  continuation.resume(returning: uid == nil)
+              }
+          }
+      }
     
     var body: some View {
         NavigationStack {
@@ -59,6 +74,9 @@ struct EditCategorySheet: View {
                                         .stroke(errorMessage != nil ? AppColors.mainGreen : Color.gray.opacity(0.25), lineWidth: 1)
                                 )
                         )
+                        .onChange(of: name) { _, newName in
+                            Task { isNameUnique = await isCategoryNameUnique(name: newName) }
+                        }
                 }
                 
                 // Error message
@@ -117,18 +135,26 @@ struct EditCategorySheet: View {
             errorMessage = "Name must be at least 2 characters."
             return
         }
-        
-        errorMessage = nil
+
         isLoading = true
-        onSave(trimmed)
-        
-        // Parent handles dismissal on success
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            isLoading = false
+        errorMessage = nil
+
+        Task {
+            guard await isCategoryNameUnique(name: trimmed) else {
+                isLoading = false
+                errorMessage = "A category with that name already exists."
+                return
+            }
+
+            onSave(trimmed)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                isLoading = false
+            }
         }
     }
     
 }
 #Preview {
-    EditCategorySheet(currentName: "Wishlist") { _ in }
+    // EditCategorySheet(currentName: "Wishlist") { _ in }
 }

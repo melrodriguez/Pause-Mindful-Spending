@@ -4,6 +4,7 @@ import SwiftUI
 // Clicking either results in a sheet appearing
 
 struct CategoryCell: View {
+    let uid: String
     let category: String
     
     // Same mechanism in DeleteItemPopup
@@ -46,9 +47,9 @@ struct CategoryCell: View {
         
         // Sheet when edit button is pressed on the cell
         .sheet(isPresented: $isShowingEditSheet) {
-            EditCategorySheet(currentName: category) { newName in
-                editCategory?(newName)
-            }
+            EditCategorySheet(uid: uid, currentName: category) { newName in
+                    editCategory?(newName)
+                }
             .presentationDetents([.medium])
         }
         

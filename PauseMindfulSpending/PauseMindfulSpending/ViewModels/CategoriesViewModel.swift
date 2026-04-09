@@ -8,6 +8,7 @@ class CategoriesViewModel: ObservableObject {
     
     // Use this list for the cells
     @Published var categories: [String] = []
+    @Published var errorMessage: String? = nil
     
     // Get category names list for display
     func getCategoryNames(uid: String) {
@@ -39,66 +40,63 @@ class CategoriesViewModel: ObservableObject {
     }
     
     func pressedAddButton(uid: String, name: String, enableStreak: Bool) {
-        firestoreService.addCategory(uid: uid, name: name, enableStreak: enableStreak, categories: categories)
-    }
-    
-    //TODO: Make a listener in Dashboard repo, so we don't have to duplicate this function
-    func generateUniqueCatgoryName(base: String) -> String {
-        let trimmed = base.trimmingCharacters(in: .whitespaces)
-        let lowercased = trimmed.lowercased()
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
         
-        var usedNumbers = Set<Int>()
-        
-        for name in categories {
-            let lower = name.lowercased()
-            guard lower.hasPrefix(lowercased) else { continue }
-            
-            let suffix = lower.dropFirst(lowercased.count)
-            
-            if suffix.isEmpty {
-                usedNumbers.insert(0)
-            } else if let num = Int(suffix) {
-                usedNumbers.insert(num)
-            }
+        let alreadyExists = categories.contains {
+            $0.lowercased() == trimmed.lowercased()
+        }
+ 
+        if alreadyExists {
+            errorMessage = "A category with that name already exists."
+            return
         }
         
-        if !usedNumbers.contains(0) {
-            return trimmed
-        }
-        
-        var i = 1
-        
-        while true {
-            if !usedNumbers.contains(i) {
-                return "\(trimmed)\(i)"
+        errorMessage = nil
+ 
+        firestoreService.addCategory(uid: uid, name: trimmed, enableStreak: enableStreak) { [weak self] success in
+            guard let self = self else { return }
+            if success {
+                self.errorMessage = nil
+                self.categories.append(trimmed)
+            } else {
+                self.errorMessage = "A category with that name already exists."
             }
-            
-            i += 1
         }
     }
 
     func pressedEditButton(uid: String, oldName: String, newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+ 
+        if trimmed.lowercased() == oldName.lowercased() {
+            return
+        }
+ 
+        let alreadyExists = categories.contains {
+            $0.lowercased() == trimmed.lowercased()
+        }
+ 
+        if alreadyExists {
+            errorMessage = "A category with that name already exists."
+            return
+        }
+        
+        errorMessage = nil
+ 
         firestoreService.fetchCategoryIdUsingName(uid: uid, name: oldName) { [weak self] categoryId in
-            guard let self = self else { return }
-            guard let categoryId = categoryId else { return }
-
-            // Actually change the category name
-            firestoreService.changeCategoryName(uid: uid, categoryId: categoryId, newName: newName,
-                                                oldName: oldName, categories: categories)
-
-            // Update the UI
+            guard let self = self, let categoryId = categoryId else { return }
+ 
+            self.firestoreService.changeCategoryName(
+                uid: uid,
+                categoryId: categoryId,
+                newName: trimmed
+            )
+ 
             DispatchQueue.main.async {
                 if let idx = self.categories.firstIndex(of: oldName) {
-                    var name = newName
-                    
-                    if newName != oldName {
-                        name = self.generateUniqueCatgoryName(base: newName)
-                    }
-                    
-                    self.categories[idx] = name
+                    self.categories[idx] = trimmed
                 }
+                self.errorMessage = nil
             }
-            
         }
     }
     
