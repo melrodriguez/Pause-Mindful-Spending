@@ -21,6 +21,7 @@ struct CategoriesView: View {
                 LazyVStack(spacing: 8) {
                     ForEach(viewModel.categories, id: \.self) { category in
                         CategoryCell(
+                            uid: self.uid,
                             category: category,
 
                             editCategory: { newName in
