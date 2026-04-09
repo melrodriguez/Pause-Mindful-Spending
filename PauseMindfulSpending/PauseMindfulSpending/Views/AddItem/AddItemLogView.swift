@@ -105,6 +105,13 @@ struct AddItemLogView: View {
                     .background(
                         Circle().fill(vm.selectedMood == mood.imageName ? Color.mainGreen : Color(.systemGray4))
                     )
+                    .overlay(Circle()
+                        .stroke(Color.mainGreen, lineWidth: 2.5)
+                        .opacity(vm.selectedMood == mood.imageName ? 1 : 0)
+                    )
+                    .scaleEffect(vm.selectedMood == mood.imageName ? 1.15 : 1.0)
+                    .animation(.easeInOut(duration: 0.15), value: vm.selectedMood)
+                
                 Text(mood.label).font(.system(size: 10)).foregroundColor(.primary)
             }
         }

@@ -4,6 +4,7 @@ struct ItemLogView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showDeletePopup = false
     @State private var showEditItemLog = false
+    @State private var hasLoaded = false
 
     let item: Item
     let uid: String
@@ -43,6 +44,13 @@ struct ItemLogView: View {
                                 : AppColors.textSecondary.opacity(0.2)
                         )
                     )
+                    .overlay(
+                        Circle()
+                            .stroke(AppColors.mainGreen, lineWidth: 2.5)
+                            .opacity(selectedMood == mood.imageName ? 1 : 0)
+                    )
+                    .scaleEffect(selectedMood == mood.imageName ? 1.15: 1.0)
+
                 Text(mood.label)
                     .font(.system(size: 10))
                     .foregroundColor(AppColors.textSecondary)
@@ -253,6 +261,8 @@ struct ItemLogView: View {
         }
         .appBackground()
         .onAppear {
+            guard !hasLoaded else {return}
+            hasLoaded = true
             viewModel.loadItem(uid: uid)
         }
         .navigationDestination(isPresented: $showEditItemLog) {

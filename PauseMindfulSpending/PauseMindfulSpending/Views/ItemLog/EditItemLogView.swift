@@ -71,6 +71,14 @@ struct EditItemLogView: View {
                     .frame(width: 38, height: 38)
                     .background(Circle()
                         .fill(vm.mood == mood.imageName ? Color.mainGreen : Color(.systemGray4)))
+                    .overlay(
+                        Circle()
+                            .stroke(Color.mainGreen, lineWidth: 2.5)
+                            .opacity(vm.mood == mood.imageName ? 1: 0)
+                        )
+                    .scaleEffect(vm.mood == mood.imageName ? 1.15 : 1.0)
+                    .animation(.easeInOut(duration: 0.15), value: vm.mood)
+                
                 Text(mood.label).font(.system(size: 10)).foregroundColor(.primary)
             }
         }
