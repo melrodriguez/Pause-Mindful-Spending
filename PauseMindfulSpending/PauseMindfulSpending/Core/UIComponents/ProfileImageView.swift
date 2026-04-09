@@ -9,7 +9,7 @@ struct ProfileImageView: View {
         Group {
             if let photoUrl,
                !photoUrl.isEmpty,
-               let url = URL(string: photoUrl + "?t=\(Int(Date().timeIntervalSince1970))") {
+               let url = URL(string: photoUrl + "&t=\(Int(Date().timeIntervalSince1970))") {
                 
                 AsyncImage(url: url) { image in
                     image

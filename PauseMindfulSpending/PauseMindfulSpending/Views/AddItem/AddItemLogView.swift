@@ -68,6 +68,9 @@ struct AddItemLogView: View {
         defaults?.removeObject(forKey: "shared_item_image")
         defaults?.removeObject(forKey: "shared_item_url")
         defaults?.set(false, forKey: "has_pending_shared_item")
+        print("DEBUG reading - has_pending:", defaults?.bool(forKey: "has_pending_shared_item") ?? false)
+        print("DEBUG reading - title:", defaults?.string(forKey: "shared_item_name") ?? "nil")
+        print("DEBUG reading suite:", defaults != nil ? "OK" : "FAILED")
         defaults?.synchronize()
     }
 

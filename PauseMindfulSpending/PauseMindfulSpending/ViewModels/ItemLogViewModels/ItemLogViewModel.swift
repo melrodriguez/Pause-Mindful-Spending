@@ -155,18 +155,20 @@ class ItemLogViewModel: ObservableObject {
     
     func setBoughtItemToWishlist(uid: String) {
         guard let itemId = item.id else { return }
-        
+
         let fieldsToUpdate: [String: Any] = [
             "status": "wishlist"
         ]
-        
+
         self.firestoreService.updateItem(
             uid: uid,
             itemId: itemId,
             fieldsToUpdate: fieldsToUpdate
         )
-        
-        self.firestoreService.resumeTimer(uid: uid, timerId: self.timerId!, itemName: item.name)
+
+        if let timerId = self.timerId {
+            self.firestoreService.resumeTimer(uid: uid, timerId: timerId, itemName: item.name)
+        }
     }
     
     func uploadPhoto(uid: String, image: UIImage) {
@@ -207,10 +209,12 @@ class ItemLogViewModel: ObservableObject {
                 fieldsToUpdate: fieldsToUpdate
             )
             
-            self.firestoreService.updateTimerItemName(uid: uid, timerId: self.timerId!, itemName: self.name)
-            
-            if self.timerUpdated {
-                self.firestoreService.updateTimer(uid: uid, timerId: self.timerId!, itemName: self.name, newDurationSeconds: self.timerSeconds)
+            if let timerId = self.timerId {
+                self.firestoreService.updateTimerItemName(uid: uid, timerId: timerId, itemName: self.name)
+
+                if self.timerUpdated {
+                    self.firestoreService.updateTimer(uid: uid, timerId: timerId, itemName: self.name, newDurationSeconds: self.timerSeconds)
+                }
             }
         }
     }

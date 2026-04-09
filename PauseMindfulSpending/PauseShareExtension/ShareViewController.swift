@@ -330,6 +330,10 @@ class ShareViewController: UIViewController {
         defaults?.set(imageData, forKey: "shared_item_image")
         defaults?.set(url, forKey: "shared_item_url")
         defaults?.set(true, forKey: "has_pending_shared_item")
+        print("DEBUG saving - title:", title ?? "nil")
+        print("DEBUG saving - price:", price ?? "nil")
+        print("DEBUG saving - imageData bytes:", imageData?.count ?? 0)
+        print("DEBUG suite:", defaults != nil ? "OK" : "FAILED")
         defaults?.synchronize()
     }
 
