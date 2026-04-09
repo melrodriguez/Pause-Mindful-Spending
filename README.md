@@ -39,7 +39,7 @@
 - Categories
   - Small fix: categories can no longer have duplicate names
 
-**Franchesca Untalan (Release 25%, Overall 25%):**
+**Franchesca Untalan (Release 20%, Overall 20%):**
 - Categories
   - Users can now add, edit, and delete categories
   - Access CategoriesView from Edit Item Log and Add Item Log
