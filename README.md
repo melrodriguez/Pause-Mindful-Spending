@@ -1,5 +1,5 @@
-## Contributions
-**Aby (Release 30%, Overall 30%):**
+## Contributions: Team 5
+**Aby Garcia (Release 30%, Overall 30%):**
 - Share Sheet Extension for Amazon — automatically fills in fields when adding an item (title, price, image)
 - Dashboard
   - Activity Calendar Widget — tracks adding, completing, and buying items
@@ -8,7 +8,7 @@
 - Updated timer cells to be clickable
 - Updated and cleaned up UI for consistency: post-timer notification, editing timer, cell view when there is no image, timer cell view, item page, delete item popup, edit category
 
-**Isabella (Release 20%, Overall 20%):**
+**Isabella Caballero (Release 20%, Overall 20%):**
 - Photo / Camera
   - Implemented photo persistence using Firebase Storage — users can now view items with uploaded photos
   - Wishlist and Timers now grab an image URL to display on their respective pages
@@ -24,7 +24,7 @@
   - Fixed photo/gallery permission display to correctly reflect the user's current permission state
   - Tapping permission toggles now directs users to iPhone Settings; changes reflect when returning to the app
 
-**Melody (Release 30%, Overall 30%):**
+**Melody Rodriguez (Release 30%, Overall 30%):**
 - List
   - Added a listener to properly pull items to the Wishlist and Timer list pages
   - Implemented ability to sort by category/status in the Wishlist
@@ -39,7 +39,7 @@
 - Categories
   - Small fix: categories can no longer have duplicate names
 
-**Franchesca (Release 25%, Overall 25%):**
+**Franchesca Untalan (Release 25%, Overall 25%):**
 - Categories
   - Users can now add, edit, and delete categories
   - Access CategoriesView from Edit Item Log and Add Item Log
