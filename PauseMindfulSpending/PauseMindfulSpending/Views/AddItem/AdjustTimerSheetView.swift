@@ -12,6 +12,7 @@ struct AdjustTimerSheetView: View {
     }
     
     @State private var input: String = ""
+    var initialSeconds: Int = 0
     var onConfirm: (Int) -> Void = { _ in }
     
     var totalSeconds: Int {
@@ -59,7 +60,13 @@ struct AdjustTimerSheetView: View {
                     }
                 }
                 
+                Text(totalSeconds == 0 ? "Please set a timer greater than 0" : " ")
+                    .font(AppFonts.caption)
+                    .foregroundColor(AppColors.pink)
+                    .padding(.top, 4)
+                
                 Button {
+                    guard totalSeconds > 0 else { return }
                     onConfirm(totalSeconds)
                     dismiss()
                 } label: {
@@ -75,6 +82,15 @@ struct AdjustTimerSheetView: View {
                 Spacer()
             }
             .padding(.top, 20)
+            .onAppear {
+                guard initialSeconds > 0 else { return }
+                let d = initialSeconds / 86400
+                let h = (initialSeconds % 86400) / 3600
+                let m = (initialSeconds % 3600) / 60
+                dayInput = d > 0 ? String(d) : ""
+                hourInput = h > 0 ? String(h) : ""
+                minuteInput = m > 0 ? String(m) : ""
+            }
         }
     }
     
@@ -129,12 +145,6 @@ struct AdjustTimerSheetView: View {
             }
         }
     }
-}
-
-#Preview {
-    AdjustTimerSheetView(onConfirm: { seconds in
-        print("Confirmed: \(seconds) seconds")
-    })
 }
 
 

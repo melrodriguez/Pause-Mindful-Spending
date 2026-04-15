@@ -5,7 +5,6 @@ import AVFoundation
 struct AddItemLogView: View {
     
     @EnvironmentObject var session: AppSessionViewModel
-    
     var moods: [(imageName: String, label: String)] = [
         ("ExcitedFace", "Excited"),
         ("HappyFace", "Happy"),
@@ -33,7 +32,8 @@ struct AddItemLogView: View {
     private var isFormValid: Bool {
         !vm.itemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !vm.price.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        vm.selectedMood != nil
+        vm.selectedMood != nil &&
+        timerSeconds > 0
     }
 
     // MARK: - Timer display
@@ -210,6 +210,7 @@ struct AddItemLogView: View {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4), lineWidth: 1))
             }
             .buttonStyle(.plain)
+        
         }
     }
 
@@ -370,10 +371,12 @@ struct AddItemLogView: View {
         .navigationBarTitleDisplayMode(.inline)
         .appBackground()
         .sheet(isPresented: $showAdjustTimer) {
-            AdjustTimerSheetView(onConfirm: { seconds in
-                timerSeconds = seconds
-            })
-            .presentationDetents([.fraction(0.65)])
+            AdjustTimerSheetView(
+                onConfirm: { seconds in
+                    timerSeconds = seconds
+                }
+            )
+            .presentationDetents([.fraction(0.75)])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(24)
         }
@@ -391,15 +394,11 @@ struct AddItemLogView: View {
         .alert("Missing Information", isPresented: $vm.showValidationAlert) {
             Button("Ok", role: .cancel) {}
         } message: {
-            Text("Please fill in your item name, price, and mood before proceeding.")
+            Text("Please fill in your item name, price, and mood, and set a pause timer greater than 0 before proceeding.")
         }
         .contentShape(Rectangle())
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
     }
-}
-
-#Preview {
-    AddItemLogView()
 }

@@ -163,7 +163,7 @@ struct RootView: View {
                             showAdjustTimerSheet = false
                         }
                     )
-                    .presentationDetents([.fraction(0.65)])
+                    .presentationDetents([.fraction(0.75)])
                     .presentationDragIndicator(.visible)
                     .presentationCornerRadius(24)
                 }

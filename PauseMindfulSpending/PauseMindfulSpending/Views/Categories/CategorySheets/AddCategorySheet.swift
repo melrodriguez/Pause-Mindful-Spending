@@ -41,13 +41,6 @@ struct AddCategorySheet: View {
                         )
                 }
                 
-                // Enable streak toggle
-                Toggle(isOn: $enableStreak) {
-                    Text("Enable streaks for this category")
-                        .font(AppFonts.subhead)
-                        .foregroundColor(AppColors.textPrimary)
-                }
-                
                 // Error message
                 if let errorMessage {
                     Text(errorMessage)
