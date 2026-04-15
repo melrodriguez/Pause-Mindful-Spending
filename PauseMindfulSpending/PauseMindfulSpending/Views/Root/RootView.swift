@@ -13,6 +13,8 @@ struct RootView: View {
     @State private var showBoughtResponse: Bool = false
     @State private var showAdjustTimerSheet: Bool = false
     
+    @State private var dragOffset: CGFloat = 0
+    
     var body: some View {
         if session.isLoading {
             LoadingView()
@@ -79,6 +81,35 @@ struct RootView: View {
                         })
                     }
                 }
+                .gesture(
+                    timerManager.currentTimerItem == nil ?
+                    AnyGesture(DragGesture(minimumDistance: 10, coordinateSpace: .global)
+                        .onEnded { value in
+                            let threshold: CGFloat = 30
+                            let horizontal = value.translation.width
+                            let vertical = value.translation.height
+
+                            guard abs(horizontal) > abs(vertical) * 1.2 else { return }
+                            guard abs(horizontal) > threshold else { return }
+
+                            let tabs = NavBar.allCases
+                            guard let currentIndex = tabs.firstIndex(of: selectedTab) else { return }
+
+                            if horizontal < 0 {
+                                let nextIndex = min(currentIndex + 1, tabs.count - 1)
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    selectedTab = tabs[nextIndex]
+                                }
+                            } else {
+                                let prevIndex = max(currentIndex - 1, 0)
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    selectedTab = tabs[prevIndex]
+                                }
+                            }
+                        }
+                    )
+                    : AnyGesture(DragGesture().onEnded { _ in })
+                )
                 .navigationDestination(isPresented: $showAddItem) {
                     AddItemLogView(itemLogged: {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
