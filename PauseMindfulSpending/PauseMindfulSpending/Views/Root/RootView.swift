@@ -82,6 +82,7 @@ struct RootView: View {
                     }
                 }
                 .gesture(
+                    // swiping between tabs
                     timerManager.currentTimerItem == nil ?
                     AnyGesture(DragGesture(minimumDistance: 10, coordinateSpace: .global)
                         .onEnded { value in
