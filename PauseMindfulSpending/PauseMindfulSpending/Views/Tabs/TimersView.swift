@@ -50,8 +50,8 @@ struct TimersView: View {
                                 .frame(maxWidth: 280)
                                 .foregroundColor(AppColors.textTertiary)
                         }
-                        .frame(maxWidth: .infinity)
-                        Spacer()
+                        .opacity(0.7)
+                        .padding(.top, 150)
                     } else {
                             switch session.userSettings?.wishlistLayout {
                             case .grid:
@@ -78,7 +78,9 @@ struct TimersView: View {
                     }
                 }
                 .onAppear {
-                    viewModel.startTimer()
+                    if !viewModel.timerItems.isEmpty {
+                        viewModel.startTimer()
+                    }
                 }
             }
             .appBackground()
