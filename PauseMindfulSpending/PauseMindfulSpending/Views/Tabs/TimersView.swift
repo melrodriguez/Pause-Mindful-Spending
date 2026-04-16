@@ -53,28 +53,27 @@ struct TimersView: View {
                         .opacity(0.7)
                         .padding(.top, 150)
                     } else {
-                            switch session.userSettings?.wishlistLayout {
-                            case .grid:
-                                TimerGrid(viewModel: viewModel, columns: [
-                                    GridItem(.fixed(180), spacing: 8),
-                                    GridItem(.fixed(180), spacing: 8)],
-                                        textSize: 20
-                                )
-                            case .single:
-                                TimerGrid(viewModel: viewModel, columns: [
-                                    GridItem(.fixed(350), spacing: 8)],
-                                        textSize: 30
-                                )
-                            case .none:
-                                TimerGrid(viewModel: viewModel, columns: [
-                                    GridItem(.fixed(180), spacing: 8),
-                                    GridItem(.fixed(180), spacing: 8)],
-                                        textSize: 20
-                                )
-                            }
-                        
-                            Color.clear
-                                .frame(height: 70)
+                        switch session.userSettings?.wishlistLayout {
+                        case .grid:
+                            TimerGrid(viewModel: viewModel, columns: [
+                                GridItem(.fixed(180), spacing: 8),
+                                GridItem(.fixed(180), spacing: 8)],
+                                    textSize: 20
+                            )
+                        case .single:
+                            TimerGrid(viewModel: viewModel, columns: [
+                                GridItem(.fixed(350), spacing: 8)],
+                                    textSize: 30
+                            )
+                        case .none:
+                            TimerGrid(viewModel: viewModel, columns: [
+                                GridItem(.fixed(180), spacing: 8),
+                                GridItem(.fixed(180), spacing: 8)],
+                                    textSize: 20
+                            )
+                        }
+                        Color.clear
+                            .frame(height: 70)
                     }
                 }
                 .onAppear {
