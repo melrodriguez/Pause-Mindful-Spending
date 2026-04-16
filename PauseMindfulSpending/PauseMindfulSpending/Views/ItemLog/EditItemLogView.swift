@@ -275,9 +275,9 @@ struct EditItemLogView: View {
                     itemNameSection()
                     categorySection()
                     priceSection()
+                    timerField
                     photoSection()
                     moodSection()
-                    timerField
                     noteSection()
 
                     Color.clear.frame(height: 90)
@@ -339,11 +339,13 @@ struct EditItemLogView: View {
             Text("Please make sure your item name, price, and pause timer is filled out")
         }
         .sheet(isPresented: $showAdjustTimer) {
-            AdjustTimerSheetView(onConfirm: { seconds in
-                vm.timerSeconds = seconds
-                vm.timerUpdated = true
-            })
-            .presentationDetents([.fraction(0.65)])
+            AdjustTimerSheetView(
+                onConfirm: { seconds in
+                    vm.timerSeconds = seconds
+                    vm.timerUpdated = true
+                }
+            )
+            .presentationDetents([.fraction(0.75)])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(24)
         }
@@ -360,6 +362,3 @@ struct EditItemLogView: View {
     }
 }
 
-#Preview {
-    // EditItemLogView()
-}

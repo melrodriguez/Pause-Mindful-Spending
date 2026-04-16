@@ -4,6 +4,7 @@ import ConfettiSwiftUI
 struct ItemLoggedView: View {
     
     var onContinue: () -> Void = {}
+    @EnvironmentObject var session: AppSessionViewModel
     
     @State private var confettiCounter: Int = 0
     var body: some View {
@@ -26,7 +27,17 @@ struct ItemLoggedView: View {
                     Circle().fill(Color.mainGreen).frame(width: 70, height: 70)
                     
                     Image("AppLogo").resizable().frame(width: 40, height: 40)
-                }.frame(height: 120).confettiCannon(trigger: $confettiCounter, colors: [.mainGreen, .pink, .yellow, .blue, .orange], confettiSize: 8, rainHeight: 400, openingAngle: Angle(degrees: 60), closingAngle: Angle(degrees: 120), radius: 200 )
+                }
+                .frame(height: 120)
+                .confettiCannon(
+                    trigger: $confettiCounter,
+                    colors: [.mainGreen, .pink, .yellow, .blue, .orange],
+                    confettiSize: 8, rainHeight: 400,
+                    openingAngle: Angle(degrees: 60),
+                    closingAngle: Angle(degrees: 120),
+                    radius: 200,
+                    hapticFeedback: false
+                )
 
                 
                 Button {
@@ -42,6 +53,7 @@ struct ItemLoggedView: View {
         }
         .onAppear {
             confettiCounter += 1
+            session.triggerHaptic(.medium)
         }
     }
 }

@@ -1,45 +1,47 @@
 import SwiftUI
 
-// Delegate that handles drag-and-drop reordering of widgets
 struct WidgetDropDelegate: DropDelegate {
+    let widget: DashboardWidget
+    @Binding var widgets: [DashboardWidget]
+    @Binding var draggedId: UUID?
+    @Binding var draggedWidget: DashboardWidget?
+    @Binding var hoveredId: UUID?
 
-    let item: DashboardWidget // widget being hovered over
-    @Binding var widgets: [DashboardWidget] // array of widget to reorder
-    @Binding var draggedItem: DashboardWidget? // widget being dragged
-
-    // Called when the dragged item first enters the drop area of another widget
     func dropEntered(info: DropInfo) {
-
-        // Check if there is a dragged widget, that isn't the same as the current
-        // one and that we can find both indices in the widget array
-        guard let draggedItem,
-              draggedItem != item,
-              let from = widgets.firstIndex(of: draggedItem),
-              let to = widgets.firstIndex(of: item)
+        guard let draggedId,
+              draggedId != widget.id,
+              let from = widgets.firstIndex(where: { $0.id == draggedId }),
+              let to = widgets.firstIndex(where: { $0.id == widget.id })
         else { return }
 
-        // Prevent unnecessary moves if the item is already in that spot
-        if widgets[to] != draggedItem {
-            
-            withAnimation(.spring(duration: 0.25)) {
-                widgets.move(
-                    fromOffsets: IndexSet(integer: from),
-                    // If dragging downward, adjust index so it inserts correctly
-                    toOffset: to > from ? to + 1 : to
-                )
-            }
+        hoveredId = widget.id
+
+        guard widgets[to].id != draggedId else { return }
+
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+            widgets.move(
+                fromOffsets: IndexSet(integer: from),
+                toOffset: to > from ? to + 1 : to
+            )
         }
     }
 
+    func dropExited(info: DropInfo) {
+        if hoveredId == widget.id {
+            hoveredId = nil
+        }
+    }
 
     func performDrop(info: DropInfo) -> Bool {
-        draggedItem = nil
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            draggedId = nil
+            draggedWidget = nil
+            hoveredId = nil
+        }
         return true
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
-
-        // indicate drag operation is a move
         return DropProposal(operation: .move)
     }
 }
