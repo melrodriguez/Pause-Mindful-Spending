@@ -77,9 +77,7 @@ struct TimersView: View {
                     }
                 }
                 .onAppear {
-                    if !viewModel.timerItems.isEmpty {
-                        viewModel.startTimer()
-                    }
+                    viewModel.startTimer()
                 }
             }
             .appBackground()
