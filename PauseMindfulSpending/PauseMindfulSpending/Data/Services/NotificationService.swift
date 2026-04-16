@@ -38,8 +38,6 @@ class NotificationService {
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Add error:", error as Any)
-            } else {
-                print("Notification Scheduled")
             }
         }
     }

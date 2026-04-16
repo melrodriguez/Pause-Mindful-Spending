@@ -180,6 +180,10 @@ extension FireStoreService {
                 self.decrementItemCount(uid: uid, categoryId: categoryId)
             }
             
+            self.deletePhoto(uid: uid, itemName: itemId) { completion in
+                return
+            }
+            
             self.deleteTimer(uid: uid, timerId: timerId)
             
             self.deleteDocumentFromSubcollection(
