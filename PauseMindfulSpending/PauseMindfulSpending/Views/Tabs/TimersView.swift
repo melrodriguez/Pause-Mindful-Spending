@@ -15,70 +15,69 @@ struct TimersView: View {
         NavigationStack {
             VStack(alignment: .leading) {
                 AppHeader(title: "Timers")
-                if viewModel.timerItems.isEmpty {
-                    Spacer()
-                    VStack(alignment: .center) {
-                        Image("GreyAppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 150)
-                            .shadow(color: .black.opacity(0.5), radius: 8, x: 5, y: 5)
-                        
-                        Text("Nothing yet")
-                            .font(AppFonts.bold(30))
-                            .foregroundColor(AppColors.textSecondary)
-                        
-                        Text("Add before you buy - mindful spending starts with a single pause")
-                            .font(AppFonts.regular(15))
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: 280)
-                            .foregroundColor(AppColors.textTertiary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    Spacer()
-                } else {
-                    ScrollView {
-                        HStack{
-                            Spacer()
-                            Button() {
-                                showingSortBySheet = true
-                            } label: {
-                                Image("Sort")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 25, height: 25)
-                            }
+                ScrollView {
+                    HStack{
+                        Spacer()
+                        Button() {
+                            showingSortBySheet = true
+                        } label: {
+                            Image("Sort")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 25, height: 25)
                         }
-                        .padding(.trailing, 20)
+                    }
+                    .padding(.trailing, 20)
                         
-                        Divider()
+                    Divider()
 
+                    if viewModel.timerItems.isEmpty {
+                        Spacer()
+                        VStack(alignment: .center) {
+                            Image("GreyAppLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 150)
+                                .shadow(color: .black.opacity(0.5), radius: 8, x: 5, y: 5)
+                        
+                            Text("Nothing yet")
+                                .font(AppFonts.bold(30))
+                                .foregroundColor(AppColors.textSecondary)
+                        
+                            Text("Add before you buy - mindful spending starts with a single pause")
+                                .font(AppFonts.regular(15))
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 280)
+                                .foregroundColor(AppColors.textTertiary)
+                        }
+                        .opacity(0.7)
+                        .padding(.top, 150)
+                    } else {
                         switch session.userSettings?.wishlistLayout {
                         case .grid:
                             TimerGrid(viewModel: viewModel, columns: [
                                 GridItem(.fixed(180), spacing: 8),
                                 GridItem(.fixed(180), spacing: 8)],
-                                      textSize: 20
+                                    textSize: 20
                             )
                         case .single:
                             TimerGrid(viewModel: viewModel, columns: [
                                 GridItem(.fixed(350), spacing: 8)],
-                                      textSize: 30
+                                    textSize: 30
                             )
                         case .none:
                             TimerGrid(viewModel: viewModel, columns: [
                                 GridItem(.fixed(180), spacing: 8),
                                 GridItem(.fixed(180), spacing: 8)],
-                                      textSize: 20
+                                    textSize: 20
                             )
                         }
-                        
                         Color.clear
                             .frame(height: 70)
                     }
-                    .onAppear {
-                        viewModel.startTimer()
-                    }
+                }
+                .onAppear {
+                    viewModel.startTimer()
                 }
             }
             .appBackground()
